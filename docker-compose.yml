@@ -1,0 +1,23 @@
+services:
+  gem-autoworks:
+    build: .
+    container_name: gem-autoworks
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8092:8000"
+    volumes:
+      - gem_data:/data
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+volumes:
+  gem_data:
+
+networks:
+  default:
+    name: gem-autoworks-net
