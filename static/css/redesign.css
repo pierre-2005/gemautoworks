@@ -107,7 +107,8 @@ label,small,p,blockquote{overflow-wrap:anywhere}
 .admin-workspace .admin-tabs{grid-column:1;grid-row:1;position:sticky;top:104px;display:flex;flex-direction:column;gap:5px;align-items:stretch;margin:0;padding:12px;background:#0c1926;border:1px solid #2b3d51;border-radius:16px;z-index:20}
 .admin-workspace .admin-tabs a{border-radius:9px;font-size:13px;padding:12px 14px;color:#acbdcd}
 .admin-workspace .admin-tabs a.is-active{background:#142f49;border:1px solid #338cc6;color:#eef8ff}
-.admin-workspace>.admin-section{grid-column:2;grid-row:1;min-width:0;padding:0 0 60px;border:none;scroll-margin-top:96px}
+.admin-workspace>.admin-section{grid-column:2;grid-row:auto;min-width:0;padding:0 0 60px;border:none;scroll-margin-top:96px}
+.admin-shell.admin-enhanced .admin-workspace>.admin-section.is-active{grid-row:1}
 .admin-shell.admin-enhanced .admin-workspace>.admin-section:not(.is-active){display:none}
 .admin-section-title{align-items:center;margin-bottom:22px}
 .admin-section-title h2{font-size:clamp(1.7rem,2.7vw,2.2rem);line-height:1.2}

@@ -1,5 +1,25 @@
 # GEM Autoworks | Website V1
 
+## Current website design and admin management
+
+The redesigned public site keeps the original GEM logo, black and electric-blue branding, contact information, and automotive photographs. A responsive layout is used for small phones, tablets, and desktop screens. The same booking and content-management endpoints are retained.
+
+Open **/admin/login** to sign in. The dashboard is organized into eight focused sections: Appointments, Availability, Services, Gallery, Reviews, Website, Emails, and Security. Use the left-side menu on desktop or swipeable section tabs on mobile. Manual appointment creation is under **Appointments → Add a booking manually**. Changes save back to the same dashboard section.
+
+The site includes automated real-Chromium viewport tests at **360, 390, 768, 1024, and 1440 pixels**. The test job uploads downloadable preview screenshots to GitHub Actions under **gem-responsive-previews**.
+
+### Deploying from private GitHub to Portainer
+
+- The production Compose file uses the container image **`ghcr.io/pierre-2005/gemautoworks:latest`**, not a local Docker build or a committed `.env` file.
+- Each push to `main` runs Python tests, responsive browser checks, and publishes ARM64 and AMD64 container images to GHCR.
+- In Portainer, deploy a Git repository stack using `docker-compose.yml`. Set at least `SECRET_KEY`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` in the stack environment, plus the correct `BUSINESS_TIMEZONE`.
+- SMTP credentials also belong in Portainer environment settings; they are required for real email notifications.
+- Portainer must have pull access to a private GHCR package, or the package must be made public. Your Git repository can stay private either way.
+- Persistent booking data and uploaded photos are stored in the Docker `gem_data` volume. Back it up; GitHub commits do not contain the customer database.
+- After a successful image publish, use Portainer's image re-pull/redeploy action to pick up the latest image; Git polling for source changes alone is not proof that a newer image was pulled.
+- `setup.py` and local `.env` examples are for local Docker installations only. Do **not** upload a populated `.env` file or other secrets to GitHub.
+
+
 A bespoke dark/blue automotive website, self-hosted booking calendar, and website control room for GEM Autoworks. Built for the Raspberry Pi with FastAPI, SQLite, Jinja2, Docker, and a Cloudflare Tunnel. **No subscription booking platform is needed.**
 
 ## What's included
