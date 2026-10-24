@@ -1,8 +1,23 @@
+# Portainer Git stack; image built and published by GitHub Actions.
+# Set credentials in Portainer Environment variables, never commit a .env file.
 services:
   gem-autoworks:
-    build: .
+    image: ghcr.io/pierre-2005/gemautoworks:latest
     container_name: gem-autoworks
     restart: unless-stopped
+    environment:
+      DATA_DIR: /data
+      SECRET_KEY: ${SECRET_KEY:?Set_SECRET_KEY_in_Portainer}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      BUSINESS_TIMEZONE: ${BUSINESS_TIMEZONE:-America/New_York}
+      COOKIE_SECURE: "true"
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURITY: ${SMTP_SECURITY:-ssl}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     ports:
       - "127.0.0.1:8092:8000"
     volumes:
@@ -16,7 +31,6 @@ services:
       retries: 3
 volumes:
   gem_data:
-
 networks:
   default:
     name: gem-autoworks-net
