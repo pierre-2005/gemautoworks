@@ -29,6 +29,16 @@ def next_open_date():
     raise AssertionError('No open date found')
 
 
+def test_redesign_assets_and_navigation():
+    with TestClient(app) as client:
+        page=client.get('/').text
+        assert 'brand-logo-only' in page
+        assert '/static/css/redesign.css?v=5' in page
+        assert client.get('/static/css/redesign.css').status_code == 200
+        response=client.get('/admin/login')
+        assert response.status_code == 200
+
+
 def test_every_public_page_and_assets():
     with TestClient(app) as client:
         for uri in ['/','/services','/gallery','/reviews','/contact','/book','/privacy','/terms','/admin/login','/health','/static/img/gem-logo.png','/static/css/site.css','/static/js/site.js']:

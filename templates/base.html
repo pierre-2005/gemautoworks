@@ -11,21 +11,23 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/site.css?v=4">
-  <script defer src="/static/js/site.js?v=4"></script>
+  <link rel="stylesheet" href="/static/css/redesign.css?v=5">
+  <script defer src="/static/js/site.js?v=5"></script>
 </head>
 <body>
+<a class="skip-link" href="#main-content">Skip to content</a>
 <div class="top-line"></div>
 <header class="site-header" id="top">
   <div class="container header-inner">
-    <a href="/" class="brand" aria-label="GEM Autoworks home"><img src="/static/img/gem-logo.png" alt="GEM Autoworks logo"><span class="brand-word">GEM <small>AUTOWORKS</small></span></a>
-    <button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <a href="/" class="brand brand-logo-only" aria-label="GEM Autoworks home" title="GEM Autoworks"><img src="/static/img/gem-logo.png" alt="GEM Autoworks logo"><span class="brand-word">GEM <small>AUTOWORKS</small></span></a>
+    <button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open navigation menu"><span></span><span></span><span></span></button>
     <nav class="nav" id="main-nav" aria-label="Main menu">
       <a href="/" {% if request.url.path=='/' %}aria-current="page"{% endif %}>Home</a>
       <a href="/services" {% if request.url.path=='/services' %}aria-current="page"{% endif %}>Services</a>
       <a href="/gallery" {% if request.url.path=='/gallery' %}aria-current="page"{% endif %}>Our Work</a>
       <a href="/reviews" {% if request.url.path=='/reviews' %}aria-current="page"{% endif %}>Reviews</a>
       <a href="/contact" {% if request.url.path=='/contact' %}aria-current="page"{% endif %}>Contact</a>
-      <a class="btn btn-primary nav-book" href="/book">Book an Appointment <span aria-hidden="true">↗</span></a>
+      <a class="btn btn-primary nav-book" href="/book">Book now <span aria-hidden="true">↗</span></a>
     </nav>
   </div>
 </header>

@@ -15,6 +15,57 @@
   document.querySelectorAll('[data-confirm]').forEach(el => el.addEventListener('click',e => {
     if (!window.confirm(el.dataset.confirm)) e.preventDefault();
   }));
+
+  // Mobile navigation and dashboard enhancements are progressive:
+  // without JavaScript all sections and forms remain accessible.
+  const menu = document.querySelector('.menu-toggle');
+  const mainNav = document.querySelector('#main-nav');
+  const closeMenu = () => {
+    if (!menu || !mainNav) return;
+    mainNav.classList.remove('open');
+    menu.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-label', 'Open navigation menu');
+  };
+  if (menu && mainNav) {
+    menu.addEventListener('click', () => menu.setAttribute('aria-label',
+      menu.getAttribute('aria-expanded') === 'true' ? 'Close navigation menu' : 'Open navigation menu'));
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
+    document.addEventListener('click', e => {
+      if (!mainNav.contains(e.target) && !menu.contains(e.target)) closeMenu();
+    });
+  }
+  const dashboard = document.querySelector('.admin-shell');
+  if (dashboard) {
+    const links = [...dashboard.querySelectorAll('[data-admin-section]')];
+    const panels = [...dashboard.querySelectorAll('.admin-section[id]')];
+    const valid = new Set(panels.map(p => p.id));
+    const openPanel = (id, scroll = false) => {
+      const target = valid.has(id) ? id : 'appointments';
+      panels.forEach(p => {
+        const active = p.id === target;
+        p.classList.toggle('is-active', active);
+        p.setAttribute('aria-hidden', String(!active));
+      });
+      links.forEach(a => {
+        const active = a.dataset.adminSection === target;
+        a.classList.toggle('is-active', active);
+        if (active) a.setAttribute('aria-current', 'page');
+        else a.removeAttribute('aria-current');
+      });
+      if (scroll && window.innerWidth < 920) {
+        dashboard.querySelector('.admin-workspace')?.scrollIntoView({block: 'start', behavior: 'smooth'});
+      }
+    };
+    dashboard.classList.add('admin-enhanced');
+    openPanel(location.hash.slice(1));
+    links.forEach(link => link.addEventListener('click', e => {
+      e.preventDefault();
+      history.replaceState(null, '', '#' + link.dataset.adminSection);
+      openPanel(link.dataset.adminSection, true);
+    }));
+    window.addEventListener('hashchange', () => openPanel(location.hash.slice(1)));
+  }
+
   const form = document.querySelector('#booking-form');
   if (!form) return;
   const service = document.querySelector('#service-choice');
