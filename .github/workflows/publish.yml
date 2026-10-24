@@ -23,6 +23,19 @@ jobs:
         run: pip install -r requirements.txt pytest httpx
       - name: Run tests
         run: python -m pytest -q
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Test responsive site and dashboard in Chromium
+        run: python tests/visual_smoke.py
+      - name: Save design previews
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gem-responsive-previews
+          path: visual-artifacts/
+          retention-days: 7
 
   publish:
     needs: test
