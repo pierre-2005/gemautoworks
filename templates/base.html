@@ -5,14 +5,21 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#070a10">
   <meta name="description" content="{{ site.seo_description }}">
+  <link rel="canonical" href="{{canonical_url}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{site.business_name}}">
+  <meta property="og:title" content="{{self.title()|striptags}}">
+  <meta property="og:description" content="{{site.seo_description}}">
+  <meta property="og:url" content="{{canonical_url}}">
+  <meta property="og:image" content="{{public_base_url}}/static/img/showcase.webp">
+  <meta name="twitter:card" content="summary_large_image">
   <title>{% block title %}GEM Autoworks | Crafted for the Drive{% endblock %}</title>
   <link rel="icon" href="/static/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/site.css?v=4">
-  <link rel="stylesheet" href="/static/css/redesign.css?v=6">
-  <script defer src="/static/js/site.js?v=5"></script>
+  <link rel="stylesheet" href="/static/css/site.css?v=10">
+  <script defer src="/static/js/site.js?v=10"></script>
 </head>
 <body>
 <a class="skip-link" href="#main-content">Skip to content</a>
@@ -27,6 +34,7 @@
       <a href="/gallery" {% if request.url.path=='/gallery' %}aria-current="page"{% endif %}>Our Work</a>
       <a href="/reviews" {% if request.url.path=='/reviews' %}aria-current="page"{% endif %}>Reviews</a>
       <a href="/contact" {% if request.url.path=='/contact' %}aria-current="page"{% endif %}>Contact</a>
+      {% if site.customer_accounts_enabled=='1' %}<a href="{{'/account' if customer_logged_in else '/account/login'}}">{{'My Garage' if customer_logged_in else 'Sign In'}}</a>{% endif %}
       <a class="btn btn-primary nav-book" href="/book">Book now <span aria-hidden="true">↗</span></a>
     </nav>
   </div>
@@ -35,7 +43,7 @@
 <footer class="footer">
  <div class="container">
    <div class="footer-top">
-     <div><a href="/" class="footer-logo"><img src="/static/img/gem-logo.png" alt=""><span>GEM <em>AUTOWORKS</em></span></a><p>{{ site.footer_caption }}</p></div>
+     <div><a href="/" class="footer-logo"><img src="/static/img/gem-logo.png" alt=""></a><p>{{ site.footer_caption }}</p></div>
      <div><span class="eyebrow">EXPLORE</span><a href="/services">Services</a><a href="/gallery">Gallery</a><a href="/reviews">Reviews</a><a href="/book">Book Online</a></div>
      <div><span class="eyebrow">GET IN TOUCH</span><a href="tel:{{ site.phone|replace(' ','')|replace('(','')|replace(')','')|replace('-','') }}">{{ site.phone }}</a><a href="mailto:{{ site.email }}">{{ site.email }}</a>{% if site.instagram %}<a href="{{ site.instagram }}" rel="noopener noreferrer" target="_blank">Instagram ↗</a>{% endif %}{% if site.facebook %}<a href="{{ site.facebook }}" rel="noopener noreferrer" target="_blank">Facebook ↗</a>{% else %}<span class="social-name">Facebook: GEM Autoworks</span>{% endif %}</div>
    </div>

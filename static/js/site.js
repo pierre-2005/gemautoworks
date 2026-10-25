@@ -1,116 +1,260 @@
+/* GEM Autoworks V2 | keyboard-friendly, progressive interactions. */
 (() => {
   'use strict';
-  const toggle = document.querySelector('.menu-toggle');
+  document.body.classList.add('js-ready');
+  const navToggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('#main-nav');
-  if (toggle && nav) {
-    toggle.addEventListener('click', () => {
-      const open = toggle.getAttribute('aria-expanded') !== 'true';
-      toggle.setAttribute('aria-expanded', String(open));
-      nav.classList.toggle('open', open);
-    });
-    nav.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => {
-      nav.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false');
-    }));
-  }
-  document.querySelectorAll('[data-confirm]').forEach(el => el.addEventListener('click',e => {
-    if (!window.confirm(el.dataset.confirm)) e.preventDefault();
-  }));
-
-  // Mobile navigation and dashboard enhancements are progressive:
-  // without JavaScript all sections and forms remain accessible.
-  const menu = document.querySelector('.menu-toggle');
-  const mainNav = document.querySelector('#main-nav');
-  const closeMenu = () => {
-    if (!menu || !mainNav) return;
-    mainNav.classList.remove('open');
-    menu.setAttribute('aria-expanded', 'false');
-    menu.setAttribute('aria-label', 'Open navigation menu');
+  const closeNav = () => {
+    if (!navToggle || !nav) return;
+    nav.classList.remove('open');
+    navToggle.setAttribute('aria-expanded','false');
+    navToggle.setAttribute('aria-label','Open navigation menu');
   };
-  if (menu && mainNav) {
-    menu.addEventListener('click', () => menu.setAttribute('aria-label',
-      menu.getAttribute('aria-expanded') === 'true' ? 'Close navigation menu' : 'Open navigation menu'));
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMenu(); });
-    document.addEventListener('click', e => {
-      if (!mainNav.contains(e.target) && !menu.contains(e.target)) closeMenu();
+  if (navToggle && nav) {
+    navToggle.addEventListener('click', () => {
+      const open = navToggle.getAttribute('aria-expanded') !== 'true';
+      nav.classList.toggle('open',open);
+      navToggle.setAttribute('aria-expanded',String(open));
+      navToggle.setAttribute('aria-label',open?'Close navigation menu':'Open navigation menu');
+    });
+    nav.querySelectorAll('a').forEach(link => link.addEventListener('click',closeNav));
+    document.addEventListener('keydown',event => {if(event.key==='Escape') closeNav();});
+    document.addEventListener('click',event => {
+      if(!nav.contains(event.target) && !navToggle.contains(event.target)) closeNav();
     });
   }
-  const dashboard = document.querySelector('.admin-shell');
-  if (dashboard) {
-    const links = [...dashboard.querySelectorAll('[data-admin-section]')];
-    const panels = [...dashboard.querySelectorAll('.admin-section[id]')];
-    const valid = new Set(panels.map(p => p.id));
-    const openPanel = (id, scroll = false) => {
-      const target = valid.has(id) ? id : 'appointments';
-      panels.forEach(p => {
-        const active = p.id === target;
-        p.classList.toggle('is-active', active);
-        p.setAttribute('aria-hidden', String(!active));
-      });
-      links.forEach(a => {
-        const active = a.dataset.adminSection === target;
-        a.classList.toggle('is-active', active);
-        if (active) a.setAttribute('aria-current', 'page');
-        else a.removeAttribute('aria-current');
-      });
-      if (scroll && window.innerWidth < 920) {
-        dashboard.querySelector('.admin-workspace')?.scrollIntoView({block: 'start', behavior: 'smooth'});
-      }
-    };
-    dashboard.classList.add('admin-enhanced');
-    openPanel(location.hash.slice(1));
-    links.forEach(link => link.addEventListener('click', e => {
-      e.preventDefault();
-      history.replaceState(null, '', '#' + link.dataset.adminSection);
-      openPanel(link.dataset.adminSection, true);
-    }));
-    window.addEventListener('hashchange', () => openPanel(location.hash.slice(1)));
-  }
 
-  const form = document.querySelector('#booking-form');
-  if (!form) return;
-  const service = document.querySelector('#service-choice');
-  const day = document.querySelector('#appointment-day');
-  const slots = document.querySelector('#slots');
-  const label = document.querySelector('#slots-label');
-  const selected = document.querySelector('#at-time');
-  let controller;
-  function reset(text) {
-    slots.replaceChildren();
-    const p=document.createElement('p');p.className='muted';p.textContent=text;slots.appendChild(p);
-    selected.value='';
-  }
-  async function refresh() {
-    if (controller) controller.abort();
-    reset('Select a service and date to see available slots.');
-    label.textContent='';
-    if (!service.value || !day.value) return;
-    controller=new AbortController();
-    reset('Loading available times...');
-    try {
-      const response=await fetch(`/api/availability?service_id=${encodeURIComponent(service.value)}&day=${encodeURIComponent(day.value)}`,{signal:controller.signal});
-      if (!response.ok) throw Error('Unable to fetch availability');
-      const result=await response.json();
-      label.textContent=`${result.slots.length} available`;
-      slots.replaceChildren();
-      if (!result.slots.length) {reset('No open times for this date. Please try another date.');return;}
-      result.slots.forEach(time=>{
-        const b=document.createElement('button');
-        b.type='button'; b.className='slot-button';b.textContent=time;
-        b.setAttribute('aria-pressed','false');
-        b.addEventListener('click',()=>{
-          slots.querySelectorAll('button').forEach(x=>{x.classList.remove('selected');x.setAttribute('aria-pressed','false');});
-          b.classList.add('selected');b.setAttribute('aria-pressed','true');selected.value=time;
-        });
-        slots.appendChild(b);
+  document.querySelectorAll('[data-confirm]').forEach(el => {
+    el.addEventListener('click',event => {
+      if(!window.confirm(el.dataset.confirm)) event.preventDefault();
+    });
+  });
+
+  // An actual section navigation experience, keeping every admin form server-rendered.
+  const workspace = document.querySelector('.admin-workspace');
+  if (workspace) {
+    const links = [...workspace.querySelectorAll('[data-admin-section]')];
+    const panels = [...workspace.querySelectorAll('.admin-section[id]')];
+    const valid = new Set(panels.map(p => p.id));
+    const show = (id,scroll=false) => {
+      const activeId=valid.has(id)?id:'appointments';
+      panels.forEach(panel => {
+        const active=panel.id===activeId;
+        panel.classList.toggle('is-active',active);
+        panel.hidden=!active;
       });
-    } catch(e) {
-      if (e.name !== 'AbortError') reset('Could not load availability. Please try again.');
+      links.forEach(link => {
+        const active=link.dataset.adminSection===activeId;
+        link.classList.toggle('is-active',active);
+        if (active) link.setAttribute('aria-current','page');
+        else link.removeAttribute('aria-current');
+      });
+      if(scroll && window.innerWidth<=920) workspace.scrollIntoView({behavior:'smooth',block:'start'});
+    };
+    workspace.classList.add('admin-enhanced');
+    show(location.hash.slice(1));
+    links.forEach(link => link.addEventListener('click',event => {
+      event.preventDefault();
+      const id=link.dataset.adminSection;
+      history.replaceState(null,'','#'+id);
+      show(id,true);
+    }));
+    window.addEventListener('hashchange',()=>show(location.hash.slice(1)));
+    const query=workspace.querySelector('#customer-table-search');
+    if(query) {
+      const rows=[...workspace.querySelectorAll('[data-customer-row]')];
+      const filter=()=>rows.forEach(row=>{row.hidden=!row.textContent.toLowerCase().includes(query.value.trim().toLowerCase());});
+      query.addEventListener('input',filter);
     }
   }
-  service.addEventListener('change',refresh);
-  day.addEventListener('change',refresh);
-  form.addEventListener('submit',e => {
-    if (!selected.value) {e.preventDefault(); slots.scrollIntoView({behavior:'smooth',block:'center'});label.textContent='Please choose an available time';}
+
+  // Customer registration lets each visitor incrementally describe their garage.
+  const addVehicle=document.querySelector('#add-signup-vehicle');
+  if(addVehicle){
+    addVehicle.addEventListener('click',()=>{
+      const list=document.querySelector('#signup-vehicles');
+      if(!list || list.children.length>=6) return;
+      const row=list.firstElementChild.cloneNode(true);
+      row.querySelectorAll('input').forEach(input=>input.value='');
+      list.appendChild(row);
+      addVehicle.disabled=list.children.length>=6;
+    });
+  }
+
+
+  // Customer self-service rescheduling reuses the authoritative server availability endpoint.
+  document.querySelectorAll('.customer-reschedule').forEach(form => {
+    const day=form.querySelector('[name=day]');
+    const times=form.querySelector('[name=at_time]');
+    const feedback=form.querySelector('[data-reschedule-feedback]');
+    let controller=null;
+    async function update(){
+      controller?.abort();
+      const next=new AbortController();
+      controller=next;
+      times.replaceChildren(new Option('Checking availability...', ''));
+      feedback.textContent='Loading available times...';
+      if(!day.value)return;
+      try{
+        const url='/api/availability?service_id='+encodeURIComponent(form.dataset.serviceId)+'&day='+encodeURIComponent(day.value);
+        const response=await fetch(url,{signal:next.signal});
+        if(!response.ok)throw new Error('Unavailable');
+        const payload=await response.json();
+        if(controller!==next)return;
+        times.replaceChildren(new Option(payload.slots.length?'Select an available time':'No available times',''));
+        payload.slots.forEach(time=>times.add(new Option(time,time)));
+        feedback.textContent=payload.slots.length?'Choose one of '+payload.slots.length+' available times.':'No slots available. Select a different date.';
+      }catch(error){
+        if(error.name!=='AbortError'){
+          times.replaceChildren(new Option('Unable to load times',''));
+          feedback.textContent='Could not check availability. Please retry.';
+        }
+      }
+    }
+    day.addEventListener('change',update);
+    form.addEventListener('submit',event=>{
+      if(!times.value){event.preventDefault();times.focus();}
+    });
+    update();
   });
-  if (service.value && day.value) refresh();
+
+  const booking=document.querySelector('#booking-form');
+  if(!booking) return;
+  const service=booking.querySelector('#service-choice');
+  const date=booking.querySelector('#appointment-day');
+  const slots=booking.querySelector('#slots');
+  const slotLabel=booking.querySelector('#slots-label');
+  const selected=booking.querySelector('#at-time');
+  const stages=[...booking.querySelectorAll('[data-book-step]')];
+  const steps=[...document.querySelectorAll('[data-progress]')];
+  const submit=booking.querySelector('#book-submit');
+  let currentStep=0, controller=null;
+
+  function showStep(index, scroll=true) {
+    currentStep=Math.min(3,Math.max(0,index));
+    stages.forEach((stage,i)=>{
+      const active=i===currentStep;
+      stage.classList.toggle('is-current',active);
+      stage.setAttribute('aria-hidden',String(!active));
+    });
+    steps.forEach((step,i)=>{
+      step.classList.toggle('is-current',i===currentStep);
+      step.classList.toggle('is-done',i<currentStep);
+      if(i===currentStep) step.setAttribute('aria-current','step');
+      else step.removeAttribute('aria-current');
+    });
+    if(currentStep===3) refreshReview();
+    if(scroll) document.querySelector('.booking-heading')?.scrollIntoView({behavior:'smooth',block:'start'});
+  }
+
+  function resetSlots(message) {
+    selected.value='';
+    slots.replaceChildren();
+    const msg=document.createElement('p');
+    msg.className='muted';
+    msg.textContent=message;
+    slots.appendChild(msg);
+  }
+  async function loadSlots(){
+    controller?.abort();
+    controller=null;
+    resetSlots('Select a service and date to see available times.');
+    slotLabel.textContent='Select a service and date';
+    if(!service.value || !date.value) return;
+    controller=new AbortController();
+    const myController=controller;
+    resetSlots('Checking available times...');
+    slotLabel.textContent='Loading...';
+    try{
+      const response=await fetch('/api/availability?service_id='+encodeURIComponent(service.value)+'&day='+encodeURIComponent(date.value),{signal:myController.signal});
+      if(!response.ok) throw Error('Availability unavailable');
+      const result=await response.json();
+      if(controller!==myController) return;
+      slotLabel.textContent=result.slots.length+' time'+(result.slots.length===1?'':'s')+' available';
+      slots.replaceChildren();
+      if(!result.slots.length){resetSlots('No available times on this date. Choose another day.');return;}
+      result.slots.forEach(time=>{
+        const button=document.createElement('button');
+        button.type='button';
+        button.className='slot-button';
+        button.textContent=time;
+        button.setAttribute('aria-pressed','false');
+        button.addEventListener('click',()=>{
+          slots.querySelectorAll('button').forEach(b=>{
+            b.classList.remove('selected');
+            b.setAttribute('aria-pressed','false');
+          });
+          button.classList.add('selected');
+          button.setAttribute('aria-pressed','true');
+          selected.value=time;
+          slotLabel.textContent='Selected '+time;
+        });
+        slots.appendChild(button);
+      });
+    }catch(error){
+      if(error.name!=='AbortError') {
+        resetSlots('We could not load availability. Please retry or choose a different day.');
+        slotLabel.textContent='Unable to load';
+      }
+    }
+  }
+
+  function validateStep(index){
+    if(index===1 && !selected.value){
+      slotLabel.textContent='Choose an available time before continuing';
+      slots.focus?.();
+      return false;
+    }
+    const fields=[...stages[index].querySelectorAll('input, select, textarea')];
+    for(const field of fields){
+      if(field.type==='hidden') continue;
+      if(!field.checkValidity()){
+        field.reportValidity();
+        field.focus();
+        return false;
+      }
+    }
+    return true;
+  }
+  function refreshReview() {
+    const get=(q)=>booking.querySelector(q);
+    const selection=service.options[service.selectedIndex];
+    const saved=get('#saved-vehicle-choice');
+    const vehicle=get('[name=vehicle]');
+    const parts={
+      service:selection?.textContent||'Not selected',
+      day:date.value||'Not selected',
+      time:selected.value||'Not selected',
+      name:get('[name=name]')?.value||'Not provided',
+      vehicle:(saved?.selectedOptions[0]?.value?saved.selectedOptions[0].textContent:vehicle?.value)||'Not provided'
+    };
+    for(const [key,value] of Object.entries(parts)){
+      const target=get('[data-review="'+key+'"]');
+      if(target) target.textContent=value;
+    }
+  }
+  booking.querySelectorAll('[data-book-next]').forEach(button=>button.addEventListener('click',()=>{
+    if(validateStep(currentStep)) showStep(currentStep+1);
+  }));
+  booking.querySelectorAll('[data-book-back]').forEach(button=>button.addEventListener('click',()=>showStep(currentStep-1)));
+  service.addEventListener('change',loadSlots);
+  date.addEventListener('change',loadSlots);
+  const saved=booking.querySelector('#saved-vehicle-choice');
+  if(saved)saved.addEventListener('change',()=>{
+    const vehicle=booking.querySelector('[name=vehicle]');
+    vehicle.disabled=Boolean(saved.value);
+    document.querySelector('#vehicle-text-field')?.classList.toggle('is-disabled',Boolean(saved.value));
+    if(saved.value)vehicle.value='';
+  });
+  booking.addEventListener('submit',event=>{
+    if(![0,1,2].every(validateStep)){
+      event.preventDefault();
+      for(let i=0;i<3;i++){if(!validateStep(i)){showStep(i);break;}}
+      return;
+    }
+    submit.disabled=true;
+    submit.textContent='Submitting...';
+  });
+  showStep(0,false);
+  if(service.value && date.value)loadSlots();
 })();

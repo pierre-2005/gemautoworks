@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% block title %}{{"Create account" if mode=="register" else "Customer access"}} | GEM Autoworks{% endblock %}
+{% block content %}
+<section class="account-auth-wrap"><div class="account-auth-card">
+<a class="account-back" href="/">← Back to GEM Autoworks</a>
+{% if mode=="register" %}
+<div class="eyebrow">YOUR GEM GARAGE</div><h1>Make it <em>personal.</em></h1>
+<p class="muted">Create your account and save your vehicles. Add more whenever you like.</p>
+<form method="post" action="/account/register" class="form-stack" id="customer-registration">
+<input type="hidden" name="csrf" value="{{csrf}}">
+<div class="account-form-grid"><label>Full name<input name="name" autocomplete="name" required maxlength="100" placeholder="Your name"></label><label>Phone number<input name="phone" type="tel" autocomplete="tel" required maxlength="50" placeholder="Your phone"></label></div>
+<label>Email address<input name="email" type="email" autocomplete="email" required maxlength="255" placeholder="you@example.com"></label>
+<label>Password<input name="password" type="password" minlength="12" maxlength="128" autocomplete="new-password" required placeholder="At least 12 characters"></label>
+<div class="account-divider"><h2>Your vehicles <small>(optional)</small></h2><p class="muted">Start with one or skip this step. You can add more in your account.</p></div>
+<div id="signup-vehicles"><div class="signup-vehicle-row"><div class="account-form-grid three"><label>Year<input type="number" name="vehicle_year" min="1900" max="2030" placeholder="2022"></label><label>Make<input name="vehicle_make" maxlength="60" placeholder="BMW"></label><label>Model<input name="vehicle_model" maxlength="60" placeholder="M3"></label></div></div></div>
+<button type="button" class="btn btn-ghost" id="add-signup-vehicle">+ Add another vehicle</button>
+<button type="submit" class="btn btn-primary btn-block btn-large">Create my account →</button>
+<p class="tiny muted">We'll email you a verification link. By registering you agree to our <a href="/terms">terms</a> and <a href="/privacy">privacy policy</a>.</p>
+</form>
+<p class="account-switch">Already have an account? <a href="/account/login">Sign in</a></p>
+{% elif mode=="login" %}
+<div class="eyebrow">WELCOME BACK</div><h1>Your garage, <em>ready.</em></h1><p class="muted">Sign in to see your vehicles, upcoming appointments and service reminders.</p>
+{% if error %}<p class="notice error">Check your credentials and verify your email before signing in.</p>{% endif %}
+<form method="post" action="/account/login" class="form-stack"><input type="hidden" name="csrf" value="{{csrf}}">
+<label>Email address<input name="email" type="email" autocomplete="username" required placeholder="you@example.com"></label>
+<label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+<a class="account-forgot" href="/account/forgot">Forgot password?</a>
+<button type="submit" class="btn btn-primary btn-block btn-large">Sign in →</button></form>
+<p class="account-switch">New to GEM? <a href="/account/register">Create an account</a></p>
+{% elif mode=="forgot" %}
+<div class="eyebrow">ACCOUNT RECOVERY</div><h1>Reset your <em>password.</em></h1><p class="muted">Enter your email address to request a secure reset link.</p>
+<form method="post" action="/account/forgot" class="form-stack"><input type="hidden" name="csrf" value="{{csrf}}">
+<label>Email address<input name="email" type="email" autocomplete="email" required></label>
+<button type="submit" class="btn btn-primary btn-block">Send reset link →</button></form>
+<p class="account-switch"><a href="/account/login">Back to sign in</a></p>
+{% elif mode=="reset" %}
+<div class="eyebrow">ACCOUNT RECOVERY</div><h1>New <em>password.</em></h1>
+<form method="post" action="/account/reset" class="form-stack"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="token" value="{{reset_token}}">
+<label>New password<input name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" required></label>
+<button type="submit" class="btn btn-primary btn-block">Save new password →</button></form>
+{% else %}
+<div class="eyebrow">CHECK YOUR INBOX</div><h1>Almost <em>there.</em></h1><p>Check your email for a secure link, if the address is eligible. Verification links expire after two hours.</p>
+<a href="/account/login" class="btn btn-primary">Return to sign in →</a>
+{% endif %}
+</div></section>{% endblock %}

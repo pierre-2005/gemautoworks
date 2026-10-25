@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import html
 import csv
 import hmac
 import io
@@ -21,11 +22,12 @@ from zoneinfo import ZoneInfo
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError, VerificationError
 from fastapi import FastAPI, Form, HTTPException, Request, UploadFile, File
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from PIL import Image, UnidentifiedImageError
 from starlette.middleware.sessions import SessionMiddleware
+import customer_portal
 
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = Path(os.environ.get('DATA_DIR', str(ROOT / 'data')))
@@ -59,6 +61,7 @@ DEFAULTS = {
     'contact_note': 'Have a unique project in mind? Send us a message and we will help you plan the next step.',
     'booking_intro': 'Find a time that works for you. Select your appointment type, choose an available slot, and send us the details.',
     'booking_requires_approval': '0',
+    'customer_accounts_enabled': '0',
     'booking_lead_hours': '2',
     'booking_window_days': '90',
     'slot_step_minutes': '30',
@@ -129,7 +132,11 @@ def init_db():
             attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL
         );
         ''')
+        # Add the retry timestamp without disturbing databases created by earlier versions.
+        if 'next_attempt_at' not in {r['name'] for r in c.execute("PRAGMA table_info(email_outbox)")}: 
+            c.execute("ALTER TABLE email_outbox ADD COLUMN next_attempt_at TEXT NOT NULL DEFAULT ''")
         c.executemany('INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)', DEFAULTS.items())
+        customer_portal.init_customer_db(c)
         if not c.execute('SELECT 1 FROM services LIMIT 1').fetchone():
             c.executemany('INSERT INTO services(title,description,duration,price_note,sort_order) VALUES(?,?,?,?,?)', [
                 ('Vehicle Consultation', 'Tell us about your vehicle and what you have in mind.', 30, 'Consultation', 1),
@@ -248,14 +255,23 @@ def send_pending():
     if not email_configured(): return 0
     delivered=0
     with connection() as c:
-        unsent=c.execute("SELECT * FROM email_outbox WHERE state IN ('pending','failed') AND attempts<6 ORDER BY id LIMIT 15").fetchall()
+        unsent=c.execute("SELECT * FROM email_outbox WHERE state IN ('pending','failed') AND attempts<6 AND (next_attempt_at='' OR next_attempt_at<=?) ORDER BY id LIMIT 15",(stamp(),)).fetchall()
         for msg in unsent:
             try:
                 mail=EmailMessage()
                 mail['From']=os.environ['SMTP_FROM']
                 mail['To']=msg['recipient']
                 mail['Subject']=msg['subject']
+                mail['Reply-To']=settings(c)['email']
                 mail.set_content(msg['body'])
+                safe_body='<br>'.join(html.escape(msg['body']).splitlines())
+                mail.add_alternative(
+                    '<!doctype html><html><body style="margin:0;background:#f2f6fa;padding:28px;font-family:Arial,sans-serif;color:#182a3b;">'
+                    '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;max-width:620px;margin:auto;background:#fff;border:1px solid #d9e4eb;border-radius:14px;">'
+                    '<tr><td style="padding:24px 30px;background:#071625;color:#fff;font-size:19px;font-weight:bold;letter-spacing:.02em;">GEM AUTOWORKS</td></tr>'
+                    '<tr><td style="padding:28px 30px;font-size:14px;line-height:1.8;">'+safe_body+'</td></tr>'
+                    '<tr><td style="padding:16px 30px;border-top:1px solid #e4eaf0;color:#62768c;font-size:12px;">Sent by GEM Autoworks. Please reply to this message if you have questions.</td></tr>'
+                    '</table></body></html>',subtype='html')
                 host=os.environ['SMTP_HOST']
                 port=int(os.environ.get('SMTP_PORT','465'))
                 if os.environ.get('SMTP_SECURITY','ssl').lower()=='ssl':
@@ -266,11 +282,14 @@ def send_pending():
                     if os.environ.get('SMTP_SECURITY','ssl').lower()=='starttls': smtp.starttls()
                     smtp.login(os.environ['SMTP_USER'],os.environ['SMTP_PASSWORD'])
                     smtp.send_message(mail)
-                c.execute("UPDATE email_outbox SET state='sent',attempts=attempts+1,last_error='' WHERE id=?",(msg['id'],))
+                c.execute("UPDATE email_outbox SET state='sent',attempts=attempts+1,next_attempt_at='',last_error='' WHERE id=?",(msg['id'],))
                 delivered+=1
             except Exception as e:
                 log.error('Email delivery failure, item #%s: %s',msg['id'],type(e).__name__)
-                c.execute("UPDATE email_outbox SET state='failed',attempts=attempts+1,last_error=? WHERE id=?",(safe_text(type(e).__name__+': '+str(e),200),msg['id']))
+                delays=(1,5,15,60,240,1440)
+                next_attempt=(datetime.now(timezone.utc)+timedelta(minutes=delays[min(msg['attempts'],5)])).isoformat(timespec='seconds')
+                c.execute("UPDATE email_outbox SET state='failed',attempts=attempts+1,next_attempt_at=?,last_error=? WHERE id=?",
+                    (next_attempt,safe_text(type(e).__name__+': '+str(e),200),msg['id']))
     return delivered
 
 async def email_worker():
@@ -281,17 +300,29 @@ async def email_worker():
             log.exception('Outbox worker failure')
         await asyncio.sleep(90)
 
+async def care_reminder_worker():
+    while True:
+        try:
+            await asyncio.to_thread(customer_portal.queue_care_reminders)
+        except Exception:
+            log.exception('Care reminders failed')
+        await asyncio.sleep(3600)
+
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     init_db()
     task=asyncio.create_task(email_worker())
+    care_task=asyncio.create_task(care_reminder_worker())
     yield
     task.cancel()
-    try: await task
-    except asyncio.CancelledError: pass
+    care_task.cancel()
+    for job in (task,care_task):
+        try: await job
+        except asyncio.CancelledError: pass
 
 app=FastAPI(title='GEM Autoworks',docs_url=None,redoc_url=None,openapi_url=None,lifespan=lifespan)
 app.add_middleware(SessionMiddleware,secret_key=SECRET_KEY,session_cookie='gem_session',same_site='lax',https_only=COOKIE_SECURE,max_age=8*60*60)
+app.include_router(customer_portal.router)
 app.mount('/static',StaticFiles(directory=ROOT/'static'),name='static')
 app.mount('/uploads',StaticFiles(directory=UPLOAD_DIR),name='uploads')
 templates=Jinja2Templates(directory=str(ROOT/'templates'))
@@ -323,7 +354,9 @@ async def friendly_http(request,exc):
 
 def render(request,template,c,status=200,**context):
     current=settings(c)
-    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'current_year':now().year,'timezone':BUSINESS_TZ,**context}
+    customer=customer_portal.current_customer(__import__(__name__),request,c)
+    customer_vehicles=(c.execute("SELECT * FROM customer_vehicles WHERE user_id=? ORDER BY id",(customer["id"],)).fetchall() if customer else [])
+    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'customer_logged_in':bool(customer),'customer_vehicles':customer_vehicles,'customer_profile':customer,'current_year':now().year,'timezone':BUSINESS_TZ,'canonical_url':os.environ.get('PUBLIC_BASE_URL','https://gemautoworks.overvault.ca').rstrip('/')+request.url.path,'public_base_url':os.environ.get('PUBLIC_BASE_URL','https://gemautoworks.overvault.ca').rstrip('/'),**context}
     return templates.TemplateResponse(request,template,values,status_code=status)
 
 @app.get('/',response_class=HTMLResponse)
@@ -374,7 +407,7 @@ def availability(day:str,service_id:int):
         return {'slots':appointment_slots(c,service,day),'timezone':BUSINESS_TZ}
 
 @app.post('/book')
-def create_booking(request:Request,service_id:int=Form(...),day:str=Form(...),at_time:str=Form(...),name:str=Form(...),email:str=Form(...),phone:str=Form(...),vehicle:str=Form(''),notes:str=Form(''),csrf:str=Form(...),website:str=Form('')):
+def create_booking(request:Request,service_id:int=Form(...),day:str=Form(...),at_time:str=Form(...),name:str=Form(...),email:str=Form(...),phone:str=Form(...),vehicle:str=Form(''),notes:str=Form(''),csrf:str=Form(...),website:str=Form(''),vehicle_id:str=Form('')):
     check_csrf(request,csrf)
     if website: return RedirectResponse('/book?success=1',303)
     throttle(request,'bookings',6,3600)
@@ -391,8 +424,22 @@ def create_booking(request:Request,service_id:int=Form(...),day:str=Form(...),at
             cfg=settings(c)
             status='pending' if cfg.get('booking_requires_approval')=='1' else 'confirmed'
             reference='GEM-'+secrets.token_hex(4).upper()
-            c.execute('''INSERT INTO appointments(reference,service_id,day,at_time,duration,name,email,phone,vehicle,notes,status,created_at,updated_at)
-                         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''',(reference,service_id,day,at_time,service['duration'],name,email,phone,vehicle,notes,status,stamp(),stamp()))
+            customer=customer_portal.current_customer(__import__(__name__),request,c)
+            customer_id=customer['id'] if customer else None
+            if customer:
+                # Only bind bookings to the verified profile and its email.
+                name=customer['name']; email=customer['email']; phone=customer['phone']
+            saved_vehicle_id=None
+            if vehicle_id:
+                if not customer or not vehicle_id.isdecimal():
+                    raise HTTPException(400,'Sign in to use a saved vehicle.')
+                owned=c.execute("SELECT * FROM customer_vehicles WHERE id=? AND user_id=?",(int(vehicle_id),customer_id)).fetchone()
+                if not owned:
+                    raise HTTPException(403,'That vehicle is not in your garage.')
+                saved_vehicle_id=owned['id']
+                vehicle=(' '.join(str(p) for p in (owned['year'],owned['make'],owned['model']) if p)).strip()
+            c.execute('''INSERT INTO appointments(reference,service_id,day,at_time,duration,name,email,phone,vehicle,notes,status,created_at,updated_at,customer_id,vehicle_id)
+                         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',(reference,service_id,day,at_time,service['duration'],name,email,phone,vehicle,notes,status,stamp(),stamp(),customer_id,saved_vehicle_id))
             summary=f'Reference: {reference}\nStatus: {status.title()}\nAppointment: {service["title"]}\nDate: {day}\nTime: {at_time} ({BUSINESS_TZ})\nDuration: {service["duration"]} minutes\nName: {name}\nEmail: {email}\nPhone: {phone}\nVehicle: {vehicle or "Not provided"}\nNotes: {notes or "None"}'
             queue_email(c,cfg['email'],f'New GEM booking: {reference}',f'A customer submitted a booking.\n\n{summary}\n\nManage it in your admin dashboard.')
             queue_email(c,email,f'Your GEM Autoworks booking {reference}',f'Hello {name},\n\nThank you for booking with GEM Autoworks. Your appointment is {status}.\n\n{summary}\n\nQuestions? Reply to {cfg["email"]} or call {cfg["phone"]}.')
@@ -412,7 +459,8 @@ def terms(request:Request):
 
 @app.get('/robots.txt')
 def robots():
-    return StreamingResponse(iter(['User-agent: *\nDisallow: /admin\nDisallow: /api\n']),media_type='text/plain')
+    base=os.environ.get('PUBLIC_BASE_URL','https://gemautoworks.overvault.ca').rstrip('/')
+    return Response('User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /account\nSitemap: '+base+'/sitemap.xml\n',media_type='text/plain')
 
 @app.get('/health')
 def health():
@@ -448,7 +496,18 @@ def logout(request:Request,csrf:str=Form(...)):
 def dashboard(request:Request):
     admin_only(request)
     with connection() as c:
-        appts=c.execute('SELECT a.*,s.title AS service_title FROM appointments a JOIN services s ON s.id=a.service_id ORDER BY a.day DESC,a.at_time DESC LIMIT 150').fetchall()
+        query=safe_text(request.query_params.get("q",""),80)
+        state=safe_text(request.query_params.get("status",""),16)
+        if state not in ("","pending","confirmed","completed","cancelled"): state=""
+        where=[];params=[]
+        if state:
+            where.append("a.status=?");params.append(state)
+        if query:
+            where.append("(a.reference LIKE ? OR a.name LIKE ? OR a.email LIKE ? OR a.vehicle LIKE ?)")
+            params.extend(["%"+query+"%"]*4)
+        clause=(" WHERE "+" AND ".join(where)) if where else ""
+        appts=c.execute("SELECT a.*,s.title AS service_title FROM appointments a JOIN services s ON s.id=a.service_id"+clause+
+                        " ORDER BY a.day DESC,a.at_time DESC LIMIT 150",params).fetchall()
         return render(request,'admin.html',c,
             appointments=appts,
             services=c.execute('SELECT * FROM services ORDER BY sort_order,id').fetchall(),
@@ -487,6 +546,7 @@ async def update_settings(request:Request,csrf:str=Form(...)):
                 if key=='email' and not email_valid(val): raise HTTPException(400,'Invalid business email.')
                 c.execute('UPDATE settings SET value=? WHERE key=?',(val,key))
         c.execute('UPDATE settings SET value=? WHERE key=?',('1' if form.get('booking_requires_approval') else '0','booking_requires_approval'))
+        c.execute('UPDATE settings SET value=? WHERE key=?',('1' if form.get('customer_accounts_enabled') else '0','customer_accounts_enabled'))
     return save_redirect('settings')
 
 @app.post('/admin/services')
@@ -613,7 +673,7 @@ def change_password(request:Request,csrf:str=Form(...),current_password:str=Form
 @app.post('/admin/outbox/retry')
 def retry_email(request:Request,csrf:str=Form(...)):
     admin_only(request);check_csrf(request,csrf)
-    with connection() as c: c.execute("UPDATE email_outbox SET attempts=0,state='pending',last_error='' WHERE state='failed'")
+    with connection() as c: c.execute("UPDATE email_outbox SET attempts=0,state='pending',last_error='',next_attempt_at='' WHERE state='failed'")
     return save_redirect('emails')
 
 @app.get('/admin/export/bookings.csv')
@@ -653,10 +713,11 @@ def reschedule_appointment(request:Request,csrf:str=Form(...),appointment_id:int
         try:
             appointment=c.execute('SELECT a.*,s.title AS service_title FROM appointments a JOIN services s ON a.service_id=s.id WHERE a.id=?',(appointment_id,)).fetchone()
             if not appointment: raise HTTPException(404,'Appointment not found')
-            busy=c.execute("SELECT at_time,duration FROM appointments WHERE day=? AND status IN ('confirmed','pending') AND id<>?",(day,appointment_id)).fetchall()
-            start=text_time(at_time)
-            if any(start<text_time(r['at_time'])+r['duration'] and start+appointment['duration']>text_time(r['at_time']) for r in busy):
-                raise HTTPException(409,'This time overlaps another appointment.')
+            service=c.execute("SELECT * FROM services WHERE id=?",(appointment['service_id'],)).fetchone()
+            c.execute("UPDATE appointments SET status='rescheduling' WHERE id=?",(appointment_id,))
+            allowed=at_time in appointment_slots(c,service,day)
+            c.execute("UPDATE appointments SET status=? WHERE id=?",(appointment['status'],appointment_id))
+            if not allowed: raise HTTPException(409,'The requested appointment time is unavailable.')
             c.execute('UPDATE appointments SET day=?,at_time=?,updated_at=? WHERE id=?',(day,at_time,stamp(),appointment_id))
             cfg=settings(c)
             queue_email(c,appointment['email'],f'GEM Autoworks booking {appointment["reference"]} rescheduled',f'Hello {appointment["name"]},\n\nYour {appointment["service_title"]} appointment ({appointment["reference"]}) has been rescheduled to {day} at {at_time} ({BUSINESS_TZ}).\n\nFor questions, contact {cfg["email"]} or {cfg["phone"]}.')
@@ -688,3 +749,29 @@ def manual_appointment(request:Request,csrf:str=Form(...),service_id:int=Form(..
         except Exception:
             c.execute('ROLLBACK');raise
     return save_redirect('appointments')
+
+
+@app.post("/admin/email/test")
+def admin_email_test(request:Request,csrf:str=Form(...)):
+    """Queue a test message only to the configured business inbox."""
+    admin_only(request)
+    check_csrf(request,csrf)
+    throttle(request,"email-test",3,600)
+    if not email_configured():
+        raise HTTPException(503,"Configure SMTP credentials in Portainer first.")
+    with connection() as c:
+        config=settings(c)
+        recipient=config["email"]
+        queue_email(c,recipient,"GEM Autoworks: SMTP test",
+                    f"Your GEM Autoworks email queue is working.\n\nSent at {stamp()}.\n"
+                    "If you received this, SMTP is accepting deliveries. Check spam if needed.")
+    return RedirectResponse("/admin?saved=1#emails",303)
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    import xml.sax.saxutils as xml_util
+    base=os.environ.get("PUBLIC_BASE_URL","https://gemautoworks.overvault.ca").rstrip("/")
+    pages=("/", "/services", "/gallery", "/reviews", "/contact", "/book", "/privacy", "/terms")
+    urls="".join("<url><loc>"+xml_util.escape(base+path)+"</loc></url>" for path in pages)
+    return Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+urls+'</urlset>',media_type="application/xml")

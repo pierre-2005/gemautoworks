@@ -4,7 +4,7 @@ WORKDIR /app
 RUN useradd -m -u 10001 gem
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
-COPY app.py ./
+COPY app.py customer_portal.py ./
 COPY templates ./templates
 COPY static ./static
 RUN mkdir /data && chown -R gem:gem /data /app

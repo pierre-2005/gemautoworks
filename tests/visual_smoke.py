@@ -18,13 +18,15 @@ ROOT = Path(__file__).resolve().parents[1]
 SHOT_DIR = ROOT / "visual-artifacts"
 SHOT_DIR.mkdir(exist_ok=True)
 SCREENS = [
+    ("tiny-phone", 320, 700),
     ("small-phone", 360, 780),
     ("phone", 390, 844),
     ("tablet", 768, 1024),
     ("laptop", 1024, 768),
     ("desktop", 1440, 900),
+    ("wide-desktop", 1920, 1080),
 ]
-PAGES = ["/", "/services", "/gallery", "/reviews", "/contact", "/book", "/admin/login"]
+PAGES = ["/", "/services", "/gallery", "/reviews", "/contact", "/book", "/admin/login", "/account/login", "/account/register", "/account/forgot"]
 
 
 def free_port():
@@ -63,6 +65,16 @@ def main():
         else:
             raise RuntimeError("Local test server did not start")
 
+        # Set up representative verified customer in a temporary database.
+        import sqlite3
+        from argon2 import PasswordHasher
+        with sqlite3.connect(Path(env["DATA_DIR"]) / "gem.sqlite3") as conn:
+            conn.execute("UPDATE settings SET value='1' WHERE key='customer_accounts_enabled'")
+            conn.execute("INSERT INTO customer_users(email,name,phone,password_hash,verified,created_at) VALUES(?,?,?,?,1,?)",
+                         ("customer@example.com","Demo Customer","5555555555",PasswordHasher().hash("SampleCustomerPassword123"),"2026-10-25"))
+            user_id=conn.execute("SELECT id FROM customer_users WHERE email='customer@example.com'").fetchone()[0]
+            conn.execute("INSERT INTO customer_vehicles(user_id,year,make,model,created_at) VALUES(?,?,?,?,?)",
+                         (user_id,2023,"Audi","A4","2026-10-25"))
         with sync_playwright() as playwright:
             browser = playwright.chromium.launch(headless=True)
             try:
@@ -88,19 +100,45 @@ def main():
                         menu.click()
                         assert not page.locator("#main-nav").is_visible(), f"{name}: mobile menu did not close"
                     page.goto(base + "/book", wait_until="domcontentloaded")
-                    if name in ("small-phone", "phone"):
+                    if name in ("tiny-phone", "small-phone", "phone"):
                         page.screenshot(path=str(SHOT_DIR / f"booking-{name}.png"), full_page=True, animations="disabled")
+                    # Verify the wizard is keyboard-operable at every screen size.
+                    select=page.locator("#service-choice")
+                    select.select_option(index=1)
+                    page.locator('[data-book-next]').first.click()
+                    assert page.locator('[data-book-step="1"]').is_visible()
+                    page.locator('[data-book-back]').first.click()
+                    assert page.locator('[data-book-step="0"]').is_visible()
+                    page.goto(base + "/account/register",wait_until="domcontentloaded")
+                    page.locator("#add-signup-vehicle").click()
+                    assert page.locator(".signup-vehicle-row").count() == 2
+                    page.goto(base + "/account/login",wait_until="domcontentloaded")
+                    page.locator('input[name="email"]').fill("customer@example.com")
+                    page.locator('input[name="password"]').fill("SampleCustomerPassword123")
+                    page.locator('button[type="submit"]').click()
+                    page.wait_for_url("**/account")
+                    assert page.locator("#garage").is_visible()
+                    assert page.locator("body").evaluate("(el) => el.scrollWidth <= document.documentElement.clientWidth + 2")
+                    if name in ("phone", "desktop"):
+                        page.screenshot(path=str(SHOT_DIR / f"customer-{name}.png"), full_page=True, animations="disabled")
                     page.goto(base + "/admin/login", wait_until="domcontentloaded")
                     page.locator('input[name="email"]').fill("owner@example.com")
                     page.locator('input[name="password"]').fill("StrongVisualTestPassword-2026")
                     page.locator('button[type="submit"]').click()
                     page.wait_for_url("**/admin")
-                    page.locator('[data-admin-section="settings"]').click()
-                    assert page.locator("#settings").is_visible(), f"{name}: website editor tab not visible"
-                    assert not page.locator("#appointments").is_visible(), f"{name}: appointments should be hidden in website tab"
+                    for section in ("appointments","hours","services","gallery","reviews","settings","emails","customers","security"):
+                        page.locator(f'[data-admin-section="{section}"]').click()
+                        assert page.locator(f"#{section}").is_visible(), f"{name}: {section} section invisible"
+                        metrics=page.evaluate("""() => ({
+                            docWidth: document.documentElement.scrollWidth,
+                            viewport: document.documentElement.clientWidth
+                        })""")
+                        if metrics["docWidth"] > metrics["viewport"] + 2:
+                            raise AssertionError(f"{name} admin section {section}: horizontal overflow {metrics}")
+                        if section in ("customers","settings","emails") and name in ("phone","desktop"):
+                            page.screenshot(path=str(SHOT_DIR / f"admin-{section}-{name}.png"), full_page=True, animations="disabled")
                     page.locator('[data-admin-section="appointments"]').click()
-                    assert page.locator("#appointments").is_visible(), f"{name}: appointments tab not visible"
-                    if name in ("phone", "desktop"):
+                    if name in ("phone","desktop"):
                         page.screenshot(path=str(SHOT_DIR / f"admin-{name}.png"), full_page=True, animations="disabled")
                     page.close()
             finally:
