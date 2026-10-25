@@ -696,10 +696,11 @@ def reschedule_appointment(request:Request,csrf:str=Form(...),appointment_id:int
         try:
             appointment=c.execute('SELECT a.*,s.title AS service_title FROM appointments a JOIN services s ON a.service_id=s.id WHERE a.id=?',(appointment_id,)).fetchone()
             if not appointment: raise HTTPException(404,'Appointment not found')
-            busy=c.execute("SELECT at_time,duration FROM appointments WHERE day=? AND status IN ('confirmed','pending') AND id<>?",(day,appointment_id)).fetchall()
-            start=text_time(at_time)
-            if any(start<text_time(r['at_time'])+r['duration'] and start+appointment['duration']>text_time(r['at_time']) for r in busy):
-                raise HTTPException(409,'This time overlaps another appointment.')
+            service=c.execute("SELECT * FROM services WHERE id=?",(appointment['service_id'],)).fetchone()
+            c.execute("UPDATE appointments SET status='rescheduling' WHERE id=?",(appointment_id,))
+            allowed=at_time in appointment_slots(c,service,day)
+            c.execute("UPDATE appointments SET status=? WHERE id=?",(appointment['status'],appointment_id))
+            if not allowed: raise HTTPException(409,'The requested appointment time is unavailable.')
             c.execute('UPDATE appointments SET day=?,at_time=?,updated_at=? WHERE id=?',(day,at_time,stamp(),appointment_id))
             cfg=settings(c)
             queue_email(c,appointment['email'],f'GEM Autoworks booking {appointment["reference"]} rescheduled',f'Hello {appointment["name"]},\n\nYour {appointment["service_title"]} appointment ({appointment["reference"]}) has been rescheduled to {day} at {at_time} ({BUSINESS_TZ}).\n\nFor questions, contact {cfg["email"]} or {cfg["phone"]}.')
