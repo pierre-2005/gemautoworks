@@ -126,12 +126,19 @@ def main():
                     page.locator('input[name="password"]').fill("StrongVisualTestPassword-2026")
                     page.locator('button[type="submit"]').click()
                     page.wait_for_url("**/admin")
-                    page.locator('[data-admin-section="settings"]').click()
-                    assert page.locator("#settings").is_visible(), f"{name}: website editor tab not visible"
-                    assert not page.locator("#appointments").is_visible(), f"{name}: appointments should be hidden in website tab"
+                    for section in ("appointments","hours","services","gallery","reviews","settings","emails","customers","security"):
+                        page.locator(f'[data-admin-section="{section}"]').click()
+                        assert page.locator(f"#{section}").is_visible(), f"{name}: {section} section invisible"
+                        metrics=page.evaluate("""() => ({
+                            docWidth: document.documentElement.scrollWidth,
+                            viewport: document.documentElement.clientWidth
+                        })""")
+                        if metrics["docWidth"] > metrics["viewport"] + 2:
+                            raise AssertionError(f"{name} admin section {section}: horizontal overflow {metrics}")
+                        if section in ("customers","settings","emails") and name in ("phone","desktop"):
+                            page.screenshot(path=str(SHOT_DIR / f"admin-{section}-{name}.png"), full_page=True, animations="disabled")
                     page.locator('[data-admin-section="appointments"]').click()
-                    assert page.locator("#appointments").is_visible(), f"{name}: appointments tab not visible"
-                    if name in ("phone", "desktop"):
+                    if name in ("phone","desktop"):
                         page.screenshot(path=str(SHOT_DIR / f"admin-{name}.png"), full_page=True, animations="disabled")
                     page.close()
             finally:
