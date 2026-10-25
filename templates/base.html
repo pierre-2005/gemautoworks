@@ -5,6 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#070a10">
   <meta name="description" content="{{ site.seo_description }}">
+  <link rel="canonical" href="{{canonical_url}}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{site.business_name}}">
+  <meta property="og:title" content="{{self.title()|striptags}}">
+  <meta property="og:description" content="{{site.seo_description}}">
+  <meta property="og:url" content="{{canonical_url}}">
+  <meta property="og:image" content="{{public_base_url}}/static/img/showcase.webp">
+  <meta name="twitter:card" content="summary_large_image">
   <title>{% block title %}GEM Autoworks | Crafted for the Drive{% endblock %}</title>
   <link rel="icon" href="/static/img/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
