@@ -339,7 +339,8 @@ async def friendly_http(request,exc):
 def render(request,template,c,status=200,**context):
     current=settings(c)
     customer=customer_portal.current_customer(__import__(__name__),request,c)
-    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'customer_logged_in':bool(customer),'current_year':now().year,'timezone':BUSINESS_TZ,**context}
+    customer_vehicles=(c.execute("SELECT * FROM customer_vehicles WHERE user_id=? ORDER BY id",(customer["id"],)).fetchall() if customer else [])
+    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'customer_logged_in':bool(customer),'customer_vehicles':customer_vehicles,'current_year':now().year,'timezone':BUSINESS_TZ,**context}
     return templates.TemplateResponse(request,template,values,status_code=status)
 
 @app.get('/',response_class=HTMLResponse)
@@ -390,7 +391,7 @@ def availability(day:str,service_id:int):
         return {'slots':appointment_slots(c,service,day),'timezone':BUSINESS_TZ}
 
 @app.post('/book')
-def create_booking(request:Request,service_id:int=Form(...),day:str=Form(...),at_time:str=Form(...),name:str=Form(...),email:str=Form(...),phone:str=Form(...),vehicle:str=Form(''),notes:str=Form(''),csrf:str=Form(...),website:str=Form('')):
+def create_booking(request:Request,service_id:int=Form(...),day:str=Form(...),at_time:str=Form(...),name:str=Form(...),email:str=Form(...),phone:str=Form(...),vehicle:str=Form(''),notes:str=Form(''),csrf:str=Form(...),website:str=Form(''),vehicle_id:str=Form('')):
     check_csrf(request,csrf)
     if website: return RedirectResponse('/book?success=1',303)
     throttle(request,'bookings',6,3600)
@@ -409,7 +410,16 @@ def create_booking(request:Request,service_id:int=Form(...),day:str=Form(...),at
             reference='GEM-'+secrets.token_hex(4).upper()
             customer=customer_portal.current_customer(__import__(__name__),request,c)
             customer_id=customer['id'] if customer else None
-            c.execute('''INSERT INTO appointments(reference,service_id,day,at_time,duration,name,email,phone,vehicle,notes,status,created_at,updated_at,customer_id)
+            saved_vehicle_id=None
+            if vehicle_id:
+                if not customer or not vehicle_id.isdecimal():
+                    raise HTTPException(400,'Sign in to use a saved vehicle.')
+                owned=c.execute("SELECT * FROM customer_vehicles WHERE id=? AND user_id=?",(int(vehicle_id),customer_id)).fetchone()
+                if not owned:
+                    raise HTTPException(403,'That vehicle is not in your garage.')
+                saved_vehicle_id=owned['id']
+                vehicle=(' '.join(str(p) for p in (owned['year'],owned['make'],owned['model']) if p)).strip()
+            c.execute('''INSERT INTO appointments(reference,service_id,day,at_time,duration,name,email,phone,vehicle,notes,status,created_at,updated_at,customer_id,vehicle_id)
                          VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''',(reference,service_id,day,at_time,service['duration'],name,email,phone,vehicle,notes,status,stamp(),stamp()))
             summary=f'Reference: {reference}\nStatus: {status.title()}\nAppointment: {service["title"]}\nDate: {day}\nTime: {at_time} ({BUSINESS_TZ})\nDuration: {service["duration"]} minutes\nName: {name}\nEmail: {email}\nPhone: {phone}\nVehicle: {vehicle or "Not provided"}\nNotes: {notes or "None"}'
             queue_email(c,cfg['email'],f'New GEM booking: {reference}',f'A customer submitted a booking.\n\n{summary}\n\nManage it in your admin dashboard.')
