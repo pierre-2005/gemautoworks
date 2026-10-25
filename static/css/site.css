@@ -481,3 +481,23 @@ body.js-ready .booking-form .form-stage:not(.is-current){display:none}
 @media(prefers-reduced-motion:reduce){
  *,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
+
+/* Small-screen appointment rows become readable stacked cards. */
+@media (max-width:700px){
+ #appointments .table-scroll{border:0;background:transparent;overflow:visible}
+ #appointments .admin-table,#appointments .admin-table tbody{display:block;width:100%;min-width:0;background:transparent}
+ #appointments .admin-table thead{display:none}
+ #appointments .admin-table tr{display:block;width:100%;min-width:0;border:1px solid #36516b;background:#102338;border-radius:13px;margin:0 0 12px;overflow:hidden}
+ #appointments .admin-table td{display:block;min-width:0;max-width:100%;width:100%;padding:13px 16px;border:0;border-bottom:1px solid #29465d;overflow-wrap:anywhere}
+ #appointments .admin-table td:last-child{border-bottom:0}
+ #appointments .admin-table td:not([colspan]):before{display:block;color:#89c9f4;font-weight:800;font-size:10px;letter-spacing:.11em;margin:0 0 5px}
+ #appointments .admin-table td:nth-child(1):before{content:"APPOINTMENT"}
+ #appointments .admin-table td:nth-child(2):before{content:"CUSTOMER"}
+ #appointments .admin-table td:nth-child(3):before{content:"VEHICLE / NOTES"}
+ #appointments .admin-table td:nth-child(4):before{content:"STATUS"}
+ #appointments .admin-table td:nth-child(5):before{content:"ACTIONS"}
+ #appointments .admin-table td[colspan]{line-height:1.7}
+ #appointments .inline-form{align-items:stretch}
+ #appointments .inline-form select{max-width:none;flex:1}
+ #appointments .admin-table .btn{white-space:normal}
+}
