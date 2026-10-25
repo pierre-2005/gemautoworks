@@ -609,3 +609,23 @@ def admin_enroll_customer(request: Request,csrf: str=Form(...),vehicle_id: int=F
                              f"Hello {user['name']},\n\nGEM has scheduled care reminders for your {row['make']} {row['model']}."
                              f"\nPlan: {plan['name']}\nNext due: {due.isoformat()}.\n\nNo appointment or payment is booked automatically.")
     return RedirectResponse("/admin?saved=1#customers",303)
+
+
+@router.post("/account/appointment/claim")
+def claim_existing_booking(request: Request,csrf: str=Form(...),reference: str=Form(...)):
+    """Allow a verified email holder to attach a previous anonymous booking by reference."""
+    import app as core
+    core.check_csrf(request,csrf)
+    core.throttle(request,"claim-booking",12,3600)
+    reference=core.safe_text(reference,32).upper()
+    if not re.fullmatch(r"GEM-[A-F0-9]{8}",reference):
+        raise HTTPException(400,"Enter a valid GEM booking reference.")
+    with core.connection() as c:
+        user=require_customer(core,request,c)
+        booking=c.execute("""SELECT id FROM appointments
+                             WHERE reference=? AND LOWER(email)=? AND customer_id IS NULL""",
+                          (reference,user["email"])).fetchone()
+        if not booking:
+            raise HTTPException(404,"No unlinked booking with that reference matches your verified email.")
+        c.execute("UPDATE appointments SET customer_id=? WHERE id=? AND customer_id IS NULL",(user["id"],booking["id"]))
+    return RedirectResponse("/account?saved=1#bookings",303)
