@@ -4,11 +4,11 @@
   
   <div class="container hero-layout">
     <div class="hero-copy">
-      <div class="eyebrow with-stroke"><span class="pulse"></span>CAR CULTURE. CAREFULLY CONSIDERED.</div>
+      <div class="eyebrow with-stroke"><span class="pulse"></span>THE DETAILS MAKE THE DIFFERENCE</div>
       <h1>{{ site.headline }}</h1>
       <p class="hero-description">{{ site.hero_subtitle }}</p>
       <div class="hero-buttons"><a class="btn btn-primary btn-large" href="/book">Reserve Your Appointment <span>↗</span></a><a class="btn btn-ghost btn-large" href="/gallery">Explore Our Work <span>↗</span></a></div>
-      <div class="hero-micro"><div class="micro-icon">✦</div><div><strong>Precision in every detail</strong><span>Personal service, start to finish.</span></div></div>
+      <div class="hero-micro"><div class="micro-icon">✦</div><div><strong>Precision in every detail</strong><span>A considered approach to every vehicle.</span></div></div>
     </div>
     <div class="hero-art"><div class="hero-image"><img src="{{site.hero_image_path}}" fetchpriority="high" alt="Supercar showcase with GEM Autoworks photography"></div><div class="hero-art-shade"></div><div class="hero-caption"><span>01 / THE GEM STANDARD</span><span>DRIVEN BY THE DETAILS <b>↗</b></span></div></div>
   </div>
@@ -23,7 +23,7 @@
 <section class="section services-section">
  <div class="container">
   <div class="section-heading"><div><div class="eyebrow section-eyebrow">02 / YOUR NEXT STEP</div><h2>Start with the <em>right conversation.</em></h2></div><a class="text-link" href="/services">View all appointment types <span>↗</span></a></div>
-  <div class="service-grid">{% for s in services %}<a href="/book?service={{ s.id }}" class="service-card"><div class="service-card-top"><span class="card-number">0{{ loop.index }}</span><span class="service-arrow">↗</span></div><h3>{{ s.title }}</h3><p>{{ s.description }}</p><div class="service-foot"><span>{{ s.duration }} MIN</span><span>{{ s.price_note }}</span></div></a>{% else %}<p>Appointment options are coming soon.</p>{% endfor %}</div>
+  <div class="service-grid">{% for s in services %}<a href="/book?service={{ s.id }}" class="service-card"><div class="service-card-top"><span class="card-number">{{ "%02d"|format(loop.index) }}</span><span class="service-arrow">↗</span></div><h3>{{ s.title }}</h3><p>{{ s.description }}</p><div class="service-foot"><span>{{ s.duration }} MIN</span><span>{{ s.price_note }}</span></div></a>{% else %}<p>Appointment options are coming soon.</p>{% endfor %}</div>
  </div>
 </section>
 <section class="section work-section">
