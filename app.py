@@ -407,7 +407,9 @@ def create_booking(request:Request,service_id:int=Form(...),day:str=Form(...),at
             cfg=settings(c)
             status='pending' if cfg.get('booking_requires_approval')=='1' else 'confirmed'
             reference='GEM-'+secrets.token_hex(4).upper()
-            c.execute('''INSERT INTO appointments(reference,service_id,day,at_time,duration,name,email,phone,vehicle,notes,status,created_at,updated_at)
+            customer=customer_portal.current_customer(__import__(__name__),request,c)
+            customer_id=customer['id'] if customer else None
+            c.execute('''INSERT INTO appointments(reference,service_id,day,at_time,duration,name,email,phone,vehicle,notes,status,created_at,updated_at,customer_id)
                          VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''',(reference,service_id,day,at_time,service['duration'],name,email,phone,vehicle,notes,status,stamp(),stamp()))
             summary=f'Reference: {reference}\nStatus: {status.title()}\nAppointment: {service["title"]}\nDate: {day}\nTime: {at_time} ({BUSINESS_TZ})\nDuration: {service["duration"]} minutes\nName: {name}\nEmail: {email}\nPhone: {phone}\nVehicle: {vehicle or "Not provided"}\nNotes: {notes or "None"}'
             queue_email(c,cfg['email'],f'New GEM booking: {reference}',f'A customer submitted a booking.\n\n{summary}\n\nManage it in your admin dashboard.')
