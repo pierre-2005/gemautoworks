@@ -66,6 +66,15 @@
     window.addEventListener('hashchange', () => openPanel(location.hash.slice(1)));
   }
 
+  const addVehicle = document.querySelector('#add-signup-vehicle');
+  if (addVehicle) addVehicle.addEventListener('click', () => {
+    const list = document.querySelector('#signup-vehicles');
+    if (list.children.length >= 6) return;
+    const row = list.firstElementChild.cloneNode(true);
+    row.querySelectorAll('input').forEach(x => x.value = '');
+    list.appendChild(row);
+    addVehicle.disabled = list.children.length >= 6;
+  });
   const form = document.querySelector('#booking-form');
   if (!form) return;
   const service = document.querySelector('#service-choice');
