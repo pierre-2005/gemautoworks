@@ -101,6 +101,24 @@ def test_customer_registration_vehicle_booking_lifecycle(tmp_path,monkeypatch):
             denied=guest.post("/account/appointment/cancel",data={"csrf":guest_csrf,"appointment_id":appointment_id},follow_redirects=False)
             assert denied.status_code==401
 
+        # Existing anonymous bookings can be claimed only with a matching verified email.
+        with TestClient(core.app) as visitor:
+            anon_day,anon_time=first_open_slot(visitor,after=18)
+            token=csrf(visitor.get("/book").text)
+            anon_response=visitor.post("/book",data={
+                "csrf":token,"service_id":1,"day":anon_day,"at_time":anon_time,
+                "name":"Test Customer","email":"flow.customer@example.com","phone":"5558675309",
+                "vehicle":"An older vehicle"
+            },follow_redirects=False)
+            assert anon_response.status_code==303
+            reference=re.search(r'ref=(GEM-[A-F0-9]{8})',anon_response.headers["location"]).group(1)
+        claim=client.post("/account/appointment/claim",data={"csrf":csrf(client.get("/account").text),
+                            "reference":reference},follow_redirects=False)
+        assert claim.status_code==303
+        with core.connection() as c:
+            assert c.execute("SELECT customer_id FROM appointments WHERE reference=?",(reference,)).fetchone()[0]==user["id"]
+        assert "An older vehicle" in client.get("/account").text or reference in client.get("/account").text
+
         # Due reminders are idempotent for each window.
         with core.connection() as c:
             due=(core.now().date()+timedelta(days=7)).isoformat()
@@ -117,6 +135,8 @@ def test_admin_email_test_and_customer_plan_controls(tmp_path,monkeypatch):
     monkeypatch.setattr(core,"DB_PATH",tmp_path/"admin-gem.sqlite3")
     monkeypatch.setattr(core,"send_pending",lambda:0)
     monkeypatch.setattr(core,"email_configured",lambda:True)
+    monkeypatch.setenv("ADMIN_EMAIL","owner@example.com")
+    monkeypatch.setenv("ADMIN_PASSWORD","A-Very-Strong-Test-Password-2026")
     with TestClient(core.app) as client:
         login=client.get("/admin/login")
         response=client.post("/admin/login",data={
