@@ -33,9 +33,9 @@ def test_redesign_assets_and_navigation():
     with TestClient(app) as client:
         page=client.get('/').text
         assert 'brand-logo-only' in page
-        assert '/static/css/redesign.css?v=6' in page
+        assert '/static/css/site.css?v=10' in page
         assert 'class="brand-word"' not in page
-        assert client.get('/static/css/redesign.css').status_code == 200
+        assert client.get('/static/css/site.css').status_code == 200
         response=client.get('/admin/login')
         assert response.status_code == 200
 
