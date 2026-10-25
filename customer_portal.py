@@ -207,7 +207,7 @@ def account(request: Request):
                                     WHERE a.customer_id=? ORDER BY a.day DESC LIMIT 60""",(user["id"],)).fetchall()
         return core.render(request, "account.html", c, customer=user, vehicles=vehicles,
                            enrollments=plans, plan_types=types, appointments=appointments,
-                           saved=request.query_params.get("saved")=="1")
+                           saved=request.query_params.get("saved")=="1",today=core.now().date().isoformat())
 
 
 @router.get("/account/login")
