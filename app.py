@@ -340,7 +340,7 @@ def render(request,template,c,status=200,**context):
     current=settings(c)
     customer=customer_portal.current_customer(__import__(__name__),request,c)
     customer_vehicles=(c.execute("SELECT * FROM customer_vehicles WHERE user_id=? ORDER BY id",(customer["id"],)).fetchall() if customer else [])
-    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'customer_logged_in':bool(customer),'customer_vehicles':customer_vehicles,'current_year':now().year,'timezone':BUSINESS_TZ,**context}
+    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'customer_logged_in':bool(customer),'customer_vehicles':customer_vehicles,'customer_profile':customer,'current_year':now().year,'timezone':BUSINESS_TZ,**context}
     return templates.TemplateResponse(request,template,values,status_code=status)
 
 @app.get('/',response_class=HTMLResponse)
