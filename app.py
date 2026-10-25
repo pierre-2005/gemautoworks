@@ -26,6 +26,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from PIL import Image, UnidentifiedImageError
 from starlette.middleware.sessions import SessionMiddleware
+import customer_portal
 
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = Path(os.environ.get('DATA_DIR', str(ROOT / 'data')))
@@ -59,6 +60,7 @@ DEFAULTS = {
     'contact_note': 'Have a unique project in mind? Send us a message and we will help you plan the next step.',
     'booking_intro': 'Find a time that works for you. Select your appointment type, choose an available slot, and send us the details.',
     'booking_requires_approval': '0',
+    'customer_accounts_enabled': '0',
     'booking_lead_hours': '2',
     'booking_window_days': '90',
     'slot_step_minutes': '30',
@@ -130,6 +132,7 @@ def init_db():
         );
         ''')
         c.executemany('INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)', DEFAULTS.items())
+        customer_portal.init_customer_db(c)
         if not c.execute('SELECT 1 FROM services LIMIT 1').fetchone():
             c.executemany('INSERT INTO services(title,description,duration,price_note,sort_order) VALUES(?,?,?,?,?)', [
                 ('Vehicle Consultation', 'Tell us about your vehicle and what you have in mind.', 30, 'Consultation', 1),
@@ -281,17 +284,29 @@ async def email_worker():
             log.exception('Outbox worker failure')
         await asyncio.sleep(90)
 
+async def care_reminder_worker():
+    while True:
+        try:
+            await asyncio.to_thread(customer_portal.queue_care_reminders)
+        except Exception:
+            log.exception('Care reminders failed')
+        await asyncio.sleep(3600)
+
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     init_db()
     task=asyncio.create_task(email_worker())
+    care_task=asyncio.create_task(care_reminder_worker())
     yield
     task.cancel()
-    try: await task
-    except asyncio.CancelledError: pass
+    care_task.cancel()
+    for job in (task,care_task):
+        try: await job
+        except asyncio.CancelledError: pass
 
 app=FastAPI(title='GEM Autoworks',docs_url=None,redoc_url=None,openapi_url=None,lifespan=lifespan)
 app.add_middleware(SessionMiddleware,secret_key=SECRET_KEY,session_cookie='gem_session',same_site='lax',https_only=COOKIE_SECURE,max_age=8*60*60)
+app.include_router(customer_portal.router)
 app.mount('/static',StaticFiles(directory=ROOT/'static'),name='static')
 app.mount('/uploads',StaticFiles(directory=UPLOAD_DIR),name='uploads')
 templates=Jinja2Templates(directory=str(ROOT/'templates'))
@@ -323,7 +338,8 @@ async def friendly_http(request,exc):
 
 def render(request,template,c,status=200,**context):
     current=settings(c)
-    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'current_year':now().year,'timezone':BUSINESS_TZ,**context}
+    customer=customer_portal.current_customer(__import__(__name__),request,c)
+    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'customer_logged_in':bool(customer),'current_year':now().year,'timezone':BUSINESS_TZ,**context}
     return templates.TemplateResponse(request,template,values,status_code=status)
 
 @app.get('/',response_class=HTMLResponse)
@@ -487,6 +503,7 @@ async def update_settings(request:Request,csrf:str=Form(...)):
                 if key=='email' and not email_valid(val): raise HTTPException(400,'Invalid business email.')
                 c.execute('UPDATE settings SET value=? WHERE key=?',(val,key))
         c.execute('UPDATE settings SET value=? WHERE key=?',('1' if form.get('booking_requires_approval') else '0','booking_requires_approval'))
+        c.execute('UPDATE settings SET value=? WHERE key=?',('1' if form.get('customer_accounts_enabled') else '0','customer_accounts_enabled'))
     return save_redirect('settings')
 
 @app.post('/admin/services')
