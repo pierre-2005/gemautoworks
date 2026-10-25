@@ -420,7 +420,7 @@ def create_booking(request:Request,service_id:int=Form(...),day:str=Form(...),at
                 saved_vehicle_id=owned['id']
                 vehicle=(' '.join(str(p) for p in (owned['year'],owned['make'],owned['model']) if p)).strip()
             c.execute('''INSERT INTO appointments(reference,service_id,day,at_time,duration,name,email,phone,vehicle,notes,status,created_at,updated_at,customer_id,vehicle_id)
-                         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)''',(reference,service_id,day,at_time,service['duration'],name,email,phone,vehicle,notes,status,stamp(),stamp()))
+                         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',(reference,service_id,day,at_time,service['duration'],name,email,phone,vehicle,notes,status,stamp(),stamp(),customer_id,saved_vehicle_id))
             summary=f'Reference: {reference}\nStatus: {status.title()}\nAppointment: {service["title"]}\nDate: {day}\nTime: {at_time} ({BUSINESS_TZ})\nDuration: {service["duration"]} minutes\nName: {name}\nEmail: {email}\nPhone: {phone}\nVehicle: {vehicle or "Not provided"}\nNotes: {notes or "None"}'
             queue_email(c,cfg['email'],f'New GEM booking: {reference}',f'A customer submitted a booking.\n\n{summary}\n\nManage it in your admin dashboard.')
             queue_email(c,email,f'Your GEM Autoworks booking {reference}',f'Hello {name},\n\nThank you for booking with GEM Autoworks. Your appointment is {status}.\n\n{summary}\n\nQuestions? Reply to {cfg["email"]} or call {cfg["phone"]}.')
