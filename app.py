@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+import html
 import csv
 import hmac
 import io
@@ -131,6 +132,9 @@ def init_db():
             attempts INTEGER NOT NULL DEFAULT 0, last_error TEXT NOT NULL DEFAULT '', created_at TEXT NOT NULL
         );
         ''')
+        # Add the retry timestamp without disturbing databases created by earlier versions.
+        if 'next_attempt_at' not in {r['name'] for r in c.execute("PRAGMA table_info(email_outbox)")}: 
+            c.execute("ALTER TABLE email_outbox ADD COLUMN next_attempt_at TEXT NOT NULL DEFAULT ''")
         c.executemany('INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)', DEFAULTS.items())
         customer_portal.init_customer_db(c)
         if not c.execute('SELECT 1 FROM services LIMIT 1').fetchone():
@@ -251,14 +255,23 @@ def send_pending():
     if not email_configured(): return 0
     delivered=0
     with connection() as c:
-        unsent=c.execute("SELECT * FROM email_outbox WHERE state IN ('pending','failed') AND attempts<6 ORDER BY id LIMIT 15").fetchall()
+        unsent=c.execute("SELECT * FROM email_outbox WHERE state IN ('pending','failed') AND attempts<6 AND (next_attempt_at='' OR next_attempt_at<=?) ORDER BY id LIMIT 15",(stamp(),)).fetchall()
         for msg in unsent:
             try:
                 mail=EmailMessage()
                 mail['From']=os.environ['SMTP_FROM']
                 mail['To']=msg['recipient']
                 mail['Subject']=msg['subject']
+                mail['Reply-To']=settings(c)['email']
                 mail.set_content(msg['body'])
+                safe_body='<br>'.join(html.escape(msg['body']).splitlines())
+                mail.add_alternative(
+                    '<!doctype html><html><body style="margin:0;background:#f2f6fa;padding:28px;font-family:Arial,sans-serif;color:#182a3b;">'
+                    '<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;max-width:620px;margin:auto;background:#fff;border:1px solid #d9e4eb;border-radius:14px;">'
+                    '<tr><td style="padding:24px 30px;background:#071625;color:#fff;font-size:19px;font-weight:bold;letter-spacing:.02em;">GEM AUTOWORKS</td></tr>'
+                    '<tr><td style="padding:28px 30px;font-size:14px;line-height:1.8;">'+safe_body+'</td></tr>'
+                    '<tr><td style="padding:16px 30px;border-top:1px solid #e4eaf0;color:#62768c;font-size:12px;">Sent by GEM Autoworks. Please reply to this message if you have questions.</td></tr>'
+                    '</table></body></html>',subtype='html')
                 host=os.environ['SMTP_HOST']
                 port=int(os.environ.get('SMTP_PORT','465'))
                 if os.environ.get('SMTP_SECURITY','ssl').lower()=='ssl':
@@ -269,11 +282,14 @@ def send_pending():
                     if os.environ.get('SMTP_SECURITY','ssl').lower()=='starttls': smtp.starttls()
                     smtp.login(os.environ['SMTP_USER'],os.environ['SMTP_PASSWORD'])
                     smtp.send_message(mail)
-                c.execute("UPDATE email_outbox SET state='sent',attempts=attempts+1,last_error='' WHERE id=?",(msg['id'],))
+                c.execute("UPDATE email_outbox SET state='sent',attempts=attempts+1,next_attempt_at='',last_error='' WHERE id=?",(msg['id'],))
                 delivered+=1
             except Exception as e:
                 log.error('Email delivery failure, item #%s: %s',msg['id'],type(e).__name__)
-                c.execute("UPDATE email_outbox SET state='failed',attempts=attempts+1,last_error=? WHERE id=?",(safe_text(type(e).__name__+': '+str(e),200),msg['id']))
+                delays=(1,5,15,60,240,1440)
+                next_attempt=(datetime.now(timezone.utc)+timedelta(minutes=delays[min(msg['attempts'],5)])).isoformat(timespec='seconds')
+                c.execute("UPDATE email_outbox SET state='failed',attempts=attempts+1,next_attempt_at=?,last_error=? WHERE id=?",
+                    (next_attempt,safe_text(type(e).__name__+': '+str(e),200),msg['id']))
     return delivered
 
 async def email_worker():
@@ -656,7 +672,7 @@ def change_password(request:Request,csrf:str=Form(...),current_password:str=Form
 @app.post('/admin/outbox/retry')
 def retry_email(request:Request,csrf:str=Form(...)):
     admin_only(request);check_csrf(request,csrf)
-    with connection() as c: c.execute("UPDATE email_outbox SET attempts=0,state='pending',last_error='' WHERE state='failed'")
+    with connection() as c: c.execute("UPDATE email_outbox SET attempts=0,state='pending',last_error='',next_attempt_at='' WHERE state='failed'")
     return save_redirect('emails')
 
 @app.get('/admin/export/bookings.csv')
