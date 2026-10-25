@@ -81,6 +81,43 @@
     });
   }
 
+
+  // Customer self-service rescheduling reuses the authoritative server availability endpoint.
+  document.querySelectorAll('.customer-reschedule').forEach(form => {
+    const day=form.querySelector('[name=day]');
+    const times=form.querySelector('[name=at_time]');
+    const feedback=form.querySelector('[data-reschedule-feedback]');
+    let controller=null;
+    async function update(){
+      controller?.abort();
+      const next=new AbortController();
+      controller=next;
+      times.replaceChildren(new Option('Checking availability...', ''));
+      feedback.textContent='Loading available times...';
+      if(!day.value)return;
+      try{
+        const url='/api/availability?service_id='+encodeURIComponent(form.dataset.serviceId)+'&day='+encodeURIComponent(day.value);
+        const response=await fetch(url,{signal:next.signal});
+        if(!response.ok)throw new Error('Unavailable');
+        const payload=await response.json();
+        if(controller!==next)return;
+        times.replaceChildren(new Option(payload.slots.length?'Select an available time':'No available times',''));
+        payload.slots.forEach(time=>times.add(new Option(time,time)));
+        feedback.textContent=payload.slots.length?'Choose one of '+payload.slots.length+' available times.':'No slots available. Select a different date.';
+      }catch(error){
+        if(error.name!=='AbortError'){
+          times.replaceChildren(new Option('Unable to load times',''));
+          feedback.textContent='Could not check availability. Please retry.';
+        }
+      }
+    }
+    day.addEventListener('change',update);
+    form.addEventListener('submit',event=>{
+      if(!times.value){event.preventDefault();times.focus();}
+    });
+    update();
+  });
+
   const booking=document.querySelector('#booking-form');
   if(!booking) return;
   const service=booking.querySelector('#service-choice');
