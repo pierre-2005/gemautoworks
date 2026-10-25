@@ -274,7 +274,12 @@ async def register_post(request: Request, csrf: str=Form(...)):
         c.execute("BEGIN IMMEDIATE")
         try:
             exists = c.execute("SELECT id FROM customer_users WHERE email=?", (email,)).fetchone()
-            if not exists:
+            if exists:
+                original=c.execute("SELECT * FROM customer_users WHERE id=?",(exists["id"],)).fetchone()
+                if not original["verified"]:
+                    url=make_token(core,c,original["id"],"verify")
+                    core.queue_email(c,email,"Verify your GEM Autoworks account",f"Hello,\n\nConfirm your email within two hours:\n{url}\n\nIgnore this if you did not register.")
+            else:
                 cur = c.execute("""INSERT INTO customer_users(email,name,phone,password_hash,created_at)
                                    VALUES(?,?,?,?,?)""",(email,name,phone,core.PH.hash(password),core.stamp()))
                 for year,make,model in vehicles:
@@ -469,4 +474,109 @@ def admin_complete_plan(request: Request,csrf: str=Form(...),enrollment_id: int=
         c.execute("UPDATE care_enrollments SET next_due=? WHERE id=?",(next_due,enrollment_id))
         core.queue_email(c,row["email"],f"GEM care schedule updated: {row['plan_name']}",
                          f"Hello {row['name']},\n\nYour next {row['plan_name']} service reminder is scheduled for {next_due}.\n\nPlease contact GEM if this date is incorrect.")
+    return RedirectResponse("/admin?saved=1#customers",303)
+
+
+@router.post("/account/profile")
+def update_profile(request: Request, csrf: str=Form(...),name: str=Form(...),phone: str=Form(...)):
+    import app as core
+    core.check_csrf(request,csrf)
+    name=core.safe_text(name,100)
+    phone=core.safe_text(phone,50)
+    if len(name)<2 or len(phone)<7:
+        raise HTTPException(400,"Please enter a valid name and phone number.")
+    with core.connection() as c:
+        user=require_customer(core,request,c)
+        c.execute("UPDATE customer_users SET name=?,phone=? WHERE id=?",(name,phone,user["id"]))
+    return RedirectResponse("/account?saved=1#profile",303)
+
+
+@router.post("/account/appointment/cancel")
+def customer_cancel_booking(request: Request,csrf: str=Form(...),appointment_id: int=Form(...)):
+    import app as core
+    core.check_csrf(request,csrf)
+    with core.connection() as c:
+        user=require_customer(core,request,c)
+        c.execute("BEGIN IMMEDIATE")
+        try:
+            booking=c.execute("""SELECT a.*,s.title AS service_title FROM appointments a
+                                 JOIN services s ON s.id=a.service_id
+                                 WHERE a.id=? AND a.customer_id=?""",(appointment_id,user["id"])).fetchone()
+            if not booking:
+                raise HTTPException(404,"Appointment not found.")
+            if booking["status"] not in ("confirmed","pending"):
+                raise HTTPException(409,"This appointment cannot be cancelled online.")
+            # Restrict self-service cancellation to at least 24 hours before the appointment.
+            starts=datetime.fromisoformat(f"{booking['day']}T{booking['at_time']}").replace(tzinfo=core.TZ)
+            if starts < core.now()+timedelta(hours=24):
+                raise HTTPException(409,"Please contact GEM directly to change an appointment within 24 hours.")
+            c.execute("UPDATE appointments SET status='cancelled',updated_at=? WHERE id=?",(core.stamp(),appointment_id))
+            config=core.settings(c)
+            core.queue_email(c,user["email"],f"GEM booking {booking['reference']} cancelled",
+                             f"Hello {user['name']},\n\nYour appointment {booking['reference']} on {booking['day']} has been cancelled.\n\nQuestions? Contact {config['email']}.")
+            core.queue_email(c,config["email"],f"Customer cancellation: {booking['reference']}",
+                             f"{user['name']} ({user['email']}) cancelled {booking['service_title']} on {booking['day']} at {booking['at_time']}.")
+            c.execute("COMMIT")
+        except Exception:
+            c.execute("ROLLBACK")
+            raise
+    return RedirectResponse("/account?saved=1#bookings",303)
+
+
+@router.post("/account/appointment/reschedule")
+def customer_reschedule_booking(request: Request,csrf: str=Form(...),
+                                appointment_id: int=Form(...),day: str=Form(...),at_time: str=Form(...)):
+    import app as core
+    core.check_csrf(request,csrf)
+    with core.connection() as c:
+        user=require_customer(core,request,c)
+        c.execute("BEGIN IMMEDIATE")
+        try:
+            booking=c.execute("""SELECT a.*,s.title AS service_title FROM appointments a
+                                 JOIN services s ON s.id=a.service_id
+                                 WHERE a.id=? AND a.customer_id=?""",(appointment_id,user["id"])).fetchone()
+            if not booking:
+                raise HTTPException(404,"Appointment not found.")
+            if booking["status"] not in ("confirmed","pending"):
+                raise HTTPException(409,"This booking cannot be rescheduled online.")
+            original=datetime.fromisoformat(f"{booking['day']}T{booking['at_time']}").replace(tzinfo=core.TZ)
+            if original < core.now()+timedelta(hours=24):
+                raise HTTPException(409,"Please contact GEM to change an appointment within 24 hours.")
+            service=c.execute("SELECT * FROM services WHERE id=?",(booking["service_id"],)).fetchone()
+            if not service:
+                raise HTTPException(400,"Associated service is unavailable.")
+            # Temporarily exclude this booking from conflicts, then restore its original status.
+            c.execute("UPDATE appointments SET status='rescheduling' WHERE id=?",(appointment_id,))
+            valid=at_time in core.appointment_slots(c,service,day)
+            c.execute("UPDATE appointments SET status=? WHERE id=?",(booking["status"],appointment_id))
+            if not valid:
+                raise HTTPException(409,"That time is not available. Please select another slot.")
+            c.execute("UPDATE appointments SET day=?,at_time=?,updated_at=? WHERE id=?",
+                      (day,at_time,core.stamp(),appointment_id))
+            config=core.settings(c)
+            summary=f"{booking['service_title']} on {day} at {at_time} ({core.BUSINESS_TZ})"
+            core.queue_email(c,user["email"],f"Your GEM booking {booking['reference']} changed",
+                             f"Hello {user['name']},\n\nYour appointment {booking['reference']} is now scheduled for {summary}.\n\nQuestions? Contact {config['email']}.")
+            core.queue_email(c,config["email"],f"Customer rescheduled: {booking['reference']}",
+                             f"{user['name']} ({user['email']}) changed their appointment to {summary}.")
+            c.execute("COMMIT")
+        except Exception:
+            c.execute("ROLLBACK")
+            raise
+    return RedirectResponse("/account?saved=1#bookings",303)
+
+
+@router.post("/admin/customer/plan")
+def admin_update_enrollment(request: Request,csrf: str=Form(...),enrollment_id: int=Form(...),
+                            next_due: str=Form(...),active: str=Form("")):
+    import app as core
+    core.admin_only(request);core.check_csrf(request,csrf)
+    try:
+        when=date.fromisoformat(next_due)
+        if not date(2000,1,1)<=when<=date(2100,1,1): raise ValueError()
+    except ValueError:
+        raise HTTPException(400,"Invalid due date.")
+    with core.connection() as c:
+        c.execute("UPDATE care_enrollments SET next_due=?,active=? WHERE id=?",
+                  (when.isoformat(),int(active=="on"),enrollment_id))
     return RedirectResponse("/admin?saved=1#customers",303)
