@@ -130,7 +130,7 @@
   const submit=booking.querySelector('#book-submit');
   let currentStep=0, controller=null;
 
-  function showStep(index) {
+  function showStep(index, scroll=true) {
     currentStep=Math.min(3,Math.max(0,index));
     stages.forEach((stage,i)=>{
       const active=i===currentStep;
@@ -144,7 +144,7 @@
       else step.removeAttribute('aria-current');
     });
     if(currentStep===3) refreshReview();
-    document.querySelector('.booking-heading')?.scrollIntoView({behavior:'smooth',block:'start'});
+    if(scroll) document.querySelector('.booking-heading')?.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
   function resetSlots(message) {
@@ -255,6 +255,6 @@
     submit.disabled=true;
     submit.textContent='Submitting...';
   });
-  showStep(0);
+  showStep(0,false);
   if(service.value && date.value)loadSlots();
 })();
