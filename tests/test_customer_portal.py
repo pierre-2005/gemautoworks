@@ -1,4 +1,10 @@
 """Customer portal smoke tests, isolated via test_site.py environment."""
+import os, tempfile
+os.environ.setdefault('DATA_DIR', tempfile.mkdtemp(prefix='gem-portal-tests-'))
+os.environ.setdefault('SECRET_KEY', 'portal-tests-only-secret-key-1234567890-123')
+os.environ.setdefault('ADMIN_EMAIL', 'owner@example.com')
+os.environ.setdefault('ADMIN_PASSWORD', 'PortalTestPassword-2026-1234')
+os.environ.setdefault('COOKIE_SECURE', 'false')
 from fastapi.testclient import TestClient
 from app import app, connection, settings
 from customer_portal import plus_months
