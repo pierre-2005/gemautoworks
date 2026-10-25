@@ -27,6 +27,7 @@
       <a href="/gallery" {% if request.url.path=='/gallery' %}aria-current="page"{% endif %}>Our Work</a>
       <a href="/reviews" {% if request.url.path=='/reviews' %}aria-current="page"{% endif %}>Reviews</a>
       <a href="/contact" {% if request.url.path=='/contact' %}aria-current="page"{% endif %}>Contact</a>
+      {% if site.customer_accounts_enabled=='1' %}<a href="{{'/account' if customer_logged_in else '/account/login'}}">{{'My Garage' if customer_logged_in else 'Sign In'}}</a>{% endif %}
       <a class="btn btn-primary nav-book" href="/book">Book now <span aria-hidden="true">↗</span></a>
     </nav>
   </div>
