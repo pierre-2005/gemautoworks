@@ -580,3 +580,32 @@ def admin_update_enrollment(request: Request,csrf: str=Form(...),enrollment_id: 
         c.execute("UPDATE care_enrollments SET next_due=?,active=? WHERE id=?",
                   (when.isoformat(),int(active=="on"),enrollment_id))
     return RedirectResponse("/admin?saved=1#customers",303)
+
+
+@router.post("/admin/customer/enroll")
+def admin_enroll_customer(request: Request,csrf: str=Form(...),vehicle_id: int=Form(...),
+                          plan_id: int=Form(...),next_due: str=Form(...)):
+    import app as core
+    core.admin_only(request);core.check_csrf(request,csrf)
+    try:
+        due=date.fromisoformat(next_due)
+        if not date(2000,1,1)<=due<=date(2100,1,1):
+            raise ValueError()
+    except ValueError:
+        raise HTTPException(400,"Enter a valid next service due date.")
+    with core.connection() as c:
+        row=c.execute("SELECT * FROM customer_vehicles WHERE id=?",(vehicle_id,)).fetchone()
+        plan=c.execute("SELECT * FROM care_plans WHERE id=? AND active=1",(plan_id,)).fetchone()
+        if not row or not plan:
+            raise HTTPException(400,"Select a valid customer vehicle and active service plan.")
+        existing=c.execute("SELECT id FROM care_enrollments WHERE vehicle_id=? AND plan_id=? AND active=1",(vehicle_id,plan_id)).fetchone()
+        if existing:
+            raise HTTPException(409,"This vehicle is already enrolled in that plan.")
+        c.execute("INSERT INTO care_enrollments(user_id,vehicle_id,plan_id,next_due,created_at) VALUES(?,?,?,?,?)",
+                  (row["user_id"],vehicle_id,plan_id,due.isoformat(),core.stamp()))
+        user=c.execute("SELECT * FROM customer_users WHERE id=?",(row["user_id"],)).fetchone()
+        if user["verified"]:
+            core.queue_email(c,user["email"],f"Your GEM care plan: {plan['name']}",
+                             f"Hello {user['name']},\n\nGEM has scheduled care reminders for your {row['make']} {row['model']}."
+                             f"\nPlan: {plan['name']}\nNext due: {due.isoformat()}.\n\nNo appointment or payment is booked automatically.")
+    return RedirectResponse("/admin?saved=1#customers",303)
