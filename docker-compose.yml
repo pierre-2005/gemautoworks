@@ -18,6 +18,7 @@ services:
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       SMTP_FROM: ${SMTP_FROM:-}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://gemautoworks.overvault.ca}
     ports:
       - "127.0.0.1:8092:8000"
     volumes:
