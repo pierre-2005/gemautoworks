@@ -18,6 +18,9 @@
 <label>Choose a care plan<select name="plan_id" required>{% for p in plan_types %}<option value="{{p.id}}">{{p.name}} (every {{p.interval_months}} months)</option>{% endfor %}</select></label>
 <label>For which vehicle?<select name="vehicle_id" required>{% for v in vehicles %}<option value="{{v.id}}">{{v.year or ''}} {{v.make}} {{v.model}}</option>{% endfor %}</select></label><button type="submit" class="btn btn-primary">Add care plan →</button></form></div>{% endif %}</section>
 <section class="account-section" id="bookings"><div class="account-section-header"><div><div class="eyebrow">03 / APPOINTMENTS</div><h2>My bookings</h2></div><a class="btn btn-primary" href="/book">Book now →</a></div>
+<details class="account-add-panel"><summary>+ Link a previous booking</summary><p class="muted">Already booked using this email address? Enter the GEM reference from your confirmation email to add it to your account.</p>
+<form method="post" action="/account/appointment/claim" class="form-stack"><input type="hidden" name="csrf" value="{{csrf}}">
+<label>Booking reference<input name="reference" placeholder="GEM-1234ABCD" maxlength="32" required></label><button type="submit" class="btn btn-primary">Link appointment</button></form></details>
 <div class="account-vehicle-grid">{% for a in appointments %}<article class="account-plan"><div class="eyebrow">{{a.status}}</div><h3>{{a.service_title}}</h3><p>{{a.day}} at {{a.at_time}}</p><p class="muted">Reference {{a.reference}}</p>
 {% if a.status in ['pending','confirmed'] %}<details class="booking-manage"><summary>Manage booking</summary><div class="booking-manage-content">
 <p class="tiny muted">Online changes require at least 24 hours notice.</p>
