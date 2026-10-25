@@ -506,3 +506,16 @@ body.js-ready .booking-form .form-stage:not(.is-current){display:none}
 .admin-workspace:not(.admin-enhanced){display:block}
 .admin-workspace:not(.admin-enhanced) .admin-tabs{position:relative;top:auto;display:flex;flex-direction:row;flex-wrap:wrap;max-height:none}
 .admin-workspace:not(.admin-enhanced) .admin-section{display:block;position:relative;padding:32px 0;border-bottom:1px solid var(--line)}
+
+/* Customer and SMTP administration: readable cards rather than cropped tables. */
+@media (max-width:700px){
+ #customers .table-scroll,#emails .table-scroll{border:0;overflow:visible;background:transparent}
+ #customers .admin-table,#emails .admin-table,
+ #customers .admin-table tbody,#emails .admin-table tbody{display:block;width:100%;min-width:0;background:transparent}
+ #customers .admin-table thead,#emails .admin-table thead{display:none}
+ #customers .admin-table tr,#emails .admin-table tr{display:block;overflow:hidden;min-width:0;width:100%;background:#10263a;border:1px solid #34516c;border-radius:13px;margin-bottom:12px}
+ #customers .admin-table td,#emails .admin-table td{display:block;width:100%;max-width:100%;overflow-wrap:anywhere;padding:11px 14px;border:0;border-bottom:1px solid #2e4860}
+ #customers .admin-table td:last-child,#emails .admin-table td:last-child{border-bottom:0}
+ #customers .admin-table td[data-label]:before,#emails .admin-table td[data-label]:before{content:attr(data-label);display:block;margin-bottom:5px;color:#8bcaf4;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:800}
+ #customers .admin-table td[colspan],#emails .admin-table td[colspan]{padding:16px}
+}
