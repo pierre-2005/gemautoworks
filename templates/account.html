@@ -21,10 +21,10 @@
 <div class="account-vehicle-grid">{% for a in appointments %}<article class="account-plan"><div class="eyebrow">{{a.status}}</div><h3>{{a.service_title}}</h3><p>{{a.day}} at {{a.at_time}}</p><p class="muted">Reference {{a.reference}}</p>
 {% if a.status in ['pending','confirmed'] %}<details class="booking-manage"><summary>Manage booking</summary><div class="booking-manage-content">
 <p class="tiny muted">Online changes require at least 24 hours notice.</p>
-<form class="form-stack" method="post" action="/account/appointment/reschedule"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="appointment_id" value="{{a.id}}">
+<form class="form-stack customer-reschedule" data-service-id="{{a.service_id}}" method="post" action="/account/appointment/reschedule"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="appointment_id" value="{{a.id}}">
 <label>New date<input type="date" name="day" min="{{today}}" value="{{a.day}}" required></label>
-<label>New time <input type="time" name="at_time" value="{{a.at_time}}" required></label>
-<p class="tiny muted">Choose an available time from the <a href="/book">booking calendar</a> and enter it here. Unavailable times will be rejected.</p>
+<label>Available time<select name="at_time" required><option value="">Select a date to load availability</option></select></label>
+<p class="tiny muted" data-reschedule-feedback>Only available appointments are shown. All times are in the business timezone.</p>
 <button class="btn btn-primary btn-small" type="submit">Reschedule</button></form>
 <form method="post" action="/account/appointment/cancel"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="appointment_id" value="{{a.id}}"><button type="submit" class="btn btn-ghost btn-small" data-confirm="Cancel this appointment?">Cancel appointment</button></form></div></details>{% endif %}</article>{% else %}<div class="account-empty">No linked bookings yet. Your new bookings will appear here when you're signed in.</div>{% endfor %}</div></section>
 <section class="account-section" id="profile"><div class="account-section-header"><div><div class="eyebrow">04 / YOUR INFORMATION</div><h2>My profile</h2></div></div>
