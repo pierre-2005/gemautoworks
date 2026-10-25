@@ -22,7 +22,7 @@ from zoneinfo import ZoneInfo
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError, VerificationError
 from fastapi import FastAPI, Form, HTTPException, Request, UploadFile, File
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse, FileResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from PIL import Image, UnidentifiedImageError
@@ -356,7 +356,7 @@ def render(request,template,c,status=200,**context):
     current=settings(c)
     customer=customer_portal.current_customer(__import__(__name__),request,c)
     customer_vehicles=(c.execute("SELECT * FROM customer_vehicles WHERE user_id=? ORDER BY id",(customer["id"],)).fetchall() if customer else [])
-    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'customer_logged_in':bool(customer),'customer_vehicles':customer_vehicles,'customer_profile':customer,'current_year':now().year,'timezone':BUSINESS_TZ,**context}
+    values={'request':request,'site':current,'csrf':csrf_token(request),'admin_logged_in':bool(admin_id(request)),'customer_logged_in':bool(customer),'customer_vehicles':customer_vehicles,'customer_profile':customer,'current_year':now().year,'timezone':BUSINESS_TZ,'canonical_url':os.environ.get('PUBLIC_BASE_URL','https://gemautoworks.overvault.ca').rstrip('/')+request.url.path,'public_base_url':os.environ.get('PUBLIC_BASE_URL','https://gemautoworks.overvault.ca').rstrip('/'),**context}
     return templates.TemplateResponse(request,template,values,status_code=status)
 
 @app.get('/',response_class=HTMLResponse)
@@ -459,7 +459,8 @@ def terms(request:Request):
 
 @app.get('/robots.txt')
 def robots():
-    return StreamingResponse(iter(['User-agent: *\nDisallow: /admin\nDisallow: /api\n']),media_type='text/plain')
+    base=os.environ.get('PUBLIC_BASE_URL','https://gemautoworks.overvault.ca').rstrip('/')
+    return Response('User-agent: *\nDisallow: /admin\nDisallow: /api\nDisallow: /account\nSitemap: '+base+'/sitemap.xml\n',media_type='text/plain')
 
 @app.get('/health')
 def health():
@@ -765,3 +766,12 @@ def admin_email_test(request:Request,csrf:str=Form(...)):
                     f"Your GEM Autoworks email queue is working.\n\nSent at {stamp()}.\n"
                     "If you received this, SMTP is accepting deliveries. Check spam if needed.")
     return RedirectResponse("/admin?saved=1#emails",303)
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    import xml.sax.saxutils as xml_util
+    base=os.environ.get("PUBLIC_BASE_URL","https://gemautoworks.overvault.ca").rstrip("/")
+    pages=("/", "/services", "/gallery", "/reviews", "/contact", "/book", "/privacy", "/terms")
+    urls="".join("<url><loc>"+xml_util.escape(base+path)+"</loc></url>" for path in pages)
+    return Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+urls+'</urlset>',media_type="application/xml")
