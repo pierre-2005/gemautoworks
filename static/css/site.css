@@ -501,3 +501,8 @@ body.js-ready .booking-form .form-stage:not(.is-current){display:none}
  #appointments .inline-form select{max-width:none;flex:1}
  #appointments .admin-table .btn{white-space:normal}
 }
+
+/* Progressive enhancement: with JS disabled/loading, never overlay admin sections. */
+.admin-workspace:not(.admin-enhanced){display:block}
+.admin-workspace:not(.admin-enhanced) .admin-tabs{position:relative;top:auto;display:flex;flex-direction:row;flex-wrap:wrap;max-height:none}
+.admin-workspace:not(.admin-enhanced) .admin-section{display:block;position:relative;padding:32px 0;border-bottom:1px solid var(--line)}
