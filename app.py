@@ -410,6 +410,9 @@ def create_booking(request:Request,service_id:int=Form(...),day:str=Form(...),at
             reference='GEM-'+secrets.token_hex(4).upper()
             customer=customer_portal.current_customer(__import__(__name__),request,c)
             customer_id=customer['id'] if customer else None
+            if customer:
+                # Only bind bookings to the verified profile and its email.
+                name=customer['name']; email=customer['email']; phone=customer['phone']
             saved_vehicle_id=None
             if vehicle_id:
                 if not customer or not vehicle_id.isdecimal():
@@ -476,7 +479,18 @@ def logout(request:Request,csrf:str=Form(...)):
 def dashboard(request:Request):
     admin_only(request)
     with connection() as c:
-        appts=c.execute('SELECT a.*,s.title AS service_title FROM appointments a JOIN services s ON s.id=a.service_id ORDER BY a.day DESC,a.at_time DESC LIMIT 150').fetchall()
+        query=safe_text(request.query_params.get("q",""),80)
+        state=safe_text(request.query_params.get("status",""),16)
+        if state not in ("","pending","confirmed","completed","cancelled"): state=""
+        where=[];params=[]
+        if state:
+            where.append("a.status=?");params.append(state)
+        if query:
+            where.append("(a.reference LIKE ? OR a.name LIKE ? OR a.email LIKE ? OR a.vehicle LIKE ?)")
+            params.extend(["%"+query+"%"]*4)
+        clause=(" WHERE "+" AND ".join(where)) if where else ""
+        appts=c.execute("SELECT a.*,s.title AS service_title FROM appointments a JOIN services s ON s.id=a.service_id"+clause+
+                        " ORDER BY a.day DESC,a.at_time DESC LIMIT 150",params).fetchall()
         return render(request,'admin.html',c,
             appointments=appts,
             services=c.execute('SELECT * FROM services ORDER BY sort_order,id').fetchall(),
@@ -717,3 +731,20 @@ def manual_appointment(request:Request,csrf:str=Form(...),service_id:int=Form(..
         except Exception:
             c.execute('ROLLBACK');raise
     return save_redirect('appointments')
+
+
+@app.post("/admin/email/test")
+def admin_email_test(request:Request,csrf:str=Form(...)):
+    """Queue a test message only to the configured business inbox."""
+    admin_only(request)
+    check_csrf(request,csrf)
+    throttle(request,"email-test",3,600)
+    if not email_configured():
+        raise HTTPException(503,"Configure SMTP credentials in Portainer first.")
+    with connection() as c:
+        config=settings(c)
+        recipient=config["email"]
+        queue_email(c,recipient,"GEM Autoworks: SMTP test",
+                    f"Your GEM Autoworks email queue is working.\n\nSent at {stamp()}.\n"
+                    "If you received this, SMTP is accepting deliveries. Check spam if needed.")
+    return RedirectResponse("/admin?saved=1#emails",303)
