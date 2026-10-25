@@ -33,6 +33,8 @@ def test_redesign_assets_and_navigation():
     with TestClient(app) as client:
         page=client.get('/').text
         assert 'brand-logo-only' in page
+        assert 'rel="canonical"' in page
+        assert 'og:image' in page
         assert '/static/css/site.css?v=10' in page
         assert 'class="brand-word"' not in page
         assert client.get('/static/css/site.css').status_code == 200
@@ -44,6 +46,9 @@ def test_every_public_page_and_assets():
     with TestClient(app) as client:
         for uri in ['/','/services','/gallery','/reviews','/contact','/book','/privacy','/terms','/admin/login','/health','/static/img/gem-logo.png','/static/css/site.css','/static/js/site.js']:
             assert client.get(uri).status_code==200,uri
+        assert client.get('/sitemap.xml').status_code==200
+        assert '/services' in client.get('/sitemap.xml').text
+        assert 'Disallow: /account' in client.get('/robots.txt').text
         assert client.get('/admin',follow_redirects=False).status_code==303
         assert client.get('/api/availability',params={'day':'2020-01-01','service_id':1}).json()['slots']==[]
 
