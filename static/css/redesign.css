@@ -327,3 +327,21 @@ label,small,p,blockquote{overflow-wrap:anywhere}
       linear-gradient(0deg,#060a11 0%,rgba(6,10,17,.50) 47%,transparent 100%)
   }
 }
+
+/* Customer portal: fluid layouts without breakpoint-specific clipping */
+.account-auth-wrap{padding:clamp(42px,8vw,100px) 18px;display:grid;place-items:center;min-height:72vh}
+.account-auth-card{width:min(100%,700px);padding:clamp(23px,5vw,54px);border-radius:22px;background:#101b29;border:1px solid #294059;box-shadow:0 22px 90px #0005}
+.account-auth-card h1{font-size:clamp(2.3rem,5vw,4rem);margin:12px 0}
+.account-auth-card .form-stack{margin-top:24px}
+.account-back,.account-forgot{display:inline-block;color:#8ccfff;font-size:13px;margin-bottom:20px}
+.account-forgot{margin:0;text-align:right}.account-switch{text-align:center;margin:24px 0 0;color:#b3c5d7}.account-switch a{color:#58bdff;font-weight:700}
+.account-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.account-form-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.account-divider{margin:26px 0 10px;border-top:1px solid #2d4357;padding-top:24px}.account-divider h2{font-size:22px;margin-bottom:8px}.account-divider h2 small{font-size:12px;color:#91a6b8}.signup-vehicle-row{margin:12px 0}
+.account-heading{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}.account-heading h1{font-size:clamp(2.6rem,5vw,4.8rem);margin:12px 0}.account-tabs{display:flex;gap:12px;flex-wrap:wrap;margin:33px 0 9px}.account-tabs a{border:1px solid #304961;border-radius:10px;padding:10px 18px;color:#bcd7ec}
+.account-tabs a:hover{background:#152f45;color:white}
+.account-section{padding:40px 0;border-bottom:1px solid #24374b;scroll-margin-top:120px}.account-section-header{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+.account-section h2{font-size:clamp(1.9rem,4vw,2.8rem);margin:8px 0}.account-vehicle-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px}
+.account-vehicle,.account-plan,.account-empty,.account-add-panel{background:#111d2b;border:1px solid #29415a;border-radius:15px;padding:24px;min-width:0}
+.account-vehicle{display:flex;flex-direction:column;gap:16px}.account-vehicle h3,.account-plan h3{margin:8px 0}.account-vehicle p{margin:0}.account-vehicle-icon{color:#58bdff;font-size:26px}
+.account-delete{background:transparent;border:0;color:#f1a5ab;padding:8px 0;text-decoration:underline}.account-add-panel{margin-top:19px}.account-add-panel summary{cursor:pointer;font-weight:750;color:#8cd0ff}.account-add-panel form{margin-top:23px}
+@media(max-width:520px){.account-form-grid,.account-form-grid.three{grid-template-columns:1fr}.account-auth-wrap{padding:24px 12px}.account-auth-card{padding:24px 18px}.account-vehicle,.account-plan,.account-empty,.account-add-panel{padding:20px}.account-tabs a{flex:1;text-align:center;padding:10px}}
