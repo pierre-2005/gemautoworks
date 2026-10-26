@@ -210,7 +210,7 @@
 
   if (stages.length === 4) {
     form.classList.add('has-booking-wizard');
-    form.removeAttribute('novalidate');
+    // Keep HTML's step-by-step validation controlled, including hidden stages.
     stages.forEach(stage => {
       stage.querySelector('[data-book-next]')?.addEventListener('click', () => {
         if (!validateStep(current)) return;
