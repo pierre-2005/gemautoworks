@@ -18,11 +18,16 @@ ROOT = Path(__file__).resolve().parents[1]
 SHOT_DIR = ROOT / "visual-artifacts"
 SHOT_DIR.mkdir(exist_ok=True)
 SCREENS = [
+    ("compact-phone", 320, 700),
     ("small-phone", 360, 780),
     ("phone", 390, 844),
+    ("large-phone", 430, 932),
     ("tablet", 768, 1024),
+    ("large-tablet", 820, 1180),
     ("laptop", 1024, 768),
     ("desktop", 1440, 900),
+    ("wide-desktop", 1920, 1080),
+    ("ultrawide", 2560, 1440),
 ]
 PAGES = ["/", "/services", "/gallery", "/reviews", "/contact", "/book", "/admin/login"]
 
@@ -73,6 +78,7 @@ def main():
                         if not response or response.status != 200:
                             raise AssertionError(f"{name} {route}: page did not return HTTP 200")
                         page.locator("body").wait_for()
+                        assert page.locator('.skip-link').count() == 0, f"{name} {route}: unwanted skip link displayed"
                         metrics = page.evaluate("""() => ({
                             docWidth: document.documentElement.scrollWidth,
                             viewport: document.documentElement.clientWidth
@@ -80,15 +86,21 @@ def main():
                         if metrics["docWidth"] > metrics["viewport"] + 2:
                             raise AssertionError(f"{name} {route}: horizontal overflow {metrics}")
                     page.goto(base, wait_until="domcontentloaded")
+                    hero = page.locator('.hero-media img')
+                    assert hero.count() == 1, f"{name}: missing editable hero photograph"
+                    assert hero.get_attribute('src'), f"{name}: hero photograph has no source"
+                    mask = hero.evaluate("(el) => getComputedStyle(el).maskImage || getComputedStyle(el).webkitMaskImage")
+                    assert 'gradient' in mask, f"{name}: image itself does not fade into background: {mask}"
+                    assert page.locator('.hero-premium').evaluate("(el) => getComputedStyle(el).backgroundColor") == "rgb(7, 11, 19)", f"{name}: hero fade background mismatch"
                     page.screenshot(path=str(SHOT_DIR / f"home-{name}.png"), full_page=True, animations="disabled")
-                    if width <= 920:
+                    if width <= 900:
                         menu = page.locator(".menu-toggle")
                         menu.click()
                         assert page.locator("#main-nav").is_visible(), f"{name}: mobile menu did not open"
                         menu.click()
                         assert not page.locator("#main-nav").is_visible(), f"{name}: mobile menu did not close"
                     page.goto(base + "/book", wait_until="domcontentloaded")
-                    if name in ("small-phone", "phone"):
+                    if name in ("compact-phone", "small-phone", "phone", "large-phone", "tablet"):
                         page.screenshot(path=str(SHOT_DIR / f"booking-{name}.png"), full_page=True, animations="disabled")
                     page.goto(base + "/admin/login", wait_until="domcontentloaded")
                     page.locator('input[name="email"]').fill("owner@example.com")
@@ -100,12 +112,12 @@ def main():
                     assert not page.locator("#appointments").is_visible(), f"{name}: appointments should be hidden in website tab"
                     page.locator('[data-admin-section="appointments"]').click()
                     assert page.locator("#appointments").is_visible(), f"{name}: appointments tab not visible"
-                    if name in ("phone", "desktop"):
+                    if name in ("phone", "tablet", "desktop"):
                         page.screenshot(path=str(SHOT_DIR / f"admin-{name}.png"), full_page=True, animations="disabled")
                     page.close()
             finally:
                 browser.close()
-        print(f"Responsive browser checks passed: {len(SCREENS)} widths x {len(PAGES)} pages, menus and admin navigation.")
+        print(f"Responsive browser checks passed: {len(SCREENS)} widths x {len(PAGES)} pages, hero fade, menus and admin navigation.")
     finally:
         server.terminate()
         try:

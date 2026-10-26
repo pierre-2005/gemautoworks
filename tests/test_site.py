@@ -33,9 +33,15 @@ def test_redesign_assets_and_navigation():
     with TestClient(app) as client:
         page=client.get('/').text
         assert 'brand-logo-only' in page
-        assert '/static/css/redesign.css?v=6' in page
+        assert '/static/css/experience.css?v=8' in page
+        assert 'Skip to main content' not in page
+        assert 'class="skip-link"' not in page
+        assert 'class="hero-media"' in page
         assert 'class="brand-word"' not in page
-        assert client.get('/static/css/redesign.css').status_code == 200
+        assert client.get('/static/css/experience.css').status_code == 200
+        css = client.get('/static/css/experience.css').text
+        assert '-webkit-mask-image:linear-gradient(to right' in css
+        assert 'background:var(--hero-solid)' in css
         response=client.get('/admin/login')
         assert response.status_code == 200
 
@@ -84,3 +90,32 @@ def test_bookings_conflicts_admin_and_reviews():
         assert time not in client.get('/api/availability',params={'day':day,'service_id':1}).json()['slots']
         # No unsecured settings edits.
         assert client.post('/admin/settings',data={'csrf':'wrong','headline':'Spoofed'},follow_redirects=False).status_code!=303
+
+
+def test_admin_hero_image_choice_is_used_without_hardcoded_photo():
+    """The image and fade must both work when an admin replaces the hero photo."""
+    with TestClient(app) as client:
+        with connection() as c:
+            c.execute(
+                "INSERT INTO gallery(title,alt,image_path) VALUES(?,?,?)",
+                ("Alternate showcase", "Alternate automotive image", "/static/img/showcase-small.webp"),
+            )
+        csrf = token(client.get('/admin/login').text)
+        response = client.post(
+            '/admin/login',
+            data={'csrf': csrf, 'email': 'owner@example.com', 'password': 'A-Very-Strong-Test-Password-2026'},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        csrf = token(client.get('/admin').text)
+        response = client.post(
+            '/admin/settings',
+            data={'csrf': csrf, 'hero_image_path': '/static/img/showcase-small.webp'},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        homepage = client.get('/').text
+        assert '<div class="hero-media" aria-hidden="true"><img src="/static/img/showcase-small.webp"' in homepage
+        assert 'Skip to main content' not in homepage
+        # Restore default so independent tests are not affected by this test.
+        client.post('/admin/settings', data={'csrf': csrf, 'hero_image_path': '/static/img/showcase.webp'}, follow_redirects=False)

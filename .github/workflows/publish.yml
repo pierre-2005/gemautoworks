@@ -3,6 +3,8 @@ name: Test and publish GEM Autoworks
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -39,6 +41,7 @@ jobs:
 
   publish:
     needs: test
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
