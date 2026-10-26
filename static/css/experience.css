@@ -30,10 +30,21 @@ a,button{-webkit-tap-highlight-color:transparent}
 .section-heading .text-link{flex-shrink:0}
 .text-link{color:#dbecff;font-weight:800;text-decoration:none;border-bottom:1px solid #317aaf;padding-bottom:7px}
 .text-link:hover{color:#69c4ff}
-.hero-premium{position:relative;min-height:min(770px,calc(100svh - 88px));display:flex;align-items:center;isolation:isolate;background:#070c15;overflow:hidden}
-.hero-media,.hero-shade{position:absolute;inset:0;pointer-events:none}
-.hero-media img{width:100%;height:100%;object-fit:cover;object-position:67% 50%;filter:contrast(1.07) saturate(.88) brightness(.77)}
-.hero-shade{background:linear-gradient(90deg,#070b13 0%,#070b13fa 14%,#070b13e7 32%,#070b1399 53%,#070b132c 79%,#070b1312 100%),linear-gradient(0deg,#070b13db 0%,transparent 28%,transparent 75%,#070b1359)}
+/* Fade *the chosen image itself* into exactly the hero's solid left background.
+   Works for any admin-selected photo without a hard rectangular edge. */
+.hero-premium{--hero-solid:#070b13;position:relative;min-height:min(770px,calc(100svh - 88px));display:flex;align-items:center;isolation:isolate;background:var(--hero-solid);overflow:hidden}
+.hero-premium .hero-media,.hero-premium .hero-shade{position:absolute;inset:0;pointer-events:none}
+.hero-premium .hero-media{overflow:hidden;background:var(--hero-solid)}
+.hero-premium .hero-media img{
+ width:100%;height:100%;object-fit:cover;object-position:67% 50%;
+ filter:contrast(1.07) saturate(.88) brightness(.81);
+ -webkit-mask-image:linear-gradient(to right,transparent 0%,transparent 7%,rgba(0,0,0,.08) 24%,rgba(0,0,0,.42) 42%,rgba(0,0,0,.82) 61%,#000 81%);
+ mask-image:linear-gradient(to right,transparent 0%,transparent 7%,rgba(0,0,0,.08) 24%,rgba(0,0,0,.42) 42%,rgba(0,0,0,.82) 61%,#000 81%);
+}
+.hero-premium .hero-shade{
+ background:linear-gradient(90deg,#070b13 0%,#070b13a8 35%,#070b1344 62%,transparent 90%),
+            linear-gradient(0deg,#070b13db 0%,transparent 32%,transparent 78%,#070b133b);
+}
 .hero-premium-inner{position:relative;z-index:1;display:flex;align-items:center;min-height:660px;padding:84px 0 125px}
 .hero-content{max-width:690px}
 .hero-kicker{display:flex;align-items:center;gap:13px;color:#92d5ff}
@@ -234,7 +245,11 @@ input::placeholder,textarea::placeholder{color:#91a4b7}
  .hero-premium{min-height:690px}
  .hero-premium-inner{min-height:660px;padding:70px 0 110px}
  .hero-premium h1{max-width:620px;font-size:clamp(50px,8vw,74px)}
- .hero-shade{background:linear-gradient(90deg,#070b13ed,#070b13b9 55%,#070b1366),linear-gradient(0deg,#070b13e3,transparent 58%)}
+ .hero-premium .hero-media img{
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.13) 17%,rgba(0,0,0,.55) 45%,#000 85%);
+  mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.13) 17%,rgba(0,0,0,.55) 45%,#000 85%);
+ }
+ .hero-premium .hero-shade{background:linear-gradient(90deg,#070b13eb 0%,#070b13a6 47%,#070b1355 100%),linear-gradient(0deg,#070b13e5,transparent 66%)}
  .hero-media img{object-position:65% 50%}
  .hero-side-note{display:none}
  .studio-intro-layout{grid-template-columns:1fr;gap:16px}
@@ -261,7 +276,11 @@ input::placeholder,textarea::placeholder{color:#91a4b7}
  .hero-premium-inner{min-height:630px;padding:70px 0 135px}
  .hero-premium h1{font-size:clamp(48px,11.3vw,65px);margin:21px 0}
  .hero-premium .hero-description{font-size:15px;line-height:1.7}
- .hero-shade{background:linear-gradient(90deg,#070b13f5,#070b13c5 65%,#070b1399),linear-gradient(0deg,#070b13f4,transparent 65%)}
+ .hero-premium .hero-media img{
+  -webkit-mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.20) 18%,rgba(0,0,0,.70) 48%,#000 88%);
+  mask-image:linear-gradient(to right,transparent 0%,rgba(0,0,0,.20) 18%,rgba(0,0,0,.70) 48%,#000 88%);
+ }
+ .hero-premium .hero-shade{background:linear-gradient(90deg,#070b13f0 0%,#070b13d0 46%,#070b1373 100%),linear-gradient(0deg,#070b13ed 0%,transparent 72%)}
  .hero-media img{object-position:67% center}
  .hero-buttons{display:grid;grid-template-columns:1fr;max-width:360px}
  .hero-assurance{margin-top:30px;gap:9px;font-size:10px}
@@ -327,3 +346,28 @@ input::placeholder,textarea::placeholder{color:#91a4b7}
  .time-slots{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.premium-service-card:hover,.journal-item:hover img,.gallery-open:hover img{transform:none}}
+
+/* V8: tighten small-screen composition and prevent overflowing content. */
+.premium-service-card,.premium-service-card .card-body,.journal-item,.footer-col,.contact-premium>div,.review-premium>div,.booking-panel,.booking-step{min-width:0}
+.premium-service-card .service-foot{flex-wrap:wrap}
+.premium-service-card h3,.contact-tile strong,.booking-summary dd,.footer-col a{overflow-wrap:anywhere}
+@media(max-width:650px){
+ .note-banner{flex-direction:column;align-items:flex-start;gap:10px}
+ .note-banner a{display:inline-block}
+ .review-layout,.contact-layout,.booking-layout,.faq-layout{min-width:0}
+ .premium-service-card .service-foot strong{text-align:left}
+ .gallery-lightbox{width:calc(100% - 14px);padding:10px}
+ .contact-tile{min-width:0}
+ .contact-tile strong{min-width:0}
+}
+@media(max-width:420px){
+ .booking-progress li{font-size:0;gap:0}
+ .booking-progress li span{font-size:10px}
+ .hero-premium h1{overflow-wrap:break-word}
+ .hero-assurance{flex-wrap:wrap}
+ .step-actions{flex-wrap:wrap}
+ .step-actions .btn{min-width:0}
+}
+@media(min-width:1920px){
+ .hero-premium .hero-media img{object-position:center 50%}
+}
