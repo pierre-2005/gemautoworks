@@ -13,3 +13,6 @@ Once-only Taste hero entrance and one word-highlight statement. No repeated reve
 Gallery uses a native, keyboard-operable image dialog. Booking preserves server validation and adds a live summary, linked time errors, fetch cancellation and submission feedback. Mobile navigation supports Escape, outside click and focus containment.
 
 Editorial photographs: Unsplash photo-1503376780353-7e6692767b70 and photo-1580273916550-e323be2ae537. Original showcase remains CMS-managed. Stock is never added as customer work. 3D asset source, author and adaptation details are in static/licenses/3d-model.txt.
+
+## Revised direction
+A generated photographic cleaning storyboard replaces the showroom. Native scroll selects eight wash-and-wipe frames; reduced motion holds the finished frame. No paint controls, orbit or door animation. Homepage introduces GEM and links to dedicated pages. Detailed services, gallery images and reviews appear only on their own pages. Booking is a direct link, not a duplicated form. Shared primary navigation remains for wayfinding; footer contains legal links only.

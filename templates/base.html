@@ -36,21 +36,15 @@
 <a href="/" class="brand brand-logo-only" aria-label="GEM Autoworks home"><img src="/static/img/gem-logo.png" alt="GEM Autoworks" width="126" height="68"></a>
 <nav class="nav" id="main-nav" aria-label="Main menu">
 {% for path,label in [('/','Home'),('/services','Appointments'),('/gallery','Gallery'),('/reviews','Reviews'),('/contact','Contact')] %}<a href="{{path}}" {% if request.url.path==path %}aria-current="page"{% endif %}>{{label}}</a>{% endfor %}
-<a class="btn btn-primary nav-book" href="/book">Book an appointment {{ arrow() }}</a>
+{% if request.url.path not in ['/', '/book'] %}<a class="btn btn-primary nav-book" href="/book">Book an appointment {{ arrow() }}</a>{% endif %}
 </nav>
 <button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open navigation menu"><span></span><span></span></button>
 </div>
 </header>
 <main id="main-content">{% block content %}{% endblock %}</main>
 <footer class="g-footer"><div class="container">
-<div class="g-footer-grid">
-<div class="g-footer-brand"><a href="/" aria-label="GEM Autoworks home"><img src="/static/img/gem-logo.png" alt="GEM Autoworks" width="150" height="90"></a><p>{{site.footer_caption}}</p></div>
-<div><h2>Find your way</h2><a href="/services">Appointments</a><a href="/gallery">Gallery</a><a href="/reviews">Customer reviews</a><a href="/contact">Contact</a></div>
-<div><h2>Talk to the team</h2><a href="tel:{{site.phone|replace(' ','')|replace('(','')|replace(')','')|replace('-','')}}">{{site.phone}}</a><a href="mailto:{{site.email}}">{{site.email}}</a>{% if site.instagram %}<a href="{{site.instagram}}" target="_blank" rel="noopener noreferrer">Instagram {{arrow()}}</a>{% endif %}{% if site.facebook %}<a href="{{site.facebook}}" target="_blank" rel="noopener noreferrer">Facebook {{arrow()}}</a>{% endif %}</div>
-</div>
-<div class="g-footer-word" aria-hidden="true">GEM AUTOWORKS</div>
 <div class="g-footer-bottom"><span>© {{current_year}} {{site.business_name}}</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a>{% if admin_logged_in %}<a href="/admin">Dashboard</a>{% endif %}</div><a href="#top">Back to top {{arrow()}}</a></div>
-<p class="g-credits">Photographs via <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">Unsplash</a>. 3D car: <a href="/static/licenses/3d-model.txt">Eric Chadwick / DGG · CC BY 4.0</a>.</p>
+
 </div></footer>
 {% block dialogs %}{% endblock %}
 </body>

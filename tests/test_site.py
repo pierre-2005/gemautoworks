@@ -48,22 +48,15 @@ def test_every_public_page_and_assets():
         assert client.get('/api/availability',params={'day':'2020-01-01','service_id':1}).json()['slots']==[]
 
 
-def test_supercar_resources_work_with_the_existing_content_security_policy():
-    # External textures must load without broadening img-src to blob: or script-src.
+def test_cleaning_home_has_no_showroom_controls_or_duplicate_service_list():
     with TestClient(app) as client:
-        response = client.get('/static/models/supercar/car.gltf')
-        assert response.status_code == 200
-        assert response.headers.get('content-encoding') == 'gzip'
-        model = response.json()
-        for resource in model.get('images', []) + model.get('buffers', []):
-            uri = resource['uri']
-            assert not uri.startswith(('data:', 'blob:', 'http:', 'https:'))
-            assert '..' not in Path(uri).parts
-            assert client.get('/static/models/supercar/' + uri).status_code == 200
-        policy = client.get('/').headers['content-security-policy']
-        assert "script-src 'self'" in policy
-        assert "img-src 'self' data:" in policy
-        assert 'unsafe-eval' not in policy
+        home = client.get('/').text
+        assert '/static/js/cleaning-experience.js' in home
+        assert 'data-paint' not in home
+        assert 'car-experience.js' not in home
+        assert 'g-service-list' not in home
+        assert client.get('/static/img/cleaning-sequence.png').status_code == 200
+        assert client.get('/services').status_code == 200
 
 
 def test_bookings_conflicts_admin_and_reviews():

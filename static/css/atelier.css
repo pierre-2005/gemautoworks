@@ -428,3 +428,27 @@ body:has(.g-lightbox[open]){overflow:hidden}
 }
 @media(prefers-reduced-data:reduce){.g-drive{height:auto}.g-drive-screen.hero{position:relative;top:auto}}
 @media print{.site-header,.g-car-controls,.g-drive-track,.g-scroll-cue,.g-footer{display:none}.g-drive{height:auto}.g-drive-screen.hero{position:relative;top:0;height:600px}}
+/* Cleaning story replaces the configurable showroom. */
+.g-cleaning{height:260svh}
+.g-cleaning .g-drive-heading{pointer-events:none}
+.g-cleaning .g-drive-heading h1{font-size:clamp(50px,6vw,86px);max-width:680px}
+.g-cleaning-stage{position:absolute;inset:225px 0 80px 24%;display:flex;align-items:center;justify-content:center}
+#cleaning-canvas{width:100%;height:100%;display:block}
+.g-cleaning-caption{display:flex;align-items:center;gap:48px}
+#cleaning-phase{font-size:15px;color:#d6e0e6;min-width:65px}
+.g-home-introduction{min-height:unset;padding:100px 0}
+.g-home-introduction> .container>p{max-width:640px;font-size:24px;color:#606464}
+.g-home-paths{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:40px;margin-top:64px}
+.g-home-paths>a{border-top:1px solid #bfc4c0;padding-top:28px;display:block}
+.g-home-paths h3{font-size:26px;margin-bottom:24px}
+.g-home-paths span{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px}
+@media(max-width:700px){
+ .g-cleaning{height:230svh}
+ .g-cleaning .g-drive-heading h1{font-size:clamp(42px,10vw,64px)}
+ .g-cleaning-stage{inset:190px 0 140px}
+ .g-cleaning-caption{grid-column:1/-1;grid-row:1;justify-content:space-between;gap:20px}
+ .g-home-introduction{padding:64px 0}
+ .g-home-introduction>.container>p{font-size:21px}
+ .g-home-paths{grid-template-columns:1fr;gap:28px;margin-top:40px}
+}
+@media(prefers-reduced-motion:reduce){.g-cleaning{height:auto}.g-cleaning .g-drive-screen.hero{position:relative;top:auto}}
