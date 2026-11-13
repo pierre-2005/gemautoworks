@@ -88,7 +88,7 @@ async function start() {
     renderer.setSize(width,height,false);
     camera.aspect=width/height;
     const mobile=innerWidth<700;
-    camera.position.set(mobile?6.4:4.4,mobile?2.7:1.9,mobile?-7.1:-5);
+    camera.position.set(mobile?8.4:4.4,mobile?3.4:1.9,mobile?-9.3:-5);
     camera.lookAt(mobile?0:-.8,mobile?.55:.6,0);
     camera.updateProjectionMatrix();
     schedule();
