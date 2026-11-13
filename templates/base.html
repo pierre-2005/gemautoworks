@@ -1,46 +1,57 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-type="service" data-radius="soft" data-buttons="solid" data-motion>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#070a10">
-  <meta name="description" content="{{ site.seo_description }}">
-  <title>{% block title %}GEM Autoworks | Crafted for the Drive{% endblock %}</title>
-  <link rel="icon" href="/static/img/favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/site.css?v=4">
-  <link rel="stylesheet" href="/static/css/redesign.css?v=6">
-  <script defer src="/static/js/site.js?v=5"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14191c">
+<meta name="page-type" content="service">
+<meta name="site-kind" content="other">
+<meta name="description" content="{{ site.seo_description }}">
+<title>{% block title %}GEM Autoworks | Automotive Care, by Appointment{% endblock %}</title>
+<meta property="og:title" content="GEM Autoworks | Automotive Care, by Appointment">
+<meta property="og:description" content="{{ site.seo_description }}">
+<meta property="og:type" content="website">
+<meta property="og:image" content="{{ request.url.scheme }}://{{ request.url.netloc }}/static/img/editorial-drive.webp">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="canonical" href="{{ request.url.scheme }}://{{ request.url.netloc }}{{ request.url.path }}">
+<link rel="icon" href="/static/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/site.css?v=4">
+<link rel="stylesheet" href="/static/css/redesign.css?v=6">
+<link rel="stylesheet" href="/static/taste/motion/motion.css">
+<link rel="stylesheet" href="/static/css/atelier.css?v=1">
+<script src="/static/js/enter.js"></script>
+<script defer src="/static/js/site.js?v=7"></script>
+<script type="module" src="/static/taste/moments/moments.js"></script>
+<script type="module" src="/static/taste/motion/motion.js"></script>
 </head>
-<body>
+<body class="{% if request.url.path.startswith('/admin') %}admin-site{% else %}public-site{% endif %}">
+<!-- Service / original GEM blue / Schibsted Grotesk / photo hero / word-highlight moment. -->
+{% macro arrow() %}<svg class="g-arrow m-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" stroke-width="1.5"/></svg>{% endmacro %}
 <a class="skip-link" href="#main-content">Skip to content</a>
-<div class="top-line"></div>
 <header class="site-header" id="top">
-  <div class="container header-inner">
-    <a href="/" class="brand brand-logo-only" aria-label="GEM Autoworks home" title="GEM Autoworks"><img src="/static/img/gem-logo.png" alt="GEM Autoworks logo"></a>
-    <button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open navigation menu"><span></span><span></span><span></span></button>
-    <nav class="nav" id="main-nav" aria-label="Main menu">
-      <a href="/" {% if request.url.path=='/' %}aria-current="page"{% endif %}>Home</a>
-      <a href="/services" {% if request.url.path=='/services' %}aria-current="page"{% endif %}>Services</a>
-      <a href="/gallery" {% if request.url.path=='/gallery' %}aria-current="page"{% endif %}>Our Work</a>
-      <a href="/reviews" {% if request.url.path=='/reviews' %}aria-current="page"{% endif %}>Reviews</a>
-      <a href="/contact" {% if request.url.path=='/contact' %}aria-current="page"{% endif %}>Contact</a>
-      <a class="btn btn-primary nav-book" href="/book">Book now <span aria-hidden="true">↗</span></a>
-    </nav>
-  </div>
+<div class="container header-inner">
+<a href="/" class="brand brand-logo-only" aria-label="GEM Autoworks home"><img src="/static/img/gem-logo.png" alt="GEM Autoworks" width="126" height="68"></a>
+<nav class="nav" id="main-nav" aria-label="Main menu">
+{% for path,label in [('/','Home'),('/services','Appointments'),('/gallery','Gallery'),('/reviews','Reviews'),('/contact','Contact')] %}<a href="{{path}}" {% if request.url.path==path %}aria-current="page"{% endif %}>{{label}}</a>{% endfor %}
+<a class="btn btn-primary nav-book" href="/book">Book an appointment {{ arrow() }}</a>
+</nav>
+<button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open navigation menu"><span></span><span></span></button>
+</div>
 </header>
 <main id="main-content">{% block content %}{% endblock %}</main>
-<footer class="footer">
- <div class="container">
-   <div class="footer-top">
-     <div><a href="/" class="footer-logo"><img src="/static/img/gem-logo.png" alt=""><span>GEM <em>AUTOWORKS</em></span></a><p>{{ site.footer_caption }}</p></div>
-     <div><span class="eyebrow">EXPLORE</span><a href="/services">Services</a><a href="/gallery">Gallery</a><a href="/reviews">Reviews</a><a href="/book">Book Online</a></div>
-     <div><span class="eyebrow">GET IN TOUCH</span><a href="tel:{{ site.phone|replace(' ','')|replace('(','')|replace(')','')|replace('-','') }}">{{ site.phone }}</a><a href="mailto:{{ site.email }}">{{ site.email }}</a>{% if site.instagram %}<a href="{{ site.instagram }}" rel="noopener noreferrer" target="_blank">Instagram ↗</a>{% endif %}{% if site.facebook %}<a href="{{ site.facebook }}" rel="noopener noreferrer" target="_blank">Facebook ↗</a>{% else %}<span class="social-name">Facebook: GEM Autoworks</span>{% endif %}</div>
-   </div>
-   <div class="footer-bottom"><span>© {{ current_year }} {{ site.business_name }}. All rights reserved.</span><span><a href="/privacy">Privacy</a><a href="/terms">Terms</a>{% if admin_logged_in %}<a href="/admin">Dashboard</a>{% endif %}</span><a href="#top">Back to top ↑</a></div>
- </div>
-</footer>
+<footer class="g-footer"><div class="container">
+<div class="g-footer-grid">
+<div class="g-footer-brand"><a href="/" aria-label="GEM Autoworks home"><img src="/static/img/gem-logo.png" alt="GEM Autoworks" width="150" height="90"></a><p>{{site.footer_caption}}</p></div>
+<div><h2>Find your way</h2><a href="/services">Appointments</a><a href="/gallery">Gallery</a><a href="/reviews">Customer reviews</a><a href="/contact">Contact</a></div>
+<div><h2>Talk to the team</h2><a href="tel:{{site.phone|replace(' ','')|replace('(','')|replace(')','')|replace('-','')}}">{{site.phone}}</a><a href="mailto:{{site.email}}">{{site.email}}</a>{% if site.instagram %}<a href="{{site.instagram}}" target="_blank" rel="noopener noreferrer">Instagram {{arrow()}}</a>{% endif %}{% if site.facebook %}<a href="{{site.facebook}}" target="_blank" rel="noopener noreferrer">Facebook {{arrow()}}</a>{% endif %}</div>
+</div>
+<div class="g-footer-word" aria-hidden="true">GEM AUTOWORKS</div>
+<div class="g-footer-bottom"><span>© {{current_year}} {{site.business_name}}</span><div><a href="/privacy">Privacy</a><a href="/terms">Terms</a>{% if admin_logged_in %}<a href="/admin">Dashboard</a>{% endif %}</div><a href="#top">Back to top {{arrow()}}</a></div>
+<p class="g-credits">Photographs via <a href="https://unsplash.com/license" target="_blank" rel="noopener noreferrer">Unsplash</a>. 3D car: <a href="/static/licenses/3d-model.txt">Eric Chadwick / DGG · CC BY 4.0</a>.</p>
+</div></footer>
+{% block dialogs %}{% endblock %}
 </body>
 </html>

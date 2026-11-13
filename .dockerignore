@@ -2,6 +2,13 @@
 .env.*
 !.env.example
 .git
+.venv
+.test-tmp
+.preview-data
+.tools
+node_modules
+visual-artifacts
+.taste-skill
 __pycache__
 .pytest_cache
 data

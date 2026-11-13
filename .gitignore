@@ -1,4 +1,11 @@
 .env
+.venv/
+.test-tmp/
+.preview-data/
+.tools/
+node_modules/
+visual-artifacts/
+.taste-skill/
 .env.*
 !.env.example
 __pycache__/

@@ -1,0 +1,18 @@
+Car Concept / model and textures by Eric Chadwick, Darmstadt Graphics Group GmbH, 2024.
+Licensed under Creative Commons Attribution 4.0 International:
+https://creativecommons.org/licenses/by/4.0/
+
+Source and attribution:
+https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept
+https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CarConcept/glTF-Binary/CarConcept.glb
+
+Derived from the CC0 model by Unity Fan, as documented in the source README.
+Changes: geometry simplified and quantized; textures resized and converted to WebP;
+paint, glass, wheel and tire materials restyled; animated door transforms and camera added;
+license-plate and steering-emblem geometry hidden. The car is automotive inspiration,
+not a product offered by GEM Autoworks or evidence of customer work.
+
+Source asset also includes Khronos Group and 3D Commerce trademarks, 2015/2017.
+Those marks remain the property of their owners. No affiliation is implied.
+
+Rendering: Three.js 0.180.0, MIT license (see three.txt).

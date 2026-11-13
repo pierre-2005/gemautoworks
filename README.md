@@ -1,4 +1,10 @@
-# GEM Autoworks | Website V1
+# GEM Autoworks | Website V2
+
+The public site now uses a cinematic, scroll-controlled 3D concept supercar, opening doors, live paint previews, ivory editorial sections, and the original GEM logo and blue identity. Gallery images enlarge in a keyboard-accessible dialog. Booking includes a live summary, calendar retry states, duplicate-submit protection, and errors that retain entered details. Service FAQs, contact routes, moderated reviews, and all admin capabilities remain available.
+
+The model and textures are self-hosted under `static/models/supercar/`; the CC BY 4.0 attribution is under `static/licenses/`. They use separate same-origin textures so the existing Content Security Policy stays intact. Reduced motion holds the car still; unavailable WebGL and data-saving browsers receive the photographic fallback. There is no animation loop while the scene is idle or off-screen.
+
+Frontend assets are committed, so Docker deployment still requires Python only. For frontend changes, use Node 22+, `npm ci`, then `npm run build:car`. `npm run prepare:car` re-downloads and optimizes the credited upstream concept model. `npm run check:js` checks application JavaScript syntax. PRs now run the existing test and responsive-browser CI; image publication still runs only outside PRs.
 
 ## Current website design and admin management
 

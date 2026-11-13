@@ -48,6 +48,24 @@ def test_every_public_page_and_assets():
         assert client.get('/api/availability',params={'day':'2020-01-01','service_id':1}).json()['slots']==[]
 
 
+def test_supercar_resources_work_with_the_existing_content_security_policy():
+    # External textures must load without broadening img-src to blob: or script-src.
+    with TestClient(app) as client:
+        response = client.get('/static/models/supercar/car.gltf')
+        assert response.status_code == 200
+        assert response.headers.get('content-encoding') == 'gzip'
+        model = response.json()
+        for resource in model.get('images', []) + model.get('buffers', []):
+            uri = resource['uri']
+            assert not uri.startswith(('data:', 'blob:', 'http:', 'https:'))
+            assert '..' not in Path(uri).parts
+            assert client.get('/static/models/supercar/' + uri).status_code == 200
+        policy = client.get('/').headers['content-security-policy']
+        assert "script-src 'self'" in policy
+        assert "img-src 'self' data:" in policy
+        assert 'unsafe-eval' not in policy
+
+
 def test_bookings_conflicts_admin_and_reviews():
     with TestClient(app) as client:
         csrf=token(client.get('/book').text)

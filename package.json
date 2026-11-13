@@ -1,0 +1,10 @@
+{
+  "name":"gem-autoworks-frontend",
+  "private":true,
+  "scripts":{
+    "build:car":"esbuild static/js/car-source.js --bundle --format=esm --minify --legal-comments=linked --outfile=static/js/car-experience.js",
+    "prepare:car":"node scripts/prepare-car.mjs",
+    "check:js":"node --check static/js/site.js && node --check static/js/car-source.js"
+  },
+  "devDependencies":{"@gltf-transform/cli":"4.5.1","esbuild":"0.28.2","three":"0.180.0"}
+}
