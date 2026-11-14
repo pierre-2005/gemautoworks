@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}About GEM Autoworks: Pavly’s mobile detailing business in {{ site.service_area }}{% endblock %}
+{% block description %}GEM Autoworks is a mobile detailing business in {{ site.service_area }}, started by Pavly to combine his passion for cars with serving his community.{% endblock %}
+{% block body %}
+{% set owner = picture('/static/img/work/owner-senna') %}
+{% set rear = picture('/static/img/work/altima-after') %}
+<main id="top">
+  <section class="hero hero--split" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h">{{ site.about_title }}</h1>
+        <p class="hero__lead">{{ site.about_text }}</p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/book">Book a detail<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+          <a class="btn btn--secondary" href="/contact">Contact Pavly</a>
+        </div>
+      </div>
+      <div class="hero__media span-6 start-7">
+        <img src="{{ owner.src }}" srcset="{{ owner.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Pavly, owner of GEM Autoworks, beside a black McLaren Senna at a car museum" style="--ly-pos: 72% 40%" fetchpriority="high" width="1200" height="1600">
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section" id="story" aria-labelledby="story-h">
+    <div class="wrap grid grid--top">
+      <div class="span-5">
+        <div class="section-head">
+          <h2 id="story-h">What you can expect from GEM</h2>
+        </div>
+        <p class="t-lead">{{ site.about_text_2 }}</p>
+        <ul class="ticks">
+          <li>Mobile detailing{% if site.service_mode == 'both' %} at your home or work, or drop-off{% elif site.service_mode == 'shop' %} at our shop{% endif %} in {{ site.service_area }}</li>
+          <li>Three packages with prices set by the size of the car</li>
+          <li>{{ site.offer_text if site.offer_enabled == '1' else 'Booking online with real open times' }}</li>
+        </ul>
+        <p class="packages__more"><a class="link" href="/services">See the packages and prices</a></p>
+      </div>
+      <div class="frame frame--photo frame--fill span-6 start-7">
+        <img class="frame__img" src="{{ rear.src }}" srcset="{{ rear.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Nissan Altima driver seat and dash after a GEM interior detail" loading="lazy" width="1536" height="2048">
+      </div>
+    </div>
+  </section>
+</main>
+{% set close_title = 'Book a detail with Pavly' %}
+{% include 'partials/closing.html' %}
+{% endblock %}

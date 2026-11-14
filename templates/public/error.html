@@ -1,0 +1,9 @@
+{% extends 'app_base.html' %}
+{% block title %}{{ title }}: GEM Autoworks{% endblock %}
+{% block content %}
+<div class="app-narrow">
+  <h1 class="app-title">{{ title }}</h1>
+  <p class="app-lead">{{ detail if detail and detail != 'Not Found' else 'The page may have moved. Start again from the home page or book a detail.' }}</p>
+  <div class="btn-row"><a class="btn btn--primary" href="/book">Book a detail</a><a class="btn btn--secondary" href="/">Go to the home page</a></div>
+</div>
+{% endblock %}

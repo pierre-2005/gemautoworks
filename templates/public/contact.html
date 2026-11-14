@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Contact GEM Autoworks: call, text or message{% endblock %}
+{% block description %}Call or text {{ site.phone }}, email, or send GEM Autoworks a message about your car. Mobile detailing in {{ site.service_area }}.{% endblock %}
+{% block body %}
+<main id="top">
+  <section class="hero hero--split" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h">Contact GEM Autoworks</h1>
+        <p class="hero__lead">Ask for a quote, check a date, or tell us about a tough job. Pavly replies by email or text, usually the same day.</p>
+        <dl class="contact-list">
+          <div><dt>Call or text</dt><dd><a class="link" href="{{ tel(site.phone) }}">{{ site.phone }}</a></dd></div>
+          <div><dt>Email</dt><dd><a class="link" href="mailto:{{ site.email }}">{{ site.email }}</a></dd></div>
+          <div><dt>Instagram</dt><dd><a class="link" href="{{ site.instagram_url }}" rel="noopener">{{ site.instagram_handle }}</a></dd></div>
+          <div><dt>Where</dt><dd>{{ site.service_area }}{% if site.service_mode != 'mobile' and site.shop_address %}. Shop: {{ site.shop_address }}{% endif %}</dd></div>
+        </dl>
+      </div>
+      <div class="span-6 start-7 form-panel" id="message">
+        {% if sent %}
+        <div class="sent" role="status">
+          <h2 class="sent__title">Your message is in</h2>
+          <p>Pavly replies by email or text, usually the same day. Want a time now? <a class="link" href="/book">Book a detail</a>.</p>
+        </div>
+        {% else %}
+        <form class="form" action="/contact" method="post" novalidate>
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <div class="hp" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
+          {% if errors %}<p class="form__status form__status--bad" role="alert">{{ errors|length }} field{{ 's' if errors|length > 1 }} to fix before sending.</p>{% endif %}
+          <div class="split-fields">
+            <div class="field"><label for="f-name">Name</label>
+              <input id="f-name" name="name" type="text" autocomplete="name" required value="{{ form.name or '' }}" aria-describedby="f-name-err"{% if errors.name %} aria-invalid="true" autofocus{% endif %}>
+              <p class="field__error" id="f-name-err"{% if not errors.name %} hidden{% endif %}>{{ errors.name or 'Write your name so we know who to reply to.' }}</p></div>
+            <div class="field"><label for="f-phone">Phone, if you prefer a text</label>
+              <input id="f-phone" name="phone" type="tel" autocomplete="tel" value="{{ form.phone or '' }}" aria-describedby="f-phone-err"{% if errors.phone %} aria-invalid="true"{% endif %}>
+              <p class="field__error" id="f-phone-err"{% if not errors.phone %} hidden{% endif %}>{{ errors.phone or '' }}</p></div>
+          </div>
+          <div class="field"><label for="f-email">Email</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" inputmode="email" required value="{{ form.email or '' }}" aria-describedby="f-email-err"{% if errors.email %} aria-invalid="true"{% endif %}>
+            <p class="field__error" id="f-email-err"{% if not errors.email %} hidden{% endif %}>{{ errors.email or 'Write an email address with an @, like name@example.com.' }}</p></div>
+          <div class="field"><label for="f-message">Your car and your question</label>
+            <textarea id="f-message" name="message" rows="5" required aria-describedby="f-message-err"{% if errors.message %} aria-invalid="true"{% endif %}>{{ form.message or '' }}</textarea>
+            <p class="field__error" id="f-message-err"{% if not errors.message %} hidden{% endif %}>{{ errors.message or 'Write a few words about your car or your question.' }}</p></div>
+          <div class="btn-row"><button class="btn btn--primary" type="submit">Send the message</button></div>
+          <p class="t-small muted">We reply by email or text, usually the same day.</p>
+        </form>
+        {% endif %}
+      </div>
+    </div></div>
+  </section>
+
+  {% if posts %}
+  <section class="section" id="instagram" aria-labelledby="ig-h">
+    <div class="wrap">
+      <div class="section-head section-head--split">
+        <h2 id="ig-h">Latest posts on Instagram</h2>
+        <a class="link" href="{{ site.instagram_url }}" rel="noopener">Follow {{ site.instagram_handle }}</a>
+      </div>
+      <div class="ig-grid">
+        {% for p in posts[:5] %}{% set img = picture(p.image_path) %}
+        <a href="{{ p.url }}" rel="noopener" aria-label="Open the post on Instagram: {{ p.caption[:80] }}">
+          <img src="{{ img.src }}" srcset="{{ img.srcset }}" sizes="(min-width: 1024px) 240px, 50vw" alt="{{ p.alt }}" loading="lazy" width="480" height="600">
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+</main>
+{% set close_title = 'Book a detail online' %}
+{% include 'partials/closing.html' %}
+{% endblock %}

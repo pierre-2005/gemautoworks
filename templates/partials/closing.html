@@ -1,0 +1,15 @@
+<footer class="footer closing" id="contact" aria-labelledby="close-h">
+  <div class="wrap">
+    <div class="closing__cta close--type">
+      <div class="section-head">
+        <h2 id="close-h">{{ close_title|default('Book your next detail') }}</h2>
+        <p>{{ close_line|default('Pick a package and a real open time. ' ~ (site.offer_text ~ '.' if site.offer_enabled == '1' else '')) }}</p>
+      </div>
+      <a class="btn btn--primary btn--xl btn--wide" href="/book">Book a detail<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+    </div>
+{% include 'partials/footer_links.html' %}
+  </div>
+</footer>
+<nav class="actionbar" aria-label="Quick actions">
+  <a class="btn btn--primary" href="/book">Book a detail</a>
+</nav>

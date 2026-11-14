@@ -1,0 +1,32 @@
+{% extends 'app_base.html' %}
+{% block title %}{{ 'Privacy policy' if kind == 'privacy' else 'Terms of service' }}: GEM Autoworks{% endblock %}
+{% block content %}
+<article class="legal">
+{% if kind == 'privacy' %}
+  <h1 class="app-title">Privacy policy</h1>
+  <p class="app-lead">What GEM Autoworks LLC keeps when you use this site, and why.</p>
+  <h2 class="app-h2">What we collect</h2>
+  <p>When you book, sign up or send a message we keep your name, email, phone number, the cars you add, the addresses you give for mobile visits, and your booking history. We also keep the reviews and messages you send.</p>
+  <h2 class="app-h2">Why</h2>
+  <p>Only to schedule and carry out your details, confirm and remind you about visits, answer your messages and show the reviews you agreed to publish. We do not sell your information or use it for advertising.</p>
+  <h2 class="app-h2">Where it is stored</h2>
+  <p>On GEM Autoworks’ own server. Emails are sent through our email provider. The site sets one cookie to keep you signed in and to protect forms; it does not use tracking or advertising cookies.</p>
+  <h2 class="app-h2">Your choices</h2>
+  <p>You can edit your details, cars and addresses in your account at any time. To have your account and history deleted, email <a class="link" href="mailto:{{ site.email }}">{{ site.email }}</a>.</p>
+{% else %}
+  <h1 class="app-title">Terms of service</h1>
+  <p class="app-lead">The short version of how booking with GEM Autoworks LLC works.</p>
+  <h2 class="app-h2">Bookings</h2>
+  <p>{% if site.booking_requires_approval == '1' %}A booking is a request until we confirm it by email or text.{% else %}Bookings are confirmed by email when you book.{% endif %} Prices shown are estimates based on the package and vehicle size. {{ site.pricing_note }}</p>
+  <h2 class="app-h2">Changes and cancellations</h2>
+  <p>You can change or cancel from the link in your confirmation email up to {{ site.cancel_cutoff_hours }} hours before the visit. Later than that, call or text {{ site.phone }}.</p>
+  <h2 class="app-h2">Mobile visits</h2>
+  <p>For a visit at your address, make sure we can reach the car and that you are allowed to have it detailed where it is parked.</p>
+  <h2 class="app-h2">Cleaning plans</h2>
+  <p>Plans repeat until you pause or cancel them in your account. Each visit can be skipped or moved like any other booking.</p>
+  <h2 class="app-h2">Payment</h2>
+  <p>Nothing is charged on this site. We confirm the price with you before we start.</p>
+{% endif %}
+  <p class="t-small muted">Questions: <a class="link" href="mailto:{{ site.email }}">{{ site.email }}</a> or {{ site.phone }}.</p>
+</article>
+{% endblock %}

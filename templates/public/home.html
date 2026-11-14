@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block head %}
+<script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
+<link rel="modulepreload" href="/static/kit/moments/moments.js">
+<link rel="modulepreload" href="/static/kit/moments/lib.js">
+<link rel="modulepreload" href="/static/kit/moments/word-highlight/moment.js">
+<link rel="stylesheet" href="/static/kit/moments/word-highlight/moment.css">
+{% endblock %}
+{% block body %}
+<!-- type: service
+     deal: hero split, nav nav-centre, close close-type (dealt close-photo; re-dealt: every usable photograph is already used above),
+     footer footer-columns, rhythm surface-pairs, buttons block, mark: the client's logo
+     moments: word-highlight in #promise -->
+{% set kia = picture('/static/img/work/kia-k5-front') %}
+<main id="top">
+  <section class="hero hero--split" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h">{{ site.hero_title }}</h1>
+        <p class="hero__lead">{{ site.hero_lead }} From {{ money(services[0].from_cents if services else none) }} for a sedan.</p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/book">Book a detail<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+          <a class="btn btn--secondary" href="#packages">See the prices</a>
+        </div>
+        {% if site.offer_enabled == '1' %}<p class="hero__offer">{{ site.offer_text }}, taken off when you book.</p>{% endif %}
+      </div>
+      <div class="hero__media span-6 start-7">
+        <img src="{{ kia.src }}" srcset="{{ kia.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Kia K5 front cabin after a GEM interior detail: clean leather seats, dash and floor mats" style="--ly-pos: 50% 55%" fetchpriority="high" width="1536" height="2048">
+        {% if opening_text %}
+        <div class="ly-float">
+          <div class="ly-float__row"><span class="ly-live">Next opening</span><span>{{ opening_text }}</span></div>
+          <div class="ly-float__title">Interior Detail, about {{ ((services[1].prices.sedan.minutes if services|length > 1 else 150) / 60)|round(1)|string|replace('.0','') }} hours</div>
+        </div>
+        {% endif %}
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section" id="packages" aria-labelledby="packages-h">
+    {% set rear = picture('/static/img/work/kia-k5-rear') %}
+    <div class="wrap grid grid--top">
+      <div class="span-5">
+        <div class="section-head">
+          <h2 id="packages-h">Three packages, priced by size</h2>
+          <p>One price for sedans and coupes, one for SUVs, one for trucks.</p>
+        </div>
+        <ul class="rows">
+          {% for s in services %}
+          <li><span class="rows__name"><a class="rows__link" href="/services#{{ s.slug }}">{{ s.name }}</a><small>{{ s.summary }}</small></span><span class="rows__value">from {{ money(s.from_cents) }}</span></li>
+          {% endfor %}
+        </ul>
+        <p class="packages__more"><a class="link" href="/services">Compare what each package includes</a></p>
+      </div>
+      <div class="frame frame--photo frame--fill span-6 start-7">
+        <img class="frame__img" src="{{ rear.src }}" srcset="{{ rear.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Kia K5 rear seats and carpet after an interior detail" loading="lazy" width="1536" height="2048">
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="work" style="--hm: 2" aria-labelledby="work-h">
+    <div class="wrap">
+      <div class="section-head section-head--split">
+        <h2 id="work-h">Before and after, from real jobs. <span class="muted">Drag across each photo.</span></h2>
+        <a class="link" href="/work">See all the work</a>
+      </div>
+      <div class="grid">
+        {% for g in pairs %}
+        {% set b = picture(g.before_path) %}{% set a = picture(g.after_path) %}
+        <div class="compare span-4" data-compare>
+          <img class="compare__img" src="{{ a.src }}" srcset="{{ a.srcset }}" sizes="(min-width: 1024px) 560px, 100vw" alt="{{ g.alt }}" loading="lazy" width="1440" height="1440">
+          <div class="compare__before"><img class="compare__img" src="{{ b.src }}" srcset="{{ b.srcset }}" sizes="(min-width: 1024px) 560px, 100vw" alt="{{ g.before_alt }}" loading="lazy" width="1440" height="1440"></div>
+          <span class="compare__handle" aria-hidden="true"></span>
+          <label class="compare__tag compare__tag--before" for="cmp-{{ g.id }}">Before</label>
+          <label class="compare__tag compare__tag--after" for="cmp-{{ g.id }}">After</label>
+          <input class="compare__range" id="cmp-{{ g.id }}" type="range" min="0" max="100" value="50" aria-label="{{ g.title }}: slide to compare before and after">
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="section ground-surface" id="promise" data-moment="word-highlight" aria-label="How GEM works">
+    <div class="wrap">
+      <p class="mo-wh__text promise__text">We come to you anywhere in {{ site.service_area }}, take care of the inside and the outside, and leave your car <strong>looking brand new</strong>. The price is confirmed before we start.</p>
+    </div>
+  </section>
+
+  <section class="section ground-surface" id="plans" aria-labelledby="plans-h">
+    <div class="wrap grid grid--top">
+      <div class="span-5">
+        <div class="section-head">
+          <h2 id="plans-h">{{ site.plans_title }}</h2>
+          <p>{{ site.plans_text }}</p>
+        </div>
+        <ul class="ticks">
+          <li>Every car in one garage, with its size and notes</li>
+          <li>The weekday and time that suit you</li>
+          <li>Skip a visit or pause the plan from your account</li>
+        </ul>
+        <p class="packages__more"><a class="link" href="{{ '/account#plans' if customer else '/account/signup?next=/account' }}">{{ 'Set up a plan' if customer else 'Create your garage' }}</a></p>
+      </div>
+      <div class="span-6 start-7 plan-demo" role="img" aria-label="A cleaning plan in the GEM garage: an SUV on the GEM Detail every four weeks, with the next three Saturday visits listed">
+        <div class="plan-demo__card">
+          <div class="plan-demo__head"><span class="plan-demo__car">Family SUV</span><span class="pill pill--ok">Active</span></div>
+          <p class="plan-demo__meta">GEM Detail · SUV or crossover · every 4 weeks · Saturdays around 9 am</p>
+          <ol class="plan-demo__visits">
+            {% for i in range(3) %}<li><span>Visit {{ i + 1 }}</span><span>Saturday, 9:00 am</span><span class="muted">{{ 'Reminder the day before' if i == 0 else 'Held for you' }}</span></li>{% endfor %}
+          </ol>
+          <div class="plan-demo__actions"><span class="btn btn--secondary" aria-hidden="true">Skip next visit</span><span class="btn btn--secondary" aria-hidden="true">Pause plan</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="about" aria-labelledby="about-h">
+    {% set owner = picture('/static/img/work/owner-senna') %}
+    <div class="wrap grid grid--top">
+      <div class="span-5">
+        <div class="section-head">
+          <h2 id="about-h">{{ site.about_title }}</h2>
+        </div>
+        <p class="t-lead">{{ site.about_text }}</p>
+        <p class="about__more">{{ site.about_text_2 }}</p>
+        <p class="packages__more"><a class="link" href="/about">Read Pavly’s story</a></p>
+      </div>
+      <div class="frame frame--photo frame--fill span-6 start-7">
+        <img class="frame__img" src="{{ owner.src }}" srcset="{{ owner.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Pavly, owner of GEM Autoworks, standing beside a black McLaren Senna at a car museum" style="object-position: 70% 40%" loading="lazy" width="1200" height="1600">
+      </div>
+    </div>
+  </section>
+
+</main>
+
+{% set close_line = 'From ' ~ money(services[0].from_cents if services else none) ~ (', with ' ~ site.offer_text|lower if site.offer_enabled == '1' else '') ~ '.' %}
+{% include 'partials/closing.html' %}
+{% endblock %}

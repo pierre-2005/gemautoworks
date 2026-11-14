@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Detailing packages and prices: GEM Autoworks, {{ site.service_area }}{% endblock %}
+{% block description %}Exterior, Interior and GEM Detail packages from {{ money(services[0].from_cents if services else none) }}, priced by the size of your car. Mobile detailing in {{ site.service_area }}.{% endblock %}
+{% block body %}
+{% set hero = picture('/static/img/work/f150-after') %}
+{% set rear = picture('/static/img/work/kia-k5-rear') %}
+{% set cons = picture('/static/img/work/altima-console-after') %}
+<main id="top">
+  <section class="hero hero--split" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h">Detailing packages and prices</h1>
+        <p class="hero__lead">Three packages, each priced for sedans, SUVs and trucks. {{ site.pricing_note }}</p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/book">Book a detail<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+          <a class="btn btn--secondary" href="#prices">Compare the packages</a>
+        </div>
+        {% if site.offer_enabled == '1' %}<p class="hero__offer">{{ site.offer_text }}, taken off when you book.</p>{% endif %}
+      </div>
+      <div class="hero__media span-6 start-7">
+        <img src="{{ hero.src }}" srcset="{{ hero.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Ford F-150 cab after a full interior detail: washed floor liner and clean cloth seats" style="--ly-pos: 50% 60%" fetchpriority="high" width="1536" height="2048">
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section" id="prices" style="--h: 2; --hm: 2" aria-labelledby="prices-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="prices-h">Prices by vehicle size</h2>
+        <p>Pick the package, then the size that matches your car. The estimate in your booking uses these prices.</p>
+      </div>
+      <div class="table-scroll">
+        <table class="price-table">
+          <thead><tr><th scope="col">Package</th>{% for key, label in SIZES %}<th scope="col">{{ label }}</th>{% endfor %}</tr></thead>
+          <tbody>
+            {% for s in services %}<tr><th scope="row"><a class="rows__link" href="#{{ s.slug }}">{{ s.name }}</a></th>{% for key, label in SIZES %}<td>{{ money(s.prices[key].cents) if key in s.prices else '–' }}</td>{% endfor %}</tr>{% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="grid packages-grid">
+        {% for s in services %}
+        <article class="package span-4" id="{{ s.slug }}">
+          <h3>{{ s.name }}</h3>
+          <p>{{ s.summary }}</p>
+          <ul class="includes includes--one">{% for item in s.includes %}<li>{{ item }}</li>{% endfor %}</ul>
+          <p class="package__book"><a class="link" href="/book?service={{ s.id }}">Book the {{ s.name }}</a></p>
+        </article>
+        {% endfor %}
+      </div>
+      {% if addons %}
+      <div class="addons">
+        <h3>Add-ons</h3>
+        <ul class="rows">{% for a in addons %}<li><span class="rows__name">{{ a.name }}{% if a.summary %}<small>{{ a.summary }}</small>{% endif %}</span><span class="rows__value">{{ money(a.price_cents) }}</span></li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="section ground-surface" id="plans" aria-labelledby="plans-h">
+    <div class="wrap grid grid--top">
+      <div class="span-5">
+        <div class="section-head">
+          <h2 id="plans-h">{{ site.plans_title }}</h2>
+          <p>{{ site.plans_text }}</p>
+        </div>
+        <ol class="ticks ticks--numbered">
+          <li>Create your garage and add each car with its size</li>
+          <li>Choose the package, how often and the usual day and time</li>
+          <li>Pavly approves the plan and your next visits appear in your account</li>
+        </ol>
+        <p class="packages__more"><a class="link" href="{{ '/account#plans' if customer else '/account/signup?next=/account' }}">{{ 'Set up a plan' if customer else 'Create your garage' }}</a></p>
+      </div>
+      <div class="frame frame--photo frame--fill span-6 start-7">
+        <img class="frame__img" src="{{ rear.src }}" srcset="{{ rear.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Kia K5 rear seats and carpet after an interior detail" loading="lazy" width="1536" height="2048">
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="questions" aria-labelledby="faq-h">
+    <div class="wrap grid grid--top">
+      <div class="span-5">
+        <div class="section-head">
+          <h2 id="faq-h">Questions before you book</h2>
+          <p>Anything else? Call or text <a class="link" href="{{ tel(site.phone) }}">{{ site.phone }}</a>.</p>
+        </div>
+        <div class="frame frame--photo faq__photo">
+          <img class="frame__img" src="{{ cons.src }}" srcset="{{ cons.srcset }}" sizes="(min-width: 1024px) 520px, 100vw" alt="Nissan Altima center console after cleaning: clear cup holders and shifter trim" loading="lazy" width="2048" height="1536">
+        </div>
+      </div>
+      <div class="faq span-6 start-7">
+        <div class="faq__item"><h3>Where do you work?</h3><p>{% if site.service_mode == 'shop' %}At our shop. Drop the car off at the time you book.{% else %}We come to you anywhere in {{ site.service_area }}{% if site.service_mode == 'both' %}, or you can drop the car off with us{% endif %}.{% endif %}{% if site.service_towns %} Towns we cover: {{ site.service_towns }}.{% endif %}</p></div>
+        <div class="faq__item"><h3>How is the price set?</h3><p>By the package and the size of the car. {{ site.pricing_note }}</p></div>
+        {% if site.offer_enabled == '1' %}<div class="faq__item"><h3>Is there a first-time discount?</h3><p>Yes. {{ site.offer_text }}. It is taken off your estimate when you book.</p></div>{% endif %}
+        <div class="faq__item"><h3>How long does a detail take?</h3><p>The booking page shows the time for your package and car size before you pick a slot.</p></div>
+        <div class="faq__item"><h3>Can I change or cancel?</h3><p>Yes, from the link in your confirmation email, up to {{ site.cancel_cutoff_hours }} hours before the visit.</p></div>
+        <div class="faq__item"><h3>Do I pay online?</h3><p>No. Nothing is charged on this site. We confirm the price with you before we start.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+{% include 'partials/closing.html' %}
+{% endblock %}

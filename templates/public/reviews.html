@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Customer reviews: GEM Autoworks mobile detailing{% endblock %}
+{% block description %}Read reviews from GEM Autoworks customers in {{ site.service_area }}, or leave one after your detail.{% endblock %}
+{% block body %}
+<main id="top">
+  <section class="hero hero--split" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h">Reviews from GEM customers</h1>
+        {% if reviews %}
+        <p class="hero__lead">{{ reviews|length }} review{{ 's' if reviews|length != 1 }} from customers in {{ site.service_area }}. Each one is read by Pavly before it goes up.</p>
+        {% else %}
+        <p class="hero__lead">GEM Autoworks is new, so the first reviews are still to come. Had a detail with us? Yours can be the first.</p>
+        {% endif %}
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/book">Book a detail<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+          {% if reviews %}<a class="btn btn--secondary" href="#write">Write a review</a>{% endif %}
+        </div>
+      </div>
+      <div class="span-6 start-7 form-panel" id="write">
+        {% if sent %}
+        <div class="sent" role="status">
+          <h2 class="sent__title">Thanks for your review</h2>
+          <p>It shows on this page once Pavly has read it.</p>
+        </div>
+        {% else %}
+        <form class="form" action="/reviews" method="post" novalidate>
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <div class="hp" aria-hidden="true"><label for="r-website">Website</label><input id="r-website" name="website" tabindex="-1" autocomplete="off"></div>
+          {% if errors %}<p class="form__status form__status--bad" role="alert">{{ errors|length }} field{{ 's' if errors|length > 1 }} to fix before sending.</p>{% endif %}
+          <fieldset class="field">
+            <legend class="field__legend">Your rating</legend>
+            <div class="rating">
+              {% for n in [5,4,3,2,1] %}<label class="rating__opt"><input type="radio" name="rating" value="{{ n }}"{% if form.rating == n|string %} checked{% endif %}><span>{{ n }} star{{ 's' if n > 1 }}</span></label>{% endfor %}
+            </div>
+            <p class="field__error"{% if not errors.rating %} hidden{% endif %}>{{ errors.rating or '' }}</p>
+          </fieldset>
+          <div class="split-fields">
+            <div class="field"><label for="r-name">Name to show</label>
+              <input id="r-name" name="name" type="text" autocomplete="given-name" value="{{ form.name or '' }}"{% if errors.name %} aria-invalid="true"{% endif %} aria-describedby="r-name-err">
+              <p class="field__error" id="r-name-err"{% if not errors.name %} hidden{% endif %}>{{ errors.name or '' }}</p></div>
+            <div class="field"><label for="r-vehicle">Your car, optional</label>
+              <input id="r-vehicle" name="vehicle" type="text" value="{{ form.vehicle or '' }}"></div>
+          </div>
+          <div class="field"><label for="r-message">Your review</label>
+            <textarea id="r-message" name="message" rows="4"{% if errors.message %} aria-invalid="true"{% endif %} aria-describedby="r-message-err">{{ form.message or '' }}</textarea>
+            <p class="field__error" id="r-message-err"{% if not errors.message %} hidden{% endif %}>{{ errors.message or '' }}</p></div>
+          <div class="btn-row"><button class="btn btn--secondary" type="submit">Send the review</button></div>
+          <p class="t-small muted">Reviews go up after Pavly reads them.</p>
+        </form>
+        {% endif %}
+      </div>
+    </div></div>
+  </section>
+
+  {% if reviews %}
+  <section class="section" id="list" style="--h: {{ 1 if reviews|length <= 4 else 2 }}; --hm: {{ 1 if reviews|length <= 2 else 2 }}" aria-labelledby="list-h">
+    <div class="wrap">
+      <div class="section-head"><h2 id="list-h">What customers said</h2></div>
+      <div class="reviews-list">
+        {% for r in reviews[:8] %}
+        <figure class="review">
+          <div class="stars" aria-label="{{ r.rating }} out of 5 stars">{{ '★' * r.rating }}<span class="stars__off">{{ '★' * (5 - r.rating) }}</span></div>
+          <blockquote>{{ r.message }}</blockquote>
+          <figcaption class="t-small muted">{{ r.name }}{% if r.vehicle %}, {{ r.vehicle }}{% endif %}</figcaption>
+        </figure>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+</main>
+{% include 'partials/closing.html' %}
+{% endblock %}

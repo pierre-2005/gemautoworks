@@ -1,46 +1,51 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-type="service" data-radius="soft" data-buttons="block" data-motion{% block html_attrs %}{% endblock %}>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#070a10">
-  <meta name="description" content="{{ site.seo_description }}">
-  <title>{% block title %}GEM Autoworks | Crafted for the Drive{% endblock %}</title>
-  <link rel="icon" href="/static/img/favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/css/site.css?v=4">
-  <link rel="stylesheet" href="/static/css/redesign.css?v=6">
-  <script defer src="/static/js/site.js?v=5"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{% block title %}{{ site.business_name }}: mobile car detailing in {{ site.service_area }}{% endblock %}</title>
+<meta name="description" content="{% block description %}{{ site.seo_description }}{% endblock %}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ self.title() }}">
+<meta property="og:description" content="{{ self.description() }}">
+<meta property="og:image" content="/static/img/share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/static/img/gem-mark-32.png" type="image/png">
+<link rel="apple-touch-icon" href="/static/img/gem-mark-180.png">
+<meta name="theme-color" content="#eef1f4">
+<meta name="site-kind" content="other">
+<meta name="page-type" content="service">
+<link rel="preload" href="/static/fonts/red-hat-display-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/static/fonts/red-hat-text-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/static/css/fonts.css">
+<link rel="stylesheet" href="/static/kit/system.css">
+<link rel="stylesheet" href="/static/kit/ui/cards.css">
+<link rel="stylesheet" href="/static/kit/motion/motion.css">
+<link rel="stylesheet" href="/static/kit/layout/layout.css">
+<style>
+:root {
+  --p-bg: #eef1f4; --p-surface: #e2e7ec; --p-ink: #0b0f14; --p-muted: #4b5563;
+  --p-accent: #0b5cad; --p-accent-ink: #eef1f4; --p-action: #0b5cad; --p-action-ink: #eef1f4;
+  --p-inv-bg: #0b0f14; --p-inv-surface: #171b21; --p-inv-ink: #eef1f4; --p-inv-muted: #8e9196;
+  --p-inv-accent: #eef1f4; --p-inv-accent-ink: #0b0f14; --p-inv-action: #eef1f4; --p-inv-action-ink: #0b0f14;
+  --font-display: "Red Hat Display", system-ui, sans-serif;
+  --font-text: "Red Hat Text", system-ui, sans-serif;
+  --display-weight: 400;
+  --display-tracking: -0.025em;
+  --display-tracking-xl: -0.035em;
+}
+</style>
+<link rel="stylesheet" href="/static/css/site.css">
+{% block head %}{% endblock %}
+<script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700)</script>
 </head>
-<body>
-<a class="skip-link" href="#main-content">Skip to content</a>
-<div class="top-line"></div>
-<header class="site-header" id="top">
-  <div class="container header-inner">
-    <a href="/" class="brand brand-logo-only" aria-label="GEM Autoworks home" title="GEM Autoworks"><img src="/static/img/gem-logo.png" alt="GEM Autoworks logo"></a>
-    <button class="menu-toggle" type="button" aria-controls="main-nav" aria-expanded="false" aria-label="Open navigation menu"><span></span><span></span><span></span></button>
-    <nav class="nav" id="main-nav" aria-label="Main menu">
-      <a href="/" {% if request.url.path=='/' %}aria-current="page"{% endif %}>Home</a>
-      <a href="/services" {% if request.url.path=='/services' %}aria-current="page"{% endif %}>Services</a>
-      <a href="/gallery" {% if request.url.path=='/gallery' %}aria-current="page"{% endif %}>Our Work</a>
-      <a href="/reviews" {% if request.url.path=='/reviews' %}aria-current="page"{% endif %}>Reviews</a>
-      <a href="/contact" {% if request.url.path=='/contact' %}aria-current="page"{% endif %}>Contact</a>
-      <a class="btn btn-primary nav-book" href="/book">Book now <span aria-hidden="true">↗</span></a>
-    </nav>
-  </div>
-</header>
-<main id="main-content">{% block content %}{% endblock %}</main>
-<footer class="footer">
- <div class="container">
-   <div class="footer-top">
-     <div><a href="/" class="footer-logo"><img src="/static/img/gem-logo.png" alt=""><span>GEM <em>AUTOWORKS</em></span></a><p>{{ site.footer_caption }}</p></div>
-     <div><span class="eyebrow">EXPLORE</span><a href="/services">Services</a><a href="/gallery">Gallery</a><a href="/reviews">Reviews</a><a href="/book">Book Online</a></div>
-     <div><span class="eyebrow">GET IN TOUCH</span><a href="tel:{{ site.phone|replace(' ','')|replace('(','')|replace(')','')|replace('-','') }}">{{ site.phone }}</a><a href="mailto:{{ site.email }}">{{ site.email }}</a>{% if site.instagram %}<a href="{{ site.instagram }}" rel="noopener noreferrer" target="_blank">Instagram ↗</a>{% endif %}{% if site.facebook %}<a href="{{ site.facebook }}" rel="noopener noreferrer" target="_blank">Facebook ↗</a>{% else %}<span class="social-name">Facebook: GEM Autoworks</span>{% endif %}</div>
-   </div>
-   <div class="footer-bottom"><span>© {{ current_year }} {{ site.business_name }}. All rights reserved.</span><span><a href="/privacy">Privacy</a><a href="/terms">Terms</a>{% if admin_logged_in %}<a href="/admin">Dashboard</a>{% endif %}</span><a href="#top">Back to top ↑</a></div>
- </div>
-</footer>
+<body class="{% block body_class %}{% endblock %}">
+{% include 'partials/nav.html' %}
+{% block body %}{% endblock %}
+<script type="module" src="/static/kit/system.js"></script>
+<script type="module" src="/static/kit/motion/motion.js"></script>
+<script type="module" src="/static/kit/layout/layout.js"></script>
+<script type="module" src="/static/js/site.js"></script>
+{% block scripts %}{% endblock %}
 </body>
 </html>
