@@ -1,0 +1,16 @@
+<article class="job job--{{ a.status }}" data-time="{{ a.time_text }}" style="--min: {{ a.minutes }}">
+  <div>
+    <p class="job__title"><a href="/admin/appointments/{{ a.id }}">{{ a.service_name }} · {{ a.name }}</a></p>
+    <p class="job__meta">{{ a.vehicle_text or a.size_text }} · {{ a.size_text }} · until {{ a.end_text }}</p>
+    <p class="job__meta">{{ a.address if a.location_type == 'mobile' else 'Drop-off at the shop' }}{% if a.notes %} · “{{ a.notes }}”{% endif %}</p>
+    <div class="job__links">
+      {% if a.phone %}<a class="btn btn--secondary btn--small" href="{{ tel(a.phone) }}">Call</a><a class="btn btn--secondary btn--small" href="sms:{{ tel(a.phone)[4:] }}">Text</a>{% endif %}
+      {% if a.location_type == 'mobile' and a.address %}<a class="btn btn--secondary btn--small" href="https://www.google.com/maps/dir/?api=1&destination={{ a.address|urlencode }}" rel="noopener" target="_blank">Directions</a>{% endif %}
+    </div>
+  </div>
+  <div style="text-align:right">
+    {% set tone = {'confirmed':'ok','completed':'ok','pending':'wait','needs_time':'wait','cancelled':'bad','no_show':'bad'}[a.status] %}
+    <span class="pill pill--{{ tone }}">{{ a.status_text }}</span>
+    <p class="job__meta tabular" style="margin-top:8px">{{ a.total_text }}</p>
+  </div>
+</article>

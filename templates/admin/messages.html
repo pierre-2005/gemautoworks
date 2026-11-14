@@ -1,0 +1,14 @@
+{% extends 'admin/base.html' %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Messages</h1><p>From the contact form. They are also emailed to you.</p></div></div>
+{% if rows %}{% for m in rows %}
+<section class="panel-box" style="margin-bottom: var(--s-3)"><div class="row-between">
+  <div><h2 class="app-h3">{{ m.name }} {% if m.status == 'new' %}<span class="pill pill--info">New</span>{% endif %}</h2>
+    <p class="job__meta"><a class="link" href="mailto:{{ m.email }}">{{ m.email }}</a>{% if m.phone %} · <a class="link" href="{{ tel(m.phone) }}">{{ m.phone }}</a>{% endif %} · {{ m.created_at[:16]|replace('T',' ') }} UTC</p>
+    <p class="msg-body">{{ m.body }}</p></div>
+  <div class="actions">{% if m.status == 'new' %}<form method="post" action="/admin/messages/{{ m.id }}/read"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small" type="submit">Mark read</button></form>{% endif %}
+    <form method="post" action="/admin/messages/{{ m.id }}/delete" data-confirm="Delete this message?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small btn--danger" type="submit">Delete</button></form></div>
+</div></section>
+{% endfor %}{% else %}<p class="empty">No messages yet.</p>{% endif %}
+{% endblock %}

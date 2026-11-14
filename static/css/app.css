@@ -118,3 +118,89 @@ details.edit[open] > summary { margin-bottom: var(--s-4); }
   transition: opacity 300ms ease, transform 300ms var(--ease-out); }
 @starting-style { .toast { opacity: 0; transform: translate(-50%, 8px); } }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+
+/* ------------------------------------------------ booking: the work-order ticket (signature move)
+   Drawn on the logo's own dark ground, with a perforated edge between the job and the money. */
+.book-head { max-width: 760px; margin-bottom: var(--s-6); }
+.ticket { background: var(--p-inv-bg); color: var(--p-inv-ink); border-radius: var(--r-lg); padding: var(--s-6); position: relative;
+  box-shadow: 0 1px 2px rgb(11 15 20 / 0.08), 0 24px 48px -24px rgb(11 15 20 / 0.45); }
+.ticket__head { display: flex; align-items: center; gap: var(--s-4); padding-bottom: var(--s-5); border-bottom: 1px solid rgb(255 255 255 / 0.12); }
+.ticket__head img { border-radius: 10px; }
+.ticket__title { margin: 0; font: var(--display-weight) 24px/1.2 var(--font-display); letter-spacing: -0.015em; }
+.ticket__rows { margin: 0; padding: var(--s-4) 0; }
+.ticket__rows div { display: flex; justify-content: space-between; gap: var(--s-4); padding: 8px 0; font-size: 15px; }
+.ticket__rows dt { color: var(--p-inv-muted); flex: none; }
+.ticket__rows dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.ticket__money { position: relative; padding-top: var(--s-5); border-top: 2px dashed rgb(255 255 255 / 0.18); }
+.ticket__money::before, .ticket__money::after { content: ""; position: absolute; top: -12px; width: 22px; height: 22px; border-radius: 50%; background: var(--p-bg); }
+.ticket__money::before { left: calc(-1 * var(--s-6) - 11px); }
+.ticket__money::after { right: calc(-1 * var(--s-6) - 11px); }
+.ticket__line { display: flex; justify-content: space-between; font-size: 15px; padding: 4px 0; font-variant-numeric: tabular-nums; }
+.ticket__line--offer { color: var(--gem-ice); }
+.ticket__total { display: flex; justify-content: space-between; align-items: baseline; margin-top: var(--s-3); font: var(--display-weight) 30px/1.1 var(--font-display); font-variant-numeric: tabular-nums; }
+.ticket__total span:first-child { font: 500 15px var(--font-text); color: var(--p-inv-muted); }
+.ticket__note { margin: var(--s-4) 0 var(--s-5); font-size: 13px; line-height: 1.5; color: var(--p-inv-muted); }
+.ticket .btn--primary { --p-action: var(--p-inv-action); --p-action-ink: var(--p-inv-action-ink); background: #fff; color: var(--p-ink); border-color: #fff; }
+.btn--block { width: 100%; justify-content: center; }
+.ticket__after { margin: var(--s-3) 0 0; font-size: 13px; color: var(--p-inv-muted); text-align: center; }
+.ticket [data-t-when], .ticket [data-t-car], .ticket [data-t-where] { transition: opacity 150ms ease; }
+.addon-list { margin-top: var(--s-5); display: grid; gap: var(--s-3); }
+.save-car { margin-top: var(--s-4); }
+.where-fixed { font-size: 17px; margin: 0 0 var(--s-4); }
+.where-mobile { margin-top: var(--s-4); }
+.times-wrap { margin-top: var(--s-5); }
+.error-list { margin: var(--s-2) 0 0; padding-left: 20px; }
+.error-list a { color: inherit; }
+.inline-alert { margin-top: var(--s-4); }
+@media (max-width: 1023px) { .ticket { margin-top: var(--s-5); } }
+
+/* ------------------------------------------------ manage page */
+.manage-status { display: flex; align-items: center; gap: var(--s-3); margin-bottom: var(--s-4); }
+.manage-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: var(--s-7); align-items: start; }
+@media (max-width: 1023px) { .manage-grid { grid-template-columns: 1fr; } }
+.legal { max-width: 720px; }
+.legal .app-h2 { margin-top: var(--s-7); }
+.legal p { font-size: 17px; line-height: 1.65; }
+
+/* ------------------------------------------------ sign in / sign up */
+.auth { display: grid; grid-template-columns: minmax(0, 480px) minmax(0, 1fr); gap: var(--s-9); align-items: start; }
+.auth__art { border-radius: var(--r-lg); overflow: hidden; aspect-ratio: 4 / 3; background: var(--p-surface); }
+.auth__art img { width: 100%; height: 100%; object-fit: cover; }
+.auth__switch { margin-top: var(--s-5); font-size: 15px; color: var(--p-muted); }
+@media (max-width: 1023px) { .auth { grid-template-columns: 1fr; } .auth__art { display: none; } }
+.pw { position: relative; }
+.pw input { padding-right: 72px; }
+.pw__toggle { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); height: 36px; padding: 0 12px; border: 0; border-radius: var(--r-sm); background: transparent; font: 500 14px var(--font-text); color: var(--p-action); cursor: pointer; }
+.pw__toggle:focus-visible { outline: 2px solid var(--p-action); }
+
+/* ------------------------------------------------ the garage: each car a bay, its size on a plate (signature move) */
+.account-head { margin-bottom: var(--s-5); }
+.account-head .app-lead { margin-bottom: 0; font-variant-numeric: tabular-nums; }
+.acc-section { padding: var(--s-7) 0; scroll-margin-top: calc(var(--nav) + var(--s-4)); }
+.acc-section + .acc-section { border-top: 1px solid var(--line); }
+.bays { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--s-4); }
+.bay { position: relative; border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-5); background: var(--p-bg);
+  background-image: linear-gradient(90deg, transparent calc(100% - 3px), color-mix(in oklab, var(--p-ink) 8%, transparent) 0); }
+.bay__plate { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 6px; background: var(--p-inv-bg); color: var(--p-inv-ink); font: 500 12px/1 var(--font-text); letter-spacing: 0.02em; margin-bottom: var(--s-4); }
+.bay__name { font: var(--display-weight) 24px/1.2 var(--font-display); letter-spacing: -0.015em; margin: 0 0 4px; }
+.bay__meta { margin: 0 0 var(--s-2); color: var(--p-muted); font-size: 15px; }
+.bay .actions { margin-top: var(--s-4); align-items: flex-start; }
+.bay details.edit { flex-basis: 100%; }
+.bay--add { border-style: dashed; background-image: none; display: flex; align-items: center; }
+.bay--add details { width: 100%; }
+.remove-form { margin-top: var(--s-4); }
+.plan { margin-bottom: var(--s-4); }
+.plan-intro { margin: 0 0 var(--s-5); max-width: 62ch; }
+details.panel-box > summary { font-size: 16px; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.step .field, .stack .field, .panel-box .field { margin-bottom: 0; }
+.step .field + .field, .step .split-3 + .field, .step .field + .field__legend, .step .field + p.field__legend, .step .field + .choices,
+.step .split-2 + .field, .step .split-3 + .split-3 { margin-top: var(--s-4); }
+.step .split-2, .step .split-3 { margin-bottom: 0; }
+.step legend.step__head { margin-bottom: var(--s-5); width: 100%; float: left; }
+.step legend.step__head + * { clear: both; }
+.step > .field__legend, .new-car > .field__legend { margin-top: var(--s-5); display: block; }
+.app-footer a.link::after, .app-footer a.link svg { display: none; }
+.split-2 > .field, .split-3 > .field, .form-grid > .field { margin-top: 0 !important; }
+.step > .split-2 + .field, .step > .split-3 + .field, .new-car > .split-3 + .field__error + .field, .new-car > .split-3 + .field { margin-top: var(--s-4); }
+.new-car > .field + .field__legend { margin-top: var(--s-5); }

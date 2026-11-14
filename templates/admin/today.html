@@ -1,0 +1,37 @@
+{% extends 'admin/base.html' %}
+{% block title %}Today{% endblock %}
+{% block content %}
+<div class="adm-head">
+  <div><h1>{{ now.strftime('%A, %B ') ~ now.day }}</h1><p>{{ today_list|length }} job{{ 's' if today_list|length != 1 }} today · next open time {{ opening.strftime('%a %b %-d, ') ~ nice_time(opening.time()) if opening else 'none in the booking window' }}</p></div>
+  <div class="actions"><a class="btn btn--primary" href="/admin/appointments/new">Add a booking</a></div>
+</div>
+{% if not smtp %}<p class="notice notice--bad">Email is not set up yet, so customers get no confirmations. Add the SMTP settings in Portainer (see README). Messages wait in System → Email until then.</p>{% endif %}
+<div class="kpis">
+  <div class="kpi{% if counts.pending %} kpi--alert{% endif %}"><b>{{ counts.pending }}</b><span>Requests to confirm</span></div>
+  <div class="kpi{% if counts.needs_time %} kpi--alert{% endif %}"><b>{{ counts.needs_time }}</b><span>Plan visits needing a time</span></div>
+  <div class="kpi"><b>{{ week|length }}</b><span>Jobs in the next 7 days</span></div>
+  <div class="kpi"><b>{{ money(month_total) }}</b><span>Completed this month</span></div>
+</div>
+
+{% if attention %}
+<section class="adm-section"><h2>Needs you</h2>
+  <div class="table-wrap"><table class="table"><thead><tr><th>When</th><th>Customer</th><th>Package</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for a in attention %}<tr><td>{{ a.start.strftime('%a %b %-d') }}, {{ a.time_text }}</td><td>{{ a.name }}</td><td>{{ a.service_name }}, {{ a.size_text }}</td><td><span class="pill pill--wait">{{ a.status_text }}</span></td><td><a class="link" href="/admin/appointments/{{ a.id }}">Open</a></td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endif %}
+
+<section class="adm-section"><h2>Today</h2>
+  {% if today_list %}<div class="dayline">{% for a in today_list %}{% include 'admin/_job.html' %}{% endfor %}</div>
+  {% else %}<p class="empty">Nothing booked today.</p>{% endif %}
+</section>
+
+<section class="adm-section"><h2>Next 7 days</h2>
+  {% if week %}
+  {% for day, items in week|groupby('day_text') %}
+  <h3 class="app-h3" style="margin-top: var(--s-5)">{{ day }}</h3>
+  <div class="dayline">{% for a in items %}{% include 'admin/_job.html' %}{% endfor %}</div>
+  {% endfor %}
+  {% else %}<p class="empty">No jobs in the next week yet.</p>{% endif %}
+</section>
+{% endblock %}

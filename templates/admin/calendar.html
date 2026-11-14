@@ -1,0 +1,16 @@
+{% extends 'admin/base.html' %}
+{% block title %}Calendar{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Week of {{ days[0].strftime('%B ') ~ days[0].day }}</h1></div>
+  <div class="actions"><a class="btn btn--secondary" href="?start={{ prev }}">Previous week</a><a class="btn btn--secondary" href="?">This week</a><a class="btn btn--secondary" href="?start={{ next }}">Next week</a></div></div>
+<div class="cal">
+  {% for d in days %}
+  <section class="cal__day{% if d == today %} cal__day--today{% endif %}" aria-label="{{ d.strftime('%A %B %-d') }}">
+    <h3>{{ d.strftime('%a %-d') }} <span>{% if hours[d] %}{{ nice_time('%02d:%02d'|format(hours[d][0] // 60, hours[d][0] % 60)) }}–{{ nice_time('%02d:%02d'|format(hours[d][1] // 60, hours[d][1] % 60)) }}{% else %}Closed{% endif %}</span></h3>
+    {% for a in by_day[d] %}<a class="cal__item cal__item--{{ a.status }}" href="/admin/appointments/{{ a.id }}"><b>{{ a.time_text }}</b> {{ a.service_name }}<br>{{ a.name }}</a>{% endfor %}
+    {% for b in blocks if b.start_local[:10] == d.isoformat() %}<div class="cal__item cal__item--block">{{ nice_time(b.start_local[11:]) }}–{{ nice_time(b.end_local[11:]) }} blocked{% if b.note %}: {{ b.note }}{% endif %}</div>{% endfor %}
+    {% if not by_day[d] and hours[d] %}<p class="cal__closed">Open all day</p>{% endif %}
+  </section>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -202,7 +202,7 @@ def month_availability(c: sqlite3.Connection, minutes: int, days: int = 42) -> l
     out = []
     for i in range(min(days, window + 1)):
         d = start + timedelta(days=i)
-        out.append({'day': d.isoformat(), 'count': len(slots(c, d, minutes, s))})
+        out.append({'day': d.isoformat(), 'label': nice_day(d), 'count': len(slots(c, d, minutes, s))})
     return out
 
 

@@ -1,0 +1,12 @@
+<div class="split-3">
+  <div class="field"><label for="{{ pfx }}-year">Year</label><input id="{{ pfx }}-year" name="year" inputmode="numeric" maxlength="4" value="{{ v.year if v else '' }}"></div>
+  <div class="field"><label for="{{ pfx }}-make">Make</label><input id="{{ pfx }}-make" name="make" required value="{{ v.make if v else '' }}"></div>
+  <div class="field"><label for="{{ pfx }}-model">Model</label><input id="{{ pfx }}-model" name="model" required value="{{ v.model if v else '' }}"></div>
+</div>
+<div class="split-3">
+  <div class="field"><label for="{{ pfx }}-size">Size</label><select id="{{ pfx }}-size" name="size" required>
+    {% for key, label in SIZES %}<option value="{{ key }}"{% if v and v.size == key %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+  <div class="field"><label for="{{ pfx }}-color">Color</label><input id="{{ pfx }}-color" name="color" value="{{ v.color if v else '' }}"></div>
+  <div class="field"><label for="{{ pfx }}-nick">Nickname, optional</label><input id="{{ pfx }}-nick" name="nickname" placeholder="Daily driver" value="{{ v.nickname if v else '' }}"></div>
+</div>
+<div class="field"><label for="{{ pfx }}-notes">Notes, optional</label><input id="{{ pfx }}-notes" name="notes" placeholder="Dog hair in the back, child seat stays in" value="{{ v.notes if v else '' }}"></div>

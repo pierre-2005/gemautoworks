@@ -1,0 +1,59 @@
+{% extends 'app_base.html' %}
+{% set titles = {'signup': 'Create your garage', 'login': 'Sign in to your garage', 'forgot': 'Reset your password', 'reset': 'Choose a new password'} %}
+{% block title %}{{ titles[mode] }}: GEM Autoworks{% endblock %}
+{% block description %}Your GEM Autoworks garage: your cars, bookings and cleaning plans in one place.{% endblock %}
+{% block content %}
+<div class="auth">
+  <div class="auth__form">
+    <h1 class="app-title">{{ titles[mode] }}</h1>
+    {% if mode == 'signup' %}
+    <p class="app-lead">Save your cars, rebook in a few taps and set up regular cleanings. Booked before as a guest? Use the same email and your visits show up here.</p>
+    {% elif mode == 'login' %}
+    {% if reset %}<p class="notice notice--ok" role="status">Your password is changed. Sign in with the new one.</p>{% endif %}
+    <p class="app-lead">Your cars, visits and cleaning plans.</p>
+    {% elif mode == 'forgot' %}
+    {% if sent %}<p class="notice notice--ok" role="status">If that email has a garage, a reset link is on its way. It works for 2 hours.</p>{% endif %}
+    <p class="app-lead">We’ll email you a link to choose a new password.</p>
+    {% else %}
+    <p class="app-lead">Use at least 10 characters.</p>
+    {% endif %}
+
+    {% if errors.form %}<p class="notice notice--bad" role="alert">{{ errors.form }}</p>{% endif %}
+    <form class="form" method="post" action="{{ '/account/reset/' ~ token if mode == 'reset' else '/account/' ~ mode }}" novalidate>
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <input type="hidden" name="next" value="{{ next }}">
+      {% if mode == 'signup' %}
+      <div class="hp" aria-hidden="true"><label for="a-website">Website</label><input id="a-website" name="website" tabindex="-1" autocomplete="off"></div>
+      <div class="field"><label for="a-name">Name</label><input id="a-name" name="name" autocomplete="name" required value="{{ form.name or '' }}" {% if errors.name %}aria-invalid="true" autofocus{% endif %} aria-describedby="a-name-err">
+        <p class="field__error" id="a-name-err" {% if not errors.name %}hidden{% endif %}>{{ errors.name or '' }}</p></div>
+      {% endif %}
+      {% if mode in ('signup', 'login', 'forgot') %}
+      <div class="field"><label for="a-email">Email</label><input id="a-email" name="email" type="email" autocomplete="email" inputmode="email" required value="{{ form.email or '' }}" {% if errors.email %}aria-invalid="true"{% endif %} aria-describedby="a-email-err">
+        <p class="field__error" id="a-email-err" {% if not errors.email %}hidden{% endif %}>{{ errors.email or '' }}</p></div>
+      {% endif %}
+      {% if mode == 'signup' %}
+      <div class="field"><label for="a-phone">Mobile phone, optional</label><input id="a-phone" name="phone" type="tel" autocomplete="tel" value="{{ form.phone or '' }}" {% if errors.phone %}aria-invalid="true"{% endif %} aria-describedby="a-phone-err">
+        <p class="field__hint">For a text on the day of your detail.</p>
+        <p class="field__error" id="a-phone-err" {% if not errors.phone %}hidden{% endif %}>{{ errors.phone or '' }}</p></div>
+      {% endif %}
+      {% if mode in ('signup', 'login', 'reset') %}
+      <div class="field"><label for="a-password">{{ 'New password' if mode == 'reset' else 'Password' }}</label>
+        <div class="pw"><input id="a-password" name="password" type="password" autocomplete="{{ 'current-password' if mode == 'login' else 'new-password' }}" required minlength="{{ 1 if mode == 'login' else 10 }}" {% if errors.password %}aria-invalid="true"{% endif %} aria-describedby="a-password-err">
+          <button class="pw__toggle" type="button" data-pw-toggle aria-controls="a-password" aria-pressed="false">Show</button></div>
+        <p class="field__error" id="a-password-err" {% if not errors.password %}hidden{% endif %}>{{ errors.password or '' }}</p></div>
+      {% endif %}
+      <div class="btn-row"><button class="btn btn--primary btn--block" type="submit">{{ {'signup': 'Create my garage', 'login': 'Sign in', 'forgot': 'Email me a reset link', 'reset': 'Save the new password'}[mode] }}</button></div>
+    </form>
+    <p class="auth__switch">
+      {% if mode == 'signup' %}Already have a garage? <a class="link" href="/account/login?next={{ next }}">Sign in</a>
+      {% elif mode == 'login' %}New here? <a class="link" href="/account/signup?next={{ next }}">Create your garage</a> · <a class="link" href="/account/forgot">Forgot your password?</a>
+      {% else %}<a class="link" href="/account/login">Back to sign in</a>{% endif %}
+    </p>
+  </div>
+  <div class="auth__art" aria-hidden="true">
+    {% set art = picture('/static/img/work/altima-console-after') %}
+    <img src="{{ art.src }}" srcset="{{ art.srcset }}" sizes="(min-width: 1024px) 560px, 0px" alt="" loading="lazy">
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/app.js"></script>{% endblock %}

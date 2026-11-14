@@ -1,0 +1,13 @@
+{% extends 'admin/base.html' %}
+{% block title %}Reviews{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Reviews</h1><p>New reviews wait here until you approve them.</p></div></div>
+{% if rows %}{% for r in rows %}
+<section class="panel-box" style="margin-bottom: var(--s-3)"><div class="row-between">
+  <div><p class="stars" aria-label="{{ r.rating }} out of 5">{{ '★' * r.rating }}<span class="stars__off">{{ '★' * (5 - r.rating) }}</span></p>
+    <p class="msg-body">{{ r.message }}</p><p class="job__meta">{{ r.name }}{% if r.vehicle %} · {{ r.vehicle }}{% endif %} · {{ r.created_at[:10] }} · <span class="pill {{ 'pill--ok' if r.status == 'approved' else 'pill--wait' if r.status == 'pending' else '' }}">{{ r.status|capitalize }}</span></p></div>
+  <div class="actions">{% for act, label in [('approved','Approve'),('hidden','Hide'),('delete','Delete')] if act != r.status %}
+    <form method="post" action="/admin/reviews/{{ r.id }}/{{ act }}"{% if act == 'delete' %} data-confirm="Delete this review?"{% endif %}><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn {{ 'btn--primary' if act == 'approved' else 'btn--secondary' }} btn--small{% if act == 'delete' %} btn--danger{% endif %}" type="submit">{{ label }}</button></form>{% endfor %}</div>
+</div></section>
+{% endfor %}{% else %}<p class="empty">No reviews yet. Send happy customers to the Reviews page after a detail.</p>{% endif %}
+{% endblock %}

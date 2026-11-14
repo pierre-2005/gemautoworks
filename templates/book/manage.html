@@ -1,0 +1,88 @@
+{% extends 'app_base.html' %}
+{% block title %}Your detail on {{ a.day_text }}: GEM Autoworks{% endblock %}
+{% block description %}Your GEM Autoworks booking: see it, change the time or cancel.{% endblock %}
+{% block content %}
+{% if new %}
+<div class="notice notice--ok" role="status" style="margin-bottom: var(--s-6)">
+  {% if a.status == 'pending' %}<strong>Your request is in.</strong> We emailed a copy to {{ a.email }}. Pavly confirms the time by email or text, usually the same day.
+  {% else %}<strong>You’re booked.</strong> We emailed the details to {{ a.email }}.{% endif %}
+</div>
+{% elif changed %}
+<div class="notice notice--ok" role="status" style="margin-bottom: var(--s-6)">Done. We emailed you the update.</div>
+{% endif %}
+
+<div class="manage-grid">
+  <div>
+    <div class="manage-status">
+      {% set tone = {'confirmed':'ok','completed':'ok','pending':'wait','needs_time':'wait','cancelled':'bad','no_show':'bad'}[a.status] %}
+      <span class="pill pill--{{ tone }}">{{ a.status_text }}</span>
+      <span class="t-small muted">Reference {{ a.reference }}</span>
+    </div>
+    <h1 class="app-title">{{ a.service_name }}, {{ a.day_text }}</h1>
+    <p class="app-lead">{{ a.time_text }} to about {{ a.end_text }}{% if a.location_type == 'mobile' %} at {{ a.address }}{% else %}, drop-off at the shop{% if site.shop_address %}: {{ site.shop_address }}{% endif %}{% endif %}.</p>
+
+    {% if can_change %}
+    <section class="panel-box" aria-labelledby="move-h" id="move">
+      <h2 class="app-h2" id="move-h">Change the time</h2>
+      <form method="get" action="/booking/{{ token }}#move" class="stack" data-autosubmit>
+        <div class="field"><label for="m-day">New day</label>
+          <select id="m-day" name="day">
+            <option value="">Pick a day</option>
+            {% for d in days if d.count %}<option value="{{ d.day }}"{% if d.day == sel_day %} selected{% endif %}>{{ d.label }} · {{ d.count }} start time{{ 's' if d.count != 1 }}</option>{% endfor %}
+          </select></div>
+        <noscript><button class="btn btn--secondary" type="submit">Show times</button></noscript>
+      </form>
+      {% if sel_day %}
+      <form method="post" action="/booking/{{ token }}/reschedule" class="stack" style="margin-top: var(--s-5)">
+        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="day" value="{{ sel_day }}">
+        {% if times %}
+        <fieldset><legend class="field__legend">Start times</legend>
+          <div class="times">{% for t in times %}<label class="day"><input type="radio" name="at" value="{{ t }}" required><span>{{ nice_time(t) }}</span></label>{% endfor %}</div></fieldset>
+        <button class="btn btn--primary" type="submit">Move my detail</button>
+        {% else %}<p class="empty">No open times that day. Pick another day.</p>{% endif %}
+      </form>
+      {% endif %}
+    </section>
+    <section class="panel-box" aria-labelledby="cancel-h">
+      <h2 class="app-h2" id="cancel-h">Cancel</h2>
+      <p class="muted">You can cancel online up to {{ site.cancel_cutoff_hours }} hours before the visit.</p>
+      <form method="post" action="/booking/{{ token }}/cancel" data-confirm="Cancel this detail? This can’t be undone online.">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <button class="btn btn--secondary btn--danger" type="submit">Cancel this detail</button>
+      </form>
+    </section>
+    {% elif a.status in ('pending', 'confirmed') %}
+    <p class="notice">It’s less than {{ site.cancel_cutoff_hours }} hours to your visit, so changes go through Pavly. Call or text <a class="link" href="{{ tel(site.phone) }}">{{ site.phone }}</a>.</p>
+    {% elif a.status == 'cancelled' %}
+    <p><a class="btn btn--primary" href="/book">Book a detail</a></p>
+    {% endif %}
+
+    {% if not customer %}
+    <section class="panel-box panel-box--surface" aria-labelledby="save-h" style="margin-top: var(--s-6)">
+      <h2 class="app-h2" id="save-h">Save this car for next time</h2>
+      <p>Create a garage with {{ a.email }} to see every visit in one place, rebook in a few taps and set up regular cleanings.</p>
+      <a class="btn btn--secondary" href="/account/signup?next=/account">Create your garage</a>
+    </section>
+    {% endif %}
+  </div>
+
+  <aside>
+    <div class="ticket">
+      <div class="ticket__head"><img src="/static/img/gem-mark-96.webp" alt="" width="40" height="40"><p class="ticket__title">{{ a.service_name }}</p></div>
+      <dl class="ticket__rows">
+        <div><dt>Car</dt><dd>{{ a.vehicle_text or a.size_text }}</dd></div>
+        <div><dt>Size</dt><dd>{{ a.size_text }}</dd></div>
+        <div><dt>When</dt><dd>{{ a.day_text }}, {{ a.time_text }}</dd></div>
+        {% if a.addon_list %}<div><dt>Add-ons</dt><dd>{{ a.addon_list|map(attribute='name')|join(', ') }}</dd></div>{% endif %}
+      </dl>
+      <div class="ticket__money">
+        <div class="ticket__line"><span>Package</span><span>{{ money(a.price_cents) }}</span></div>
+        {% if a.discount_cents %}<div class="ticket__line ticket__line--offer"><span>First detail offer</span><span>−{{ money(a.discount_cents) }}</span></div>{% endif %}
+        <div class="ticket__total"><span>Estimate</span><span>{{ a.total_text }}</span></div>
+      </div>
+      <p class="ticket__note">{{ site.pricing_note }}</p>
+    </div>
+  </aside>
+</div>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/app.js"></script>{% endblock %}

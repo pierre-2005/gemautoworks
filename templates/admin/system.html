@@ -1,0 +1,27 @@
+{% extends 'admin/base.html' %}
+{% block title %}System{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>System</h1><p>Email, admins and backups.</p></div></div>
+<section class="panel-box" id="email"><div class="row-between"><h2 class="app-h3">Email {% if smtp %}<span class="pill pill--ok">Connected</span>{% else %}<span class="pill pill--bad">Not set up</span>{% endif %}</h2>
+  <form method="post" action="/admin/system/retry"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small" type="submit">Retry failed emails</button></form></div>
+  {% if not smtp %}<p class="muted">Set SMTP_HOST, SMTP_USER, SMTP_PASSWORD and SMTP_FROM in the Portainer stack, then redeploy. A Gmail app password works.</p>{% endif %}
+  {% if outbox %}<div class="table-wrap"><table class="table"><thead><tr><th>Queued</th><th>To</th><th>Subject</th><th>State</th></tr></thead><tbody>
+  {% for m in outbox %}<tr><td>{{ m.created_at[:16]|replace('T',' ') }}</td><td>{{ m.recipient }}</td><td>{{ m.subject }}</td><td>{{ m.state }}{% if m.last_error %}<br><span class="muted">{{ m.last_error }}</span>{% endif %}</td></tr>{% endfor %}
+  </tbody></table></div>{% else %}<p class="muted">No emails yet.</p>{% endif %}</section>
+<div class="split-2" style="margin-top: var(--s-5)">
+  <section class="panel-box" id="security"><h2 class="app-h3">Change your password</h2>
+    <form method="post" action="/admin/system/password" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="field"><label for="sp-c">Current password</label><input id="sp-c" name="current" type="password" autocomplete="current-password" required></div>
+      <div class="field"><label for="sp-n">New password, 14+ characters</label><input id="sp-n" name="new" type="password" autocomplete="new-password" minlength="14" required></div>
+      <button class="btn btn--secondary btn--small" type="submit">Change password</button></form></section>
+  <section class="panel-box"><h2 class="app-h3">Admins</h2>
+    <ul class="list-plain">{% for a in admins %}<li>{{ a.email }}</li>{% endfor %}</ul>
+    <form method="post" action="/admin/system/admins" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="field"><label for="na-e">Add an admin: email</label><input id="na-e" name="email" type="email" required></div>
+      <div class="field"><label for="na-p">Their password, 14+ characters</label><input id="na-p" name="password" type="password" autocomplete="new-password" minlength="14" required></div>
+      <button class="btn btn--secondary btn--small" type="submit">Add admin</button></form></section>
+</div>
+<section class="panel-box" style="margin-top: var(--s-5)"><h2 class="app-h3">Backups</h2>
+  <p class="muted">Download a copy of everything: bookings, customers, garages, plans and settings. Photos you upload live in the same Docker volume.</p>
+  <div class="actions"><a class="btn btn--secondary btn--small" href="/admin/export/backup.sqlite3">Download database backup</a><a class="btn btn--secondary btn--small" href="/admin/export/bookings.csv">Download bookings CSV</a></div></section>
+{% endblock %}

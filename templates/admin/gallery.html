@@ -1,0 +1,53 @@
+{% extends 'admin/base.html' %}
+{% block title %}Photos{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Photos</h1><p>Before and after pairs show as sliders. Featured ones go on the home page.</p></div></div>
+<details class="panel-box edit" open><summary>Add photos</summary>
+  <form method="post" action="/admin/gallery" enctype="multipart/form-data" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="form-grid">
+      <div class="field"><label for="g-title">Title</label><input id="g-title" name="title" required placeholder="Honda Pilot, full interior"></div>
+      <div class="field"><label for="g-after">After photo</label><input id="g-after" name="after" type="file" accept="image/*" required></div>
+      <div class="field"><label for="g-alt">Describe the after photo</label><input id="g-alt" name="alt" required placeholder="Pilot third row after shampoo, clean carpet"></div>
+      <div class="field"><label for="g-before">Before photo, optional</label><input id="g-before" name="before" type="file" accept="image/*"></div>
+      <div class="field full"><label for="g-balt">Describe the before photo</label><input id="g-balt" name="before_alt"></div>
+    </div>
+    <label class="check"><input type="checkbox" name="featured" value="1"><span>Feature on the home page</span></label>
+    <p class="field__hint">Photos are resized and cleaned of location data automatically. Take before and after from the same spot.</p>
+    <div class="actions"><button class="btn btn--primary btn--small" type="submit">Upload</button></div></form></details>
+<div class="thumbs" style="margin-top: var(--s-5)">
+  {% for g in rows %}{% set a = picture(g.after_path) %}{% set b = picture(g.before_path) if g.before_path else none %}
+  <div class="thumb"><div class="thumb__img">{% if b %}<img src="{{ b.src }}" alt="Before: {{ g.before_alt }}" loading="lazy">{% endif %}<img src="{{ a.src }}" alt="{{ g.alt }}" loading="lazy"></div>
+    <div class="thumb__body">
+      <form method="post" action="/admin/gallery/{{ g.id }}" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+        <div class="field"><label for="gt{{ g.id }}">Title</label><input id="gt{{ g.id }}" name="title" value="{{ g.title }}"></div>
+        <div class="field"><label for="ga{{ g.id }}">Description</label><input id="ga{{ g.id }}" name="alt" value="{{ g.alt }}"></div>
+        <div class="row-between"><label class="check"><input type="checkbox" name="featured" value="1" {% if g.featured %}checked{% endif %}><span>Featured</span></label>
+          <input aria-label="Order" name="sort_order" value="{{ g.sort_order }}" inputmode="numeric" style="width:64px; height:36px"></div>
+        <div class="actions"><button class="btn btn--secondary btn--small" type="submit">Save</button>
+          <button class="btn btn--secondary btn--small btn--danger" type="submit" formaction="/admin/gallery/{{ g.id }}/delete" formnovalidate>Delete</button></div>
+      </form></div></div>
+  {% endfor %}
+</div>
+
+<section class="adm-section" id="instagram"><h2>Instagram posts on the site</h2>
+  <p class="muted">Instagram does not let small accounts show their feed without a Meta developer app, so you pick the posts here: upload the photo and paste the post’s link.</p>
+  <details class="panel-box edit"><summary>Add a post</summary>
+    <form method="post" action="/admin/instagram" enctype="multipart/form-data" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="form-grid">
+        <div class="field"><label for="ig-url">Post link</label><input id="ig-url" name="url" type="url" required placeholder="https://www.instagram.com/p/…"></div>
+        <div class="field"><label for="ig-photo">Photo</label><input id="ig-photo" name="photo" type="file" accept="image/*" required></div>
+        <div class="field"><label for="ig-alt">Describe the photo</label><input id="ig-alt" name="alt" required></div>
+        <div class="field"><label for="ig-date">Posted on</label><input id="ig-date" name="posted_on" type="date"></div>
+        <div class="field full"><label for="ig-cap">Caption</label><textarea id="ig-cap" name="caption" rows="2"></textarea></div>
+      </div>
+      <div class="actions"><button class="btn btn--primary btn--small" type="submit">Add post</button></div></form></details>
+  <div class="thumbs" style="margin-top: var(--s-4)">
+    {% for p in posts %}{% set i = picture(p.image_path) %}
+    <div class="thumb"><div class="thumb__img"><img src="{{ i.src }}" alt="{{ p.alt }}" loading="lazy"></div>
+      <div class="thumb__body"><p class="job__meta">{{ p.posted_on }} · {{ 'Shown' if p.visible else 'Hidden' }}</p><p class="job__meta">{{ p.caption[:90] }}</p>
+        <div class="actions"><form method="post" action="/admin/instagram/{{ p.id }}/toggle"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small" type="submit">{{ 'Hide' if p.visible else 'Show' }}</button></form>
+          <form method="post" action="/admin/instagram/{{ p.id }}/delete" data-confirm="Delete this post from the site?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small btn--danger" type="submit">Delete</button></form></div></div></div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}
