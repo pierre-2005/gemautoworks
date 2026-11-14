@@ -38,6 +38,7 @@ Self-hosted on a Raspberry Pi: FastAPI, SQLite and server-rendered pages in one 
 | `BUSINESS_TIMEZONE` | default fine | `America/New_York` |
 
 3. Pull the new image and redeploy the stack.
+4. Keep the site reachable **only through the Cloudflare tunnel** (the compose file binds it to `127.0.0.1:8092`). The rate limits trust Cloudflare's `CF-Connecting-IP` header from local or private addresses, so don't expose port 8092 to your LAN or put another proxy in front without removing that header.
 
 ### Your existing data is safe
 
