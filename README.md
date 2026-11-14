@@ -1,10 +1,10 @@
 # GEM Autoworks | Website V2
 
-The public site now uses a cinematic, scroll-controlled 3D concept supercar, opening doors, live paint previews, ivory editorial sections, and the original GEM logo and blue identity. Gallery images enlarge in a keyboard-accessible dialog. Booking includes a live summary, calendar retry states, duplicate-submit protection, and errors that retain entered details. Service FAQs, contact routes, moderated reviews, and all admin capabilities remain available.
+The homepage uses an original Blender detailing scene, scrubbed forward and backward by native scrolling. A stationary midnight-blue coupe, gloved hands, a curved microfiber towel and a spatial foam mask form one continuous shot. The character is a stylized procedural illustration, not actual GEM staff or premises. This remains a draft for visual review; specialist character and garment work is needed to meet a photorealistic advertising standard.
 
-The model and textures are self-hosted under `static/models/supercar/`; the CC BY 4.0 attribution is under `static/licenses/`. They use separate same-origin textures so the existing Content Security Policy stays intact. Reduced motion holds the car still; unavailable WebGL and data-saving browsers receive the photographic fallback. There is no animation loop while the scene is idle or off-screen.
+Optimized frames and posters are self-hosted under `static/detailing/`. Reduced motion, reduced data and loading failure show the final-frame HTML picture. The player decodes at most 14 cached frames, defers neighbouring frames until needed, and selects a separate mobile sequence. The existing same-origin Content Security Policy is retained. The old spinning showroom, paint controls and eight-image storyboard are unreferenced legacy assets, retained with their original licence files.
 
-Frontend assets are committed, so Docker deployment still requires Python only. For frontend changes, use Node 22+, `npm ci`, then `npm run build:car`. `npm run prepare:car` re-downloads and optimizes the credited upstream concept model. `npm run check:js` checks application JavaScript syntax. PRs now run the existing test and responsive-browser CI; image publication still runs only outside PRs.
+Delivery assets are committed, so Docker deployment requires Python only. `npm run check:js` checks application JavaScript syntax. Original editable scene, source scripts, render instructions and provenance are in `production/detailing/`; these production files are excluded from the container image. PRs run functional and responsive-browser CI. No production deployment is part of this change.
 
 ## Current website design and admin management
 

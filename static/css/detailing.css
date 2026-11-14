@@ -1,0 +1,49 @@
+/* Original Blender sequence. Space stays reserved before any frame is downloaded. */
+.g-cleaning{height:200svh;background:#0b1116}
+.g-cleaning .g-drive-screen{overflow:hidden}
+.g-cleaning .g-drive-heading{position:relative;z-index:2;padding-top:44px}
+.g-cleaning .g-drive-heading h1{max-width:620px;font-size:clamp(48px,5.9vw,84px)}
+.g-cleaning-stage{inset:180px 0 116px 25%;display:block}
+.g-cleaning-poster,#cleaning-canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.g-cleaning-poster img{width:100%;height:100%;object-fit:contain;display:block}
+#cleaning-canvas{opacity:0;pointer-events:none}
+#cleaning-canvas.is-ready{opacity:1}
+.g-cleaning .g-drive-bottom{z-index:2}
+.g-cleaning .g-drive-description{max-width:310px}
+.g-cleaning .g-drive-description p{font-size:16px;line-height:1.55}
+.g-cleaning-caption{gap:32px}
+#cleaning-phase{color:#d6e0e6;font-size:14px;min-width:60px}
+.g-cleaning[data-cleaning-reason="preference"],.g-cleaning[data-cleaning-reason="unavailable"]{height:auto}
+.g-cleaning[data-cleaning-reason="preference"] .g-drive-screen.hero,
+.g-cleaning[data-cleaning-reason="unavailable"] .g-drive-screen.hero{position:relative;top:auto}
+html:not(.js) .g-cleaning{height:auto}
+html:not(.js) .g-cleaning .g-drive-screen.hero{position:relative;top:auto}
+@media(min-width:1600px){.g-cleaning-stage{inset:170px 0 100px 22%}}
+@media(min-width:701px) and (max-height:720px){
+ .g-cleaning .g-drive-heading{padding-top:24px}
+ .g-cleaning .g-drive-heading h1{font-size:48px}
+ .g-cleaning-stage{inset:115px 0 80px 28%}
+ .g-cleaning .g-drive-description p{display:none}
+ .g-cleaning .g-drive-bottom{bottom:24px}
+}
+@media(max-width:700px){
+ .g-cleaning{height:200svh}
+ .g-cleaning .g-drive-screen.hero{height:calc(100svh - var(--nav-h));min-height:620px}
+ .g-cleaning .g-drive-heading{padding-top:24px}
+ .g-cleaning .g-drive-heading h1{font-size:clamp(40px,10vw,60px);max-width:500px}
+ .g-cleaning-stage{inset:150px 0 132px}
+ .g-cleaning .g-drive-bottom{bottom:22px}
+ .g-cleaning-caption{gap:16px}
+ .g-cleaning .g-scroll-cue{max-width:170px}
+}
+@media(min-width:701px) and (max-height:500px) and (hover:none){
+ .g-cleaning-stage{inset:12px 0 12px 35%}
+}
+@media(prefers-reduced-motion:reduce),(prefers-reduced-data:reduce){
+ .g-cleaning{height:auto}
+ .g-cleaning .g-drive-screen.hero{position:relative;top:auto}
+ #cleaning-canvas{display:none}
+ .g-cleaning .g-scroll-cue span{font-size:0}
+ .g-cleaning .g-scroll-cue span:after{content:"Meet GEM below";font-size:12px}
+}
+@media print{.g-cleaning{height:auto}.g-cleaning .g-drive-screen.hero{position:relative;top:0}}

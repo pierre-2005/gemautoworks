@@ -1,0 +1,863 @@
+{
+  "browsers": [
+    {
+      "name": "chrome",
+      "version": "157.0.8103.78",
+      "status": "tested"
+    },
+    {
+      "name": "msedge",
+      "version": "157.0.4341.46",
+      "status": "tested"
+    },
+    {
+      "name": "Firefox",
+      "status": "not available on this host"
+    },
+    {
+      "name": "Safari",
+      "status": "not available on Windows; WebKit/Safari was not tested"
+    }
+  ],
+  "checks": [
+    "chrome: forward, reverse, jumps, resize, overflow, bounded bitmap lifetime, keyboard, availability, validation, booking confirmation and admin navigation",
+    "Phone portrait and landscape request only mobile frames and poster",
+    "Reduced motion loads only a static final poster; live preference changes release frames",
+    "Save-Data preference keeps the static final picture and avoids sequence downloads",
+    "frames failures retain final picture and accessible booking action",
+    "manifest failures retain final picture and accessible booking action",
+    "Failure of the entire animation directory retains the existing photograph and booking access",
+    "Delayed sequence requests retain the poster without a blank canvas",
+    "JavaScript-disabled visitors retain final illustration and booking link",
+    "msedge: forward, reverse, jumps, resize, overflow, bounded bitmap lifetime, keyboard, availability, validation, booking confirmation and admin navigation"
+  ],
+  "resourceSamples": [
+    {
+      "channel": "chrome",
+      "viewport": "desktop",
+      "cachedResponseMs": [
+        6.0999999940395355,
+        5.5,
+        6,
+        4.800000004470348,
+        4.600000001490116
+      ],
+      "decoded": 14,
+      "bitmaps": {
+        "live": 14,
+        "max": 15
+      },
+      "heap": 2978253,
+      "overflow": false,
+      "resources": [
+        {
+          "name": "desktop/poster.webp",
+          "bytes": 23198,
+          "transferBytes": 23498
+        },
+        {
+          "name": "manifest.json",
+          "bytes": 363,
+          "transferBytes": 663
+        },
+        {
+          "name": "desktop/000.webp",
+          "bytes": 16818,
+          "transferBytes": 17118
+        },
+        {
+          "name": "desktop/001.webp",
+          "bytes": 16818,
+          "transferBytes": 17118
+        },
+        {
+          "name": "desktop/002.webp",
+          "bytes": 16892,
+          "transferBytes": 17192
+        },
+        {
+          "name": "desktop/003.webp",
+          "bytes": 16856,
+          "transferBytes": 17156
+        },
+        {
+          "name": "desktop/040.webp",
+          "bytes": 17984,
+          "transferBytes": 18284
+        },
+        {
+          "name": "desktop/080.webp",
+          "bytes": 17032,
+          "transferBytes": 17332
+        },
+        {
+          "name": "desktop/119.webp",
+          "bytes": 18336,
+          "transferBytes": 18636
+        },
+        {
+          "name": "desktop/159.webp",
+          "bytes": 17786,
+          "transferBytes": 18086
+        },
+        {
+          "name": "desktop/000.webp",
+          "bytes": 16818,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/001.webp",
+          "bytes": 16818,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/002.webp",
+          "bytes": 16892,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/003.webp",
+          "bytes": 16856,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/040.webp",
+          "bytes": 17984,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/080.webp",
+          "bytes": 17032,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/119.webp",
+          "bytes": 18336,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/159.webp",
+          "bytes": 17786,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/041.webp",
+          "bytes": 18020,
+          "transferBytes": 18320
+        },
+        {
+          "name": "desktop/039.webp",
+          "bytes": 17942,
+          "transferBytes": 18242
+        },
+        {
+          "name": "desktop/042.webp",
+          "bytes": 17962,
+          "transferBytes": 18262
+        },
+        {
+          "name": "desktop/081.webp",
+          "bytes": 17040,
+          "transferBytes": 17340
+        },
+        {
+          "name": "desktop/079.webp",
+          "bytes": 16838,
+          "transferBytes": 17138
+        },
+        {
+          "name": "desktop/082.webp",
+          "bytes": 17022,
+          "transferBytes": 17322
+        },
+        {
+          "name": "desktop/120.webp",
+          "bytes": 18282,
+          "transferBytes": 18582
+        },
+        {
+          "name": "desktop/156.webp",
+          "bytes": 17598,
+          "transferBytes": 17898
+        },
+        {
+          "name": "desktop/157.webp",
+          "bytes": 17586,
+          "transferBytes": 17886
+        },
+        {
+          "name": "desktop/155.webp",
+          "bytes": 17650,
+          "transferBytes": 17950
+        },
+        {
+          "name": "desktop/158.webp",
+          "bytes": 17786,
+          "transferBytes": 18086
+        },
+        {
+          "name": "desktop/154.webp",
+          "bytes": 17604,
+          "transferBytes": 17904
+        },
+        {
+          "name": "desktop/153.webp",
+          "bytes": 17780,
+          "transferBytes": 18080
+        },
+        {
+          "name": "desktop/078.webp",
+          "bytes": 16822,
+          "transferBytes": 17122
+        },
+        {
+          "name": "desktop/083.webp",
+          "bytes": 16924,
+          "transferBytes": 17224
+        },
+        {
+          "name": "desktop/016.webp",
+          "bytes": 17238,
+          "transferBytes": 17538
+        },
+        {
+          "name": "desktop/017.webp",
+          "bytes": 17390,
+          "transferBytes": 17690
+        },
+        {
+          "name": "desktop/015.webp",
+          "bytes": 17302,
+          "transferBytes": 17602
+        },
+        {
+          "name": "desktop/018.webp",
+          "bytes": 17338,
+          "transferBytes": 17638
+        },
+        {
+          "name": "desktop/014.webp",
+          "bytes": 17368,
+          "transferBytes": 17668
+        },
+        {
+          "name": "desktop/019.webp",
+          "bytes": 17368,
+          "transferBytes": 17668
+        },
+        {
+          "name": "desktop/143.webp",
+          "bytes": 18890,
+          "transferBytes": 19190
+        },
+        {
+          "name": "desktop/144.webp",
+          "bytes": 18630,
+          "transferBytes": 18930
+        },
+        {
+          "name": "desktop/142.webp",
+          "bytes": 18674,
+          "transferBytes": 18974
+        },
+        {
+          "name": "desktop/145.webp",
+          "bytes": 18720,
+          "transferBytes": 19020
+        },
+        {
+          "name": "desktop/141.webp",
+          "bytes": 18712,
+          "transferBytes": 19012
+        },
+        {
+          "name": "desktop/146.webp",
+          "bytes": 18588,
+          "transferBytes": 18888
+        },
+        {
+          "name": "desktop/140.webp",
+          "bytes": 18722,
+          "transferBytes": 19022
+        },
+        {
+          "name": "desktop/048.webp",
+          "bytes": 18396,
+          "transferBytes": 18696
+        },
+        {
+          "name": "desktop/049.webp",
+          "bytes": 18424,
+          "transferBytes": 18724
+        },
+        {
+          "name": "desktop/047.webp",
+          "bytes": 18354,
+          "transferBytes": 18654
+        },
+        {
+          "name": "desktop/050.webp",
+          "bytes": 18560,
+          "transferBytes": 18860
+        },
+        {
+          "name": "desktop/046.webp",
+          "bytes": 18324,
+          "transferBytes": 18624
+        },
+        {
+          "name": "desktop/000.webp",
+          "bytes": 16818,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/001.webp",
+          "bytes": 16818,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/002.webp",
+          "bytes": 16892,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/003.webp",
+          "bytes": 16856,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/114.webp",
+          "bytes": 18240,
+          "transferBytes": 18540
+        },
+        {
+          "name": "desktop/115.webp",
+          "bytes": 18170,
+          "transferBytes": 18470
+        },
+        {
+          "name": "desktop/113.webp",
+          "bytes": 18044,
+          "transferBytes": 18344
+        },
+        {
+          "name": "desktop/116.webp",
+          "bytes": 18296,
+          "transferBytes": 18596
+        },
+        {
+          "name": "desktop/112.webp",
+          "bytes": 17928,
+          "transferBytes": 18228
+        },
+        {
+          "name": "desktop/117.webp",
+          "bytes": 18128,
+          "transferBytes": 18428
+        },
+        {
+          "name": "desktop/111.webp",
+          "bytes": 17882,
+          "transferBytes": 18182
+        },
+        {
+          "name": "desktop/118.webp",
+          "bytes": 18312,
+          "transferBytes": 18612
+        },
+        {
+          "name": "desktop/119.webp",
+          "bytes": 18336,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/120.webp",
+          "bytes": 18282,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/067.webp",
+          "bytes": 17698,
+          "transferBytes": 17998
+        },
+        {
+          "name": "desktop/068.webp",
+          "bytes": 17688,
+          "transferBytes": 17988
+        },
+        {
+          "name": "desktop/066.webp",
+          "bytes": 17794,
+          "transferBytes": 18094
+        },
+        {
+          "name": "desktop/069.webp",
+          "bytes": 17414,
+          "transferBytes": 17714
+        }
+      ]
+    },
+    {
+      "channel": "chrome",
+      "viewport": "phone-portrait-landscape",
+      "decoded": 14,
+      "bitmaps": {
+        "live": 14,
+        "max": 15
+      },
+      "heap": 3060841,
+      "resources": [
+        {
+          "name": "mobile/poster.webp",
+          "bytes": 16097,
+          "transferBytes": 16397
+        },
+        {
+          "name": "manifest.json",
+          "bytes": 363,
+          "transferBytes": 663
+        },
+        {
+          "name": "mobile/000.webp",
+          "bytes": 11147,
+          "transferBytes": 11447
+        },
+        {
+          "name": "mobile/001.webp",
+          "bytes": 11123,
+          "transferBytes": 11423
+        },
+        {
+          "name": "mobile/002.webp",
+          "bytes": 11097,
+          "transferBytes": 11397
+        },
+        {
+          "name": "mobile/003.webp",
+          "bytes": 11059,
+          "transferBytes": 11359
+        },
+        {
+          "name": "mobile/040.webp",
+          "bytes": 11665,
+          "transferBytes": 11965
+        },
+        {
+          "name": "mobile/080.webp",
+          "bytes": 10667,
+          "transferBytes": 10967
+        },
+        {
+          "name": "mobile/119.webp",
+          "bytes": 11573,
+          "transferBytes": 11873
+        },
+        {
+          "name": "mobile/159.webp",
+          "bytes": 12193,
+          "transferBytes": 12493
+        },
+        {
+          "name": "mobile/000.webp",
+          "bytes": 11147,
+          "transferBytes": 0
+        },
+        {
+          "name": "mobile/001.webp",
+          "bytes": 11123,
+          "transferBytes": 0
+        },
+        {
+          "name": "mobile/002.webp",
+          "bytes": 11097,
+          "transferBytes": 0
+        },
+        {
+          "name": "mobile/003.webp",
+          "bytes": 11059,
+          "transferBytes": 0
+        },
+        {
+          "name": "mobile/040.webp",
+          "bytes": 11665,
+          "transferBytes": 0
+        },
+        {
+          "name": "mobile/080.webp",
+          "bytes": 10667,
+          "transferBytes": 0
+        },
+        {
+          "name": "mobile/111.webp",
+          "bytes": 11329,
+          "transferBytes": 11629
+        },
+        {
+          "name": "mobile/112.webp",
+          "bytes": 11453,
+          "transferBytes": 11753
+        },
+        {
+          "name": "mobile/110.webp",
+          "bytes": 11321,
+          "transferBytes": 11621
+        },
+        {
+          "name": "mobile/113.webp",
+          "bytes": 11477,
+          "transferBytes": 11777
+        },
+        {
+          "name": "mobile/109.webp",
+          "bytes": 11339,
+          "transferBytes": 11639
+        },
+        {
+          "name": "mobile/114.webp",
+          "bytes": 11547,
+          "transferBytes": 11847
+        },
+        {
+          "name": "mobile/048.webp",
+          "bytes": 11653,
+          "transferBytes": 11953
+        },
+        {
+          "name": "mobile/049.webp",
+          "bytes": 11585,
+          "transferBytes": 11885
+        },
+        {
+          "name": "mobile/047.webp",
+          "bytes": 11631,
+          "transferBytes": 11931
+        },
+        {
+          "name": "mobile/050.webp",
+          "bytes": 11723,
+          "transferBytes": 12023
+        }
+      ]
+    },
+    {
+      "channel": "msedge",
+      "viewport": "desktop",
+      "cachedResponseMs": [
+        1.3000000044703484,
+        2.2000000029802322,
+        4.200000002980232,
+        4.9000000059604645,
+        4
+      ],
+      "decoded": 14,
+      "bitmaps": {
+        "live": 14,
+        "max": 15
+      },
+      "heap": 2928218,
+      "overflow": false,
+      "resources": [
+        {
+          "name": "desktop/poster.webp",
+          "bytes": 23198,
+          "transferBytes": 23498
+        },
+        {
+          "name": "manifest.json",
+          "bytes": 363,
+          "transferBytes": 663
+        },
+        {
+          "name": "desktop/000.webp",
+          "bytes": 16818,
+          "transferBytes": 17118
+        },
+        {
+          "name": "desktop/001.webp",
+          "bytes": 16818,
+          "transferBytes": 17118
+        },
+        {
+          "name": "desktop/002.webp",
+          "bytes": 16892,
+          "transferBytes": 17192
+        },
+        {
+          "name": "desktop/003.webp",
+          "bytes": 16856,
+          "transferBytes": 17156
+        },
+        {
+          "name": "desktop/000.webp",
+          "bytes": 16818,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/001.webp",
+          "bytes": 16818,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/002.webp",
+          "bytes": 16892,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/003.webp",
+          "bytes": 16856,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/040.webp",
+          "bytes": 17984,
+          "transferBytes": 18284
+        },
+        {
+          "name": "desktop/080.webp",
+          "bytes": 17032,
+          "transferBytes": 17332
+        },
+        {
+          "name": "desktop/119.webp",
+          "bytes": 18336,
+          "transferBytes": 18636
+        },
+        {
+          "name": "desktop/159.webp",
+          "bytes": 17786,
+          "transferBytes": 18086
+        },
+        {
+          "name": "desktop/041.webp",
+          "bytes": 18020,
+          "transferBytes": 18320
+        },
+        {
+          "name": "desktop/039.webp",
+          "bytes": 17942,
+          "transferBytes": 18242
+        },
+        {
+          "name": "desktop/042.webp",
+          "bytes": 17962,
+          "transferBytes": 18262
+        },
+        {
+          "name": "desktop/120.webp",
+          "bytes": 18282,
+          "transferBytes": 18582
+        },
+        {
+          "name": "desktop/156.webp",
+          "bytes": 17598,
+          "transferBytes": 17898
+        },
+        {
+          "name": "desktop/157.webp",
+          "bytes": 17586,
+          "transferBytes": 17886
+        },
+        {
+          "name": "desktop/155.webp",
+          "bytes": 17650,
+          "transferBytes": 17950
+        },
+        {
+          "name": "desktop/158.webp",
+          "bytes": 17786,
+          "transferBytes": 18086
+        },
+        {
+          "name": "desktop/154.webp",
+          "bytes": 17604,
+          "transferBytes": 17904
+        },
+        {
+          "name": "desktop/153.webp",
+          "bytes": 17780,
+          "transferBytes": 18080
+        },
+        {
+          "name": "desktop/081.webp",
+          "bytes": 17040,
+          "transferBytes": 17340
+        },
+        {
+          "name": "desktop/016.webp",
+          "bytes": 17238,
+          "transferBytes": 17538
+        },
+        {
+          "name": "desktop/017.webp",
+          "bytes": 17390,
+          "transferBytes": 17690
+        },
+        {
+          "name": "desktop/015.webp",
+          "bytes": 17302,
+          "transferBytes": 17602
+        },
+        {
+          "name": "desktop/018.webp",
+          "bytes": 17338,
+          "transferBytes": 17638
+        },
+        {
+          "name": "desktop/014.webp",
+          "bytes": 17368,
+          "transferBytes": 17668
+        },
+        {
+          "name": "desktop/143.webp",
+          "bytes": 18890,
+          "transferBytes": 19190
+        },
+        {
+          "name": "desktop/144.webp",
+          "bytes": 18630,
+          "transferBytes": 18930
+        },
+        {
+          "name": "desktop/142.webp",
+          "bytes": 18674,
+          "transferBytes": 18974
+        },
+        {
+          "name": "desktop/145.webp",
+          "bytes": 18720,
+          "transferBytes": 19020
+        },
+        {
+          "name": "desktop/141.webp",
+          "bytes": 18712,
+          "transferBytes": 19012
+        },
+        {
+          "name": "desktop/146.webp",
+          "bytes": 18588,
+          "transferBytes": 18888
+        },
+        {
+          "name": "desktop/048.webp",
+          "bytes": 18396,
+          "transferBytes": 18696
+        },
+        {
+          "name": "desktop/049.webp",
+          "bytes": 18424,
+          "transferBytes": 18724
+        },
+        {
+          "name": "desktop/047.webp",
+          "bytes": 18354,
+          "transferBytes": 18654
+        },
+        {
+          "name": "desktop/050.webp",
+          "bytes": 18560,
+          "transferBytes": 18860
+        },
+        {
+          "name": "desktop/046.webp",
+          "bytes": 18324,
+          "transferBytes": 18624
+        },
+        {
+          "name": "desktop/051.webp",
+          "bytes": 18460,
+          "transferBytes": 18760
+        },
+        {
+          "name": "desktop/000.webp",
+          "bytes": 16818,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/001.webp",
+          "bytes": 16818,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/002.webp",
+          "bytes": 16892,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/003.webp",
+          "bytes": 16856,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/114.webp",
+          "bytes": 18240,
+          "transferBytes": 18540
+        },
+        {
+          "name": "desktop/115.webp",
+          "bytes": 18170,
+          "transferBytes": 18470
+        },
+        {
+          "name": "desktop/113.webp",
+          "bytes": 18044,
+          "transferBytes": 18344
+        },
+        {
+          "name": "desktop/116.webp",
+          "bytes": 18296,
+          "transferBytes": 18596
+        },
+        {
+          "name": "desktop/112.webp",
+          "bytes": 17928,
+          "transferBytes": 18228
+        },
+        {
+          "name": "desktop/117.webp",
+          "bytes": 18128,
+          "transferBytes": 18428
+        },
+        {
+          "name": "desktop/111.webp",
+          "bytes": 17882,
+          "transferBytes": 18182
+        },
+        {
+          "name": "desktop/118.webp",
+          "bytes": 18312,
+          "transferBytes": 18612
+        },
+        {
+          "name": "desktop/119.webp",
+          "bytes": 18336,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/120.webp",
+          "bytes": 18282,
+          "transferBytes": 0
+        },
+        {
+          "name": "desktop/067.webp",
+          "bytes": 17698,
+          "transferBytes": 17998
+        },
+        {
+          "name": "desktop/068.webp",
+          "bytes": 17688,
+          "transferBytes": 17988
+        },
+        {
+          "name": "desktop/066.webp",
+          "bytes": 17794,
+          "transferBytes": 18094
+        },
+        {
+          "name": "desktop/069.webp",
+          "bytes": 17414,
+          "transferBytes": 17714
+        }
+      ]
+    }
+  ]
+}

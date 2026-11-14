@@ -1,12 +1,27 @@
 {% extends 'base.html' %}
+{% block extra_head %}
+<link rel="stylesheet" href="/static/css/detailing.css?v=1">
+{% endblock %}
 {% block content %}
 <section class="g-drive g-cleaning" aria-labelledby="hero-title" data-car-experience>
 <div class="hero g-drive-screen" data-enter>
 <div class="container g-drive-heading"><h1 id="hero-title">{% if site.headline=='Crafted for the drive.' %}Care in<br> <span>every movement.</span>{% else %}{{site.headline}}{% endif %}</h1></div>
-<div class="g-cleaning-stage" role="img" aria-label="A detailer washes and wipes a sports car as you scroll. Generated automotive illustration."><canvas id="cleaning-canvas"></canvas><noscript><img src="/static/img/editorial-drive.webp" alt="Sports car on the road"></noscript></div>
-<div class="container g-drive-bottom"><div class="g-drive-description"><p>GEM Autoworks.<br> Automotive appointments,<br> made personal.</p><a class="btn btn-primary btn-large" href="/book">Book an appointment {{arrow()}}</a></div><div class="g-cleaning-caption"><span id="cleaning-phase" aria-live="off">Prepare</span><a href="#care" class="g-scroll-cue"><span>Scroll through the clean</span><svg width="20" height="32" viewBox="0 0 20 32" fill="none" aria-hidden="true"><path d="M10 1v28m-7-7 7 7 7-7" stroke="currentColor" stroke-width="1.5"/></svg></a></div></div>
+<div class="g-cleaning-stage" role="img" aria-label="An original 3D illustration of a detailer washing and wiping a midnight-blue coupe. This is a fictional character and studio, not GEM staff or premises.">
+<picture class="g-cleaning-poster">
+<source media="(max-width:700px) and (prefers-reduced-motion:reduce), (max-width:700px) and (prefers-reduced-data:reduce), (max-height:500px) and (hover:none) and (prefers-reduced-motion:reduce), (max-height:500px) and (hover:none) and (prefers-reduced-data:reduce)" srcset="/static/detailing/mobile/finish.webp">
+<source media="(prefers-reduced-motion:reduce), (prefers-reduced-data:reduce)" srcset="/static/detailing/desktop/finish.webp">
+<source media="(max-width:700px), (max-height:500px) and (hover:none)" srcset="/static/detailing/mobile/poster.webp">
+<img src="/static/detailing/desktop/poster.webp" width="960" height="600" alt="" fetchpriority="high" decoding="async">
+</picture>
+<canvas id="cleaning-canvas" aria-hidden="true"></canvas>
+<noscript><picture class="g-cleaning-poster g-cleaning-nojs"><source media="(max-width:700px), (max-height:500px) and (hover:none)" srcset="/static/detailing/mobile/finish.webp"><img src="/static/detailing/desktop/finish.webp" width="960" height="600" alt="" fetchpriority="high"></picture></noscript>
+</div>
+<div class="container g-drive-bottom">
+<div class="g-drive-description"><p>GEM Autoworks.<br> Automotive appointments,<br> made personal.</p><a class="btn btn-primary btn-large" href="/book">Book an appointment {{arrow()}}</a></div>
+<div class="g-cleaning-caption"><span id="cleaning-phase" aria-live="off">Finish</span><a href="#care" class="g-scroll-cue" aria-label="Continue to the GEM introduction"><span>Scroll through the clean</span><svg width="20" height="32" viewBox="0 0 20 32" fill="none" aria-hidden="true"><path d="M10 1v28m-7-7 7 7 7-7" stroke="currentColor" stroke-width="1.5"/></svg></a></div>
+</div>
 </div></section>
 <section class="g-section g-home-introduction" id="care"><div class="container"><h2>Bring your ideas.<br> We’ll make time.</h2><p>{% if site.about_text=='At GEM Autoworks, every vehicle deserves thoughtful attention. Reach out to discuss your goals, explore our work, and book time with our team.' %}Tell us about your vehicle and what you have in mind. GEM is built around a direct conversation with the team.{% else %}{{site.about_text}}{% endif %}</p><div class="g-home-paths"><a href="/services"><h3>Plan a visit</h3><span>Compare appointments {{arrow()}}</span></a><a href="/gallery"><h3>Take a closer look</h3><span>Open the gallery {{arrow()}}</span></a><a href="/reviews"><h3>Hear from customers</h3><span>Read their experiences {{arrow()}}</span></a></div></div></section>
-<script type="module" src="/static/js/cleaning-experience.js?v=1"></script>
+<script type="module" src="/static/js/detailing-player.js?v=1"></script>
 {% endblock %}
 

@@ -1,7 +1,11 @@
-Current revision: scroll-controlled cleaning storyboard.
+# Original scroll-controlled detailing draft
 
-Eight generated frames show one detailer washing and wiping a car from a locked camera. These are illustrations, not actual footage or representations of GEM employees or customer work. Native scroll selects the frames; reduced motion shows the clean finish. Paint choices, car rotation and door animation are absent from the rendered experience.
+The homepage now plays a continuous eight-second Blender animation through native scroll. A stationary fictional coupe and a detailer progress through preparation, washing, wiping, paint reveal and finish. All scene geometry, materials and motion were authored from scratch. There are no imported models, rigs, textures, animation clips or generated storyboard inputs.
+
+This remains an artistic draft, not an approved production-quality result. The procedural character, garment anatomy and vehicle surfacing need further specialist refinement. Cloth contact and foam progression use controlled approximations rather than physical simulations. See `production/detailing/BUILD_NOTES.md`, `SOURCES.md` and `VALIDATION.md` for editable source, provenance, checks and limitations.
+
+Each composition has 160 rendered WebP frames: 960×600 desktop and 576×720 mobile. Playback progressively fetches nearby frames, bounds decoded memory, supports reverse scrolling and returns to normal page flow after one viewport of sticky travel. Reduced motion, reduced data, JavaScript failure and failed sequence requests retain a static fallback. No external animation library is loaded.
 
 Homepage no longer repeats service descriptions, durations, prices, gallery imagery, reviews, contact details, or closing booking pitches. Dedicated pages own those details. Shared main navigation stays for wayfinding. Footer contains legal navigation only. Homepage has a direct booking link rather than a duplicate booking form.
 
-Asset: static/img/cleaning-sequence.png. Built-in ImageGen prompt: fixed-camera eight-frame sequence of a professional detailer washing a midnight-blue coupe, then wiping the foam with a microfiber towel in a dark studio. No text or logos. Original prompt and generated source retained in the conversation.
+The scene is a fictional illustration, not GEM staff, premises or customer work. The previous licensed car, paint/spin code and eight-image storyboard are unused. Automatic approval review blocked their deletion; they remain with their original licence notices pending direct approval. Nothing was deployed to production.
