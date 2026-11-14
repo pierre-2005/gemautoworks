@@ -40,10 +40,10 @@ body.admin { background: var(--p-bg); }
 @media (max-width: 899px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* the day as a timeline: each job a block as long as it takes (signature move) */
-.dayline { position: relative; border-left: 2px solid var(--line); margin-left: 64px; padding-left: var(--s-5); }
+.dayline { position: relative; border-left: 1px solid var(--line); margin-left: 64px; padding-left: var(--s-5); }
 .job { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s-4); padding: var(--s-4) var(--s-5); border-radius: var(--r-md); background: var(--p-bg); border: 1px solid var(--line); margin-bottom: var(--s-3); min-height: calc(var(--min, 60) * 0.55px); }
 .job::before { content: attr(data-time); position: absolute; left: calc(-1 * var(--s-5) - 64px - 2px); top: var(--s-4); width: 56px; text-align: right; font: 500 14px var(--font-text); color: var(--p-muted); font-variant-numeric: tabular-nums; }
-.job::after { content: ""; position: absolute; left: calc(-1 * var(--s-5) - 7px); top: calc(var(--s-4) + 4px); width: 10px; height: 10px; border-radius: 50%; background: var(--p-action); box-shadow: 0 0 0 3px var(--p-bg); }
+.job::after { content: ""; position: absolute; left: calc(-1 * var(--s-5) - 6px); top: calc(var(--s-4) + 4px); width: 10px; height: 10px; border-radius: 50%; background: var(--p-action); box-shadow: 0 0 0 3px var(--p-bg); }
 .job--pending::after, .job--needs_time::after { background: #b7791f; }
 .job--completed { opacity: 0.65; }
 .job__title { font-weight: 500; font-size: 17px; margin: 0 0 4px; }
@@ -62,7 +62,7 @@ body.admin { background: var(--p-bg); }
 .cal__item { display: block; padding: 8px 10px; margin-bottom: 6px; border-radius: var(--r-sm); background: #e1ecf8; color: #0b3d75; font-size: 13px; line-height: 1.35; text-decoration: none; }
 .cal__item--pending, .cal__item--needs_time { background: #fdf0d5; color: #713f12; }
 .cal__item--completed { background: var(--p-surface); color: var(--p-muted); }
-.cal__item--block { background: repeating-linear-gradient(-45deg, var(--p-surface) 0 6px, transparent 6px 12px); color: var(--p-muted); }
+.cal__item--block { background: transparent; border: 1px dashed color-mix(in oklab, var(--p-ink) 25%, transparent); color: var(--p-muted); }
 .cal__closed { font-size: 13px; color: var(--p-muted); }
 .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-4); }
 .form-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }

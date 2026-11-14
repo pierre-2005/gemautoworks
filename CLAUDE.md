@@ -16,7 +16,8 @@ tests/          pytest unit/integration; visual_smoke.py (Playwright screenshots
 
 ## Conventions
 - Every POST form carries a CSRF token; every public form has a honeypot + rate limit.
-- All times stored as UTC ISO strings; displayed in `BUSINESS_TIMEZONE`.
+- Appointment times are stored as local wall-clock strings (`YYYY-MM-DDTHH:MM` in `BUSINESS_TIMEZONE`): one detailer, one calendar. Audit timestamps (`created_at`) are UTC.
+- Public pages use the Taste kit (`static/kit/`, do not edit it) and must keep passing its gate; app pages extend `app_base.html` (normal flow).
 - Settings are key/value in `settings`; read via `get_settings()`; never hard-code business copy in templates.
 - Schema changes go through numbered migrations in `db.py` (`schema_version`).
 - No lorem ipsum. No invented reviews, prices, or claims.
