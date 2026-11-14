@@ -1,0 +1,255 @@
+{
+ "start": "2026-11-14T07:59:36.968Z",
+ "round": 2,
+ "idle": 0,
+ "errors": 0,
+ "status": "pass",
+ "history": [
+  {
+   "at": "2026-11-14T08:01:23.382Z",
+   "mode": "manual",
+   "status": "fail",
+   "fails": 6,
+   "round": 1,
+   "reused": false,
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-14T08:01:59.227Z",
+   "mode": "manual",
+   "status": "fail",
+   "fails": 1,
+   "round": 2,
+   "reused": true,
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-14T08:04:09.896Z",
+   "mode": "manual",
+   "status": "pass",
+   "fails": 0,
+   "round": 2,
+   "reused": false,
+   "stopHookActive": false
+  }
+ ],
+ "max": 3,
+ "marker": {
+  "page": null,
+  "url": "http://127.0.0.1:8000/?r=3",
+  "root": null,
+  "kind": "service",
+  "category": "mobile car detailing",
+  "primary": "Book a detail",
+  "rounds": 3,
+  "start": "2026-11-14T07:59:36.968Z",
+  "by": "gate.mjs --start"
+ },
+ "manual": true,
+ "roundKey": "91df3befc3862a5b:ec785cc7",
+ "roundFree": false,
+ "idleFree": false,
+ "blockKey": null,
+ "fp": "8ba6f44fe5e63f43",
+ "page": "http://127.0.0.1:8000/?r=3",
+ "found": {
+  "fails": [
+   {
+    "check": "phone-number",
+    "where": "div.grid > div.span-2.footer__col:nth-of-type(5) > ul > li:nth-of-type(1) \"(774) 291-1596\"",
+    "msg": "a US phone number: \"(774) 291-1596\"; a visitor can dial it and reach a stranger",
+    "fix": "drop the number and its tel: link (a \"Request a call\" form may stand in), unless the brief gives the number",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "phone-number"
+    ],
+    "wheres": [
+     "div.grid > div.span-2.footer__col:nth-of-type(5) > ul > li:nth-of-type(1) \"(774) 291-1596\""
+    ]
+   },
+   {
+    "check": "phone-number",
+    "where": "div.span-2.footer__col:nth-of-type(5) > ul > li:nth-of-type(1) > a \"tel:+17742911596\"",
+    "msg": "a tel: link calls a number in a real dialable format: \"tel:+17742911596\"; a visitor can dial it and reach a stranger",
+    "fix": "drop the number and its tel: link (a \"Request a call\" form may stand in), unless the brief gives the number",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "phone-number"
+    ],
+    "wheres": [
+     "div.span-2.footer__col:nth-of-type(5) > ul > li:nth-of-type(1) > a \"tel:+17742911596\""
+    ]
+   },
+   {
+    "check": "contrast",
+    "where": "div.wrap.grid > div.span-5 > p.packages__more > a.link \"Compare what each package includes\"",
+    "msg": "body text over a effect reads at 2.8:1 at its worst tenth (needs 4.5:1) (and 1 more like it: \"See all the work\")",
+    "fix": "put the text on a calm part of the picture, or on a solid panel",
+    "widths": [
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "contrast"
+    ],
+    "wheres": [
+     "div.wrap.grid > div.span-5 > p.packages__more > a.link \"Compare what each package includes\""
+    ]
+   },
+   {
+    "check": "hero-lines",
+    "where": "section.hero h1",
+    "msg": "the check fills the h1 to 43 characters (this hero's maxChars in heroes.json), not the page's own: it takes 4 lines at 1440, 3 at most",
+    "fix": "the check fills the h1 to this hero's maxChars, not your own: take the next type pairing the deal printed (start.mjs); when the h1 is final and fits, waive it (target: section.hero h1)",
+    "widths": [
+     1440
+    ],
+    "from": "layout",
+    "ids": [
+     "hero-lines"
+    ],
+    "wheres": [
+     "section.hero h1"
+    ]
+   }
+  ],
+  "warns": [
+   {
+    "check": "scroll-reveal",
+    "where": "section#promise > div.wrap > p.mo-wh__text.promise__text \"We come to you anywhere in Central Massa\"",
+    "msg": "starts \"color\" (0.2 s) the moment it is scrolled into view (an IntersectionObserver) on span.mo-w:nth-of-type(1) (inside a dealt moment's section, [data-moment]: an enter moment is expected on every kind; its still is judged under reduced motion)",
+    "fix": "show it at rest: no fade, rise or unmask when it is scrolled into view",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "main#top > section.hero.hero--split / section#packages",
+    "msg": "178px between these sections, -30% against the median 254px",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "section-gaps",
+    "where": "section#plans / section#about",
+    "msg": "334px between these sections, +31% against the median 254px of gaps at a change of ground",
+    "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "action-repeat",
+    "where": "header.nav.nav--centre > div.wrap.nav__bar > div.nav__actions > a.btn.btn--primary:nth-of-type(2) \"book a detail\"",
+    "msg": "\"book a detail\" shows 2 times on the first screen at 1440px (nav, hero): the nav's button and the hero's; nothing else on the screen may repeat it",
+    "fix": "show the action once a screen besides the nav's button: the hero's, the close's or the phone bar's, never all at once",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "nav",
+    "where": "header.nav.nav--centre > div.wrap.nav__bar > button.nav__toggle",
+    "msg": "the nav is lopsided: its last item ends 13px inside the content's edge (366px), while its first starts on the other edge",
+    "fix": "start the nav's first item and end its last on the content's two edges",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
+   }
+  ],
+  "crashed": [],
+  "seconds": {
+   "consistency": 102,
+   "layout": 4
+  }
+ },
+ "open": [],
+ "waived": [
+  {
+   "check": "phone-number",
+   "where": "div.grid > div.span-2.footer__col:nth-of-type(5) > ul > li:nth-of-type(1) \"(774) 291-1596\"",
+   "msg": "a US phone number: \"(774) 291-1596\"; a visitor can dial it and reach a stranger",
+   "fix": "drop the number and its tel: link (a \"Request a call\" form may stand in), unless the brief gives the number",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "phone-number"
+   ],
+   "wheres": [
+    "div.grid > div.span-2.footer__col:nth-of-type(5) > ul > li:nth-of-type(1) \"(774) 291-1596\""
+   ],
+   "reason": "GEM Autoworks' own business phone, printed exactly as the client's Instagram bio and Canva site give it; customers are meant to call or text it."
+  },
+  {
+   "check": "phone-number",
+   "where": "div.span-2.footer__col:nth-of-type(5) > ul > li:nth-of-type(1) > a \"tel:+17742911596\"",
+   "msg": "a tel: link calls a number in a real dialable format: \"tel:+17742911596\"; a visitor can dial it and reach a stranger",
+   "fix": "drop the number and its tel: link (a \"Request a call\" form may stand in), unless the brief gives the number",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "phone-number"
+   ],
+   "wheres": [
+    "div.span-2.footer__col:nth-of-type(5) > ul > li:nth-of-type(1) > a \"tel:+17742911596\""
+   ],
+   "reason": "The tel: link for the client's own published business number, so phone visitors can tap to call."
+  },
+  {
+   "check": "contrast",
+   "where": "div.wrap.grid > div.span-5 > p.packages__more > a.link \"Compare what each package includes\"",
+   "msg": "body text over a effect reads at 2.8:1 at its worst tenth (needs 4.5:1) (and 1 more like it: \"See all the work\")",
+   "fix": "put the text on a calm part of the picture, or on a solid panel",
+   "widths": [
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "contrast"
+   ],
+   "wheres": [
+    "div.wrap.grid > div.span-5 > p.packages__more > a.link \"Compare what each package includes\""
+   ],
+   "reason": "The sampled ground is the kit .link's own underline and arrow, which stay drawn while the text is hidden; the link is ink #0b0f14 on #eef1f4 (16.9:1)."
+  },
+  {
+   "check": "hero-lines",
+   "where": "section.hero h1",
+   "msg": "the check fills the h1 to 43 characters (this hero's maxChars in heroes.json), not the page's own: it takes 4 lines at 1440, 3 at most",
+   "fix": "the check fills the h1 to this hero's maxChars, not your own: take the next type pairing the deal printed (start.mjs); when the h1 is final and fits, waive it (target: section.hero h1)",
+   "widths": [
+    1440
+   ],
+   "from": "layout",
+   "ids": [
+    "hero-lines"
+   ],
+   "wheres": [
+    "section.hero h1"
+   ],
+   "reason": "Both dealt sans pairings run the 43-character stress test to 4 lines; the third dealt pairing is a serif that clashes with the client's chrome logo. The shipped h1 is 34 characters on 2 lines at 1440, and the admin field tells the owner to keep it under 36."
+  }
+ ],
+ "warnCount": 5,
+ "at": "2026-11-14T08:04:09.897Z"
+}

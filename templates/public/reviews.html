@@ -14,10 +14,22 @@
         {% endif %}
         <div class="btn-row">
           <a class="btn btn--primary" href="/book">Book a detail<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
-          {% if reviews %}<a class="btn btn--secondary" href="#write">Write a review</a>{% endif %}
+          <a class="btn btn--secondary" href="#write">Write a review</a>
         </div>
       </div>
-      <div class="span-6 start-7 form-panel" id="write">
+      <div class="hero__media span-6 start-7">
+        {% set hp = picture('/static/img/work/altima-after') %}
+        <img src="{{ hp.src }}" srcset="{{ hp.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Nissan Altima interior after a GEM detail" style="--ly-pos: 50% 55%" fetchpriority="high" width="1536" height="2048">
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section ground-surface" id="write" style="--hm: 2" aria-labelledby="write-h">
+    <div class="wrap grid grid--top">
+      <div class="span-5">
+        <div class="section-head"><h2 id="write-h">Write a review</h2><p>Tell other drivers how your detail went. Pavly reads every review before it goes up, and never edits what you wrote.</p></div>
+      </div>
+      <div class="span-6 start-7 form-panel">
         {% if sent %}
         <div class="sent" role="status">
           <h2 class="sent__title">Thanks for your review</h2>
@@ -50,7 +62,7 @@
         </form>
         {% endif %}
       </div>
-    </div></div>
+    </div>
   </section>
 
   {% if reviews %}

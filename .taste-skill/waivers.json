@@ -1,5 +1,7 @@
-{
-  "hero-lines": "The h1 is the client's own editable line (Admin > Site). The dealt split hero's 45-character stress test runs to 4 lines in both sans pairings dealt for service (Figtree, Red Hat); the third dealt pairing is a serif that clashes with the client's chrome logo. The shipped h1 (34 characters) sits on 2 lines at 1440, and the admin field tells the owner to keep it under 36 characters.",
-  "phone-number": "The client's real business phone, printed exactly as the brief (their Instagram and Canva site) gives it.",
-  "street-number": "Addresses only appear in a signed-in customer's own garage and bookings, never on public pages."
-}
+[
+  {"check": "phone-number", "target": "li:nth-of-type(1) \"(774) 291-1596\"", "reason": "GEM Autoworks' own business phone, printed exactly as the client's Instagram bio and Canva site give it; customers are meant to call or text it."},
+  {"check": "phone-number", "target": "tel:+17742911596", "reason": "The tel: link for the client's own published business number, so phone visitors can tap to call."},
+  {"check": "hero-lines", "target": "section.hero h1", "reason": "Both dealt sans pairings run the 43-character stress test to 4 lines; the third dealt pairing is a serif that clashes with the client's chrome logo. The shipped h1 is 34 characters on 2 lines at 1440, and the admin field tells the owner to keep it under 36."},
+  {"check": "contrast", "target": "Compare what each package includes", "reason": "The sampled ground is the kit .link's own underline and arrow, which stay drawn while the text is hidden; the link is ink #0b0f14 on #eef1f4 (16.9:1)."},
+  {"check": "contrast", "target": "See all the work", "reason": "Same kit .link underline and arrow sampled as the ground; ink on the flat page ground at 16.9:1."}
+]

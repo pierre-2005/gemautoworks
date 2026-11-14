@@ -91,11 +91,11 @@ html { accent-color: var(--p-accent); caret-color: var(--p-accent); }
 .price-table thead th { font: 500 13px/1.4 var(--font-text); color: var(--p-muted); }
 .price-table td:not(:first-child), .price-table th:not(:first-child) { text-align: right; }
 
-.ig-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--s-4); }
+.ig-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-4); }
 .ig-grid a { display: block; aspect-ratio: 4 / 5; overflow: hidden; border-radius: var(--r-md); background: var(--p-surface); }
 .ig-grid img { width: 100%; height: 100%; object-fit: cover; transition: transform 300ms var(--ease-out); }
 @media (hover: hover) and (pointer: fine) { .ig-grid a:hover img { transform: scale(1.03); } }
-@media (max-width: 1023px) { .ig-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1023px) { .ig-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 639px) { .ig-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s-3); } }
 
 .review { padding: var(--s-6) 0; border-top: 1px solid var(--line); }
@@ -111,14 +111,16 @@ html { accent-color: var(--p-accent); caret-color: var(--p-accent); }
 .hp { position: absolute !important; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 
 /* ------------------------------------------------ section fit (layout-v4: each section one or two screens) */
-#packages .frame--fill, #about .frame--fill, #story .frame--fill { height: min(640px, calc(100svh - var(--padt) - var(--padb))); }
+#packages .frame--fill, #about .frame--fill, #story .frame--fill, #plans .frame--fill { height: min(640px, calc(100svh - var(--padt) - var(--padb))); }
 @media (min-width: 640px) and (max-width: 1023px) {
   #work .compare { grid-column: span 6; aspect-ratio: 2 / 3; }
   #work .compare:nth-child(3) { display: none; }
-  #packages .frame--fill, #about .frame--fill { height: 46svh; margin-top: var(--s-6); }
+  #packages .frame--fill, #about .frame--fill, #story .frame--fill, #plans .frame--fill, #questions .frame--fill { height: 46svh; margin-top: var(--s-6); }
+  .packages-grid .package { grid-column: span 4; }
+  #pairs .compare { grid-column: span 4; aspect-ratio: 9 / 16; }
 }
 @media (max-width: 639px) {
-  #packages .frame--fill, #about .frame--fill { height: 300px; margin-top: var(--s-6); }
+  #packages .frame--fill, #about .frame--fill, #story .frame--fill, #plans .frame--fill, #questions .frame--fill { height: 300px; margin-top: var(--s-6); }
 }
 
 /* ------------------------------------------------ services */
@@ -131,11 +133,11 @@ html { accent-color: var(--p-accent); caret-color: var(--p-accent); }
 .package__book { margin-top: var(--s-4); }
 .addons { margin-top: var(--s-7); max-width: 628px; }
 .addons h3 { font: 500 18px/1.3 var(--font-text); margin: 0 0 var(--s-3); }
-.faq__photo { margin-top: var(--s-6); aspect-ratio: 4 / 3; }
+.faq__photo { min-height: 420px; }
 .ticks--numbered { counter-reset: tick; }
 .ticks--numbered li { counter-increment: tick; padding-left: 36px; position: relative; }
 .ticks--numbered li::before { content: counter(tick); position: absolute; left: 0; top: 14px; width: 24px; height: 24px; border-radius: 50%; background: var(--p-ink); color: var(--p-bg); font: 500 13px/24px var(--font-text); text-align: center; }
-@media (max-width: 1023px) { .faq__photo { display: none; } }
+
 
 /* ------------------------------------------------ contact and reviews: a form beside the words, on --g-alt */
 .form-panel { background: var(--p-surface); border-radius: var(--r-lg); padding: var(--s-7); align-self: start; }

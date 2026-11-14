@@ -180,13 +180,13 @@ details.edit[open] > summary { margin-bottom: var(--s-4); }
 .acc-section + .acc-section { border-top: 1px solid var(--line); }
 .bays { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--s-4); }
 .bay { position: relative; border: 1px solid var(--line); border-radius: var(--r-lg); padding: var(--s-5); background: var(--p-bg);
-  background-image: linear-gradient(90deg, transparent calc(100% - 3px), color-mix(in oklab, var(--p-ink) 8%, transparent) 0); }
+}
 .bay__plate { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 6px; background: var(--p-inv-bg); color: var(--p-inv-ink); font: 500 12px/1 var(--font-text); letter-spacing: 0.02em; margin-bottom: var(--s-4); }
 .bay__name { font: var(--display-weight) 24px/1.2 var(--font-display); letter-spacing: -0.015em; margin: 0 0 4px; }
 .bay__meta { margin: 0 0 var(--s-2); color: var(--p-muted); font-size: 15px; }
 .bay .actions { margin-top: var(--s-4); align-items: flex-start; }
 .bay details.edit { flex-basis: 100%; }
-.bay--add { border-style: dashed; background-image: none; display: flex; align-items: center; }
+.bay--add { border-style: dashed; display: flex; align-items: center; }
 .bay--add details { width: 100%; }
 .remove-form { margin-top: var(--s-4); }
 .plan { margin-bottom: var(--s-4); }

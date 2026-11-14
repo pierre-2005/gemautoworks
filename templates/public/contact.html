@@ -8,14 +8,26 @@
       <div class="hero__text span-5">
         <h1 id="hero-h">Contact GEM Autoworks</h1>
         <p class="hero__lead">Ask for a quote, check a date, or tell us about a tough job. Pavly replies by email or text, usually the same day.</p>
+        <div class="btn-row"><a class="btn btn--primary" href="/book">Book a detail</a><a class="btn btn--secondary" href="#message">Send a message</a></div>
+      </div>
+      <div class="hero__media span-6 start-7">
+        {% set hp = picture('/static/img/work/f150-after') %}
+        <img src="{{ hp.src }}" srcset="{{ hp.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Ford F-150 cab after a GEM interior detail" style="--ly-pos: 50% 60%" fetchpriority="high" width="1536" height="2048">
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section ground-surface" id="message" style="--hm: 2" aria-labelledby="msg-h">
+    <div class="wrap grid grid--top">
+      <div class="span-5">
+        <div class="section-head"><h2 id="msg-h">Send a message</h2><p>Tell us the car, what it needs and the town. We reply by email or text, usually the same day.</p></div>
         <dl class="contact-list">
           <div><dt>Call or text</dt><dd><a class="link" href="{{ tel(site.phone) }}">{{ site.phone }}</a></dd></div>
           <div><dt>Email</dt><dd><a class="link" href="mailto:{{ site.email }}">{{ site.email }}</a></dd></div>
           <div><dt>Instagram</dt><dd><a class="link" href="{{ site.instagram_url }}" rel="noopener">{{ site.instagram_handle }}</a></dd></div>
-          <div><dt>Where</dt><dd>{{ site.service_area }}{% if site.service_mode != 'mobile' and site.shop_address %}. Shop: {{ site.shop_address }}{% endif %}</dd></div>
         </dl>
       </div>
-      <div class="span-6 start-7 form-panel" id="message">
+      <div class="span-6 start-7 form-panel">
         {% if sent %}
         <div class="sent" role="status">
           <h2 class="sent__title">Your message is in</h2>
@@ -45,7 +57,7 @@
         </form>
         {% endif %}
       </div>
-    </div></div>
+    </div>
   </section>
 
   {% if posts %}
@@ -56,7 +68,7 @@
         <a class="link" href="{{ site.instagram_url }}" rel="noopener">Follow {{ site.instagram_handle }}</a>
       </div>
       <div class="ig-grid">
-        {% for p in posts[:5] %}{% set img = picture(p.image_path) %}
+        {% for p in posts[:4] %}{% set img = picture(p.image_path) %}
         <a href="{{ p.url }}" rel="noopener" aria-label="Open the post on Instagram: {{ p.caption[:80] }}">
           <img src="{{ img.src }}" srcset="{{ img.srcset }}" sizes="(min-width: 1024px) 240px, 50vw" alt="{{ p.alt }}" loading="lazy" width="480" height="600">
         </a>

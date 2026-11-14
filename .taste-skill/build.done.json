@@ -1,11 +1,11 @@
 {
- "page": "index.html",
- "url": null,
+ "page": null,
+ "url": "http://127.0.0.1:8000/?r=3",
  "root": null,
  "kind": "service",
  "category": "mobile car detailing",
  "primary": "Book a detail",
  "rounds": 3,
- "start": "2026-11-14T07:13:03.963Z",
+ "start": "2026-11-14T07:59:36.968Z",
  "by": "gate.mjs --start"
 }

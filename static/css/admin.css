@@ -89,3 +89,12 @@ body.admin { background: var(--p-bg); }
 .kv dt { color: var(--p-muted); }
 .kv dd { margin: 0; overflow-wrap: anywhere; }
 .msg-body { white-space: pre-wrap; margin: var(--s-3) 0; font-size: 16px; line-height: 1.55; }
+/* the kit sizes main > section to whole screens for the marketing pages; the admin is a working screen */
+.adm__main > section, .adm__main > .section { height: auto !important; min-height: 0 !important; padding: 0; display: block; }
+.adm__main > section + section, .adm__main > section + .adm-section { margin-top: var(--s-7); }
+@media (max-width: 899px) {
+  .adm { grid-template-rows: auto 1fr; }
+  .adm__rail { min-width: 0; }
+  .adm__nav { min-width: 0; flex: 1; }
+}
+.adm__main .notice { margin-bottom: var(--s-5); }
