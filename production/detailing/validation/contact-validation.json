@@ -1,0 +1,51 @@
+[
+  {
+    "frame": 26,
+    "cloth_min_gap_mm": 2.44,
+    "cloth_max_gap_mm": 26.53,
+    "glove_min_gap_mm": 5.99,
+    "glove_max_gap_mm": 59.49
+  },
+  {
+    "frame": 49,
+    "cloth_min_gap_mm": 3.94,
+    "cloth_max_gap_mm": 27.84,
+    "glove_min_gap_mm": 6.47,
+    "glove_max_gap_mm": 60.75
+  },
+  {
+    "frame": 71,
+    "cloth_min_gap_mm": 4.18,
+    "cloth_max_gap_mm": 28.19,
+    "glove_min_gap_mm": 7.07,
+    "glove_max_gap_mm": 61.71
+  },
+  {
+    "frame": 91,
+    "cloth_min_gap_mm": 2.45,
+    "cloth_max_gap_mm": 28.17,
+    "glove_min_gap_mm": 8.14,
+    "glove_max_gap_mm": 60.36
+  },
+  {
+    "frame": 115,
+    "cloth_min_gap_mm": 2.43,
+    "cloth_max_gap_mm": 30.04,
+    "glove_min_gap_mm": 5.93,
+    "glove_max_gap_mm": 60.59
+  },
+  {
+    "frame": 140,
+    "cloth_min_gap_mm": 4.0,
+    "cloth_max_gap_mm": 31.41,
+    "glove_min_gap_mm": 6.61,
+    "glove_max_gap_mm": 61.16
+  },
+  {
+    "frame": 160,
+    "cloth_min_gap_mm": 4.23,
+    "cloth_max_gap_mm": 30.15,
+    "glove_min_gap_mm": 7.19,
+    "glove_max_gap_mm": 61.48
+  }
+]

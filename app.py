@@ -26,6 +26,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from PIL import Image, UnidentifiedImageError
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = Path(os.environ.get('DATA_DIR', str(ROOT / 'data')))
@@ -291,6 +292,7 @@ async def lifespan(app:FastAPI):
     except asyncio.CancelledError: pass
 
 app=FastAPI(title='GEM Autoworks',docs_url=None,redoc_url=None,openapi_url=None,lifespan=lifespan)
+app.add_middleware(GZipMiddleware, minimum_size=1000, compresslevel=5)
 app.add_middleware(SessionMiddleware,secret_key=SECRET_KEY,session_cookie='gem_session',same_site='lax',https_only=COOKIE_SECURE,max_age=8*60*60)
 app.mount('/static',StaticFiles(directory=ROOT/'static'),name='static')
 app.mount('/uploads',StaticFiles(directory=UPLOAD_DIR),name='uploads')

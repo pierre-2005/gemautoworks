@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "duration": 8,
+  "count": 160,
+  "variants": {
+    "desktop": {
+      "width": 960,
+      "height": 600,
+      "path": "/static/detailing/desktop/",
+      "frameBytes": 2843282
+    },
+    "mobile": {
+      "width": 576,
+      "height": 720,
+      "path": "/static/detailing/mobile/",
+      "frameBytes": 1828838
+    }
+  }
+}

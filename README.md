@@ -1,4 +1,10 @@
-# GEM Autoworks | Website V1
+# GEM Autoworks | Website V2
+
+The homepage uses an original Blender detailing scene, scrubbed forward and backward by native scrolling. A stationary midnight-blue coupe, gloved hands, a curved microfiber towel and a spatial foam mask form one continuous shot. The character is a stylized procedural illustration, not actual GEM staff or premises. This remains a draft for visual review; specialist character and garment work is needed to meet a photorealistic advertising standard.
+
+Optimized frames and posters are self-hosted under `static/detailing/`. Reduced motion, reduced data and loading failure show the final-frame HTML picture. The player decodes at most 14 cached frames, defers neighbouring frames until needed, and selects a separate mobile sequence. The existing same-origin Content Security Policy is retained. The old spinning showroom, paint controls and eight-image storyboard are unreferenced legacy assets, retained with their original licence files.
+
+Delivery assets are committed, so Docker deployment requires Python only. `npm run check:js` checks application JavaScript syntax. Original editable scene, source scripts, render instructions and provenance are in `production/detailing/`; these production files are excluded from the container image. PRs run functional and responsive-browser CI. No production deployment is part of this change.
 
 ## Current website design and admin management
 

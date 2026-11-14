@@ -1,0 +1,100 @@
+{
+  "source_revision": "1d13cbfc8b41c61dd23586bed10e351e105ce7a9e197b53f63b8dc4f6d5a0e7a",
+  "compositions": {
+    "desktop": {
+      "frames": 160,
+      "dimensions": [
+        960,
+        600
+      ],
+      "unique_pngs": 160,
+      "largest_frame_differences": [
+        {
+          "index": 145,
+          "mean_rgb_difference": 4.6037
+        },
+        {
+          "index": 146,
+          "mean_rgb_difference": 4.5435
+        },
+        {
+          "index": 144,
+          "mean_rgb_difference": 4.5426
+        },
+        {
+          "index": 147,
+          "mean_rgb_difference": 4.2237
+        },
+        {
+          "index": 64,
+          "mean_rgb_difference": 4.1339
+        },
+        {
+          "index": 143,
+          "mean_rgb_difference": 4.1212
+        },
+        {
+          "index": 148,
+          "mean_rgb_difference": 3.9898
+        },
+        {
+          "index": 142,
+          "mean_rgb_difference": 3.8547
+        }
+      ],
+      "median_difference": 1.0007,
+      "static_corner_max_difference": 0.0197,
+      "master_bytes": 99594062
+    },
+    "mobile": {
+      "frames": 160,
+      "dimensions": [
+        576,
+        720
+      ],
+      "unique_pngs": 160,
+      "largest_frame_differences": [
+        {
+          "index": 146,
+          "mean_rgb_difference": 4.1934
+        },
+        {
+          "index": 145,
+          "mean_rgb_difference": 4.0617
+        },
+        {
+          "index": 147,
+          "mean_rgb_difference": 3.9997
+        },
+        {
+          "index": 148,
+          "mean_rgb_difference": 3.7442
+        },
+        {
+          "index": 144,
+          "mean_rgb_difference": 3.7252
+        },
+        {
+          "index": 64,
+          "mean_rgb_difference": 3.4921
+        },
+        {
+          "index": 143,
+          "mean_rgb_difference": 3.4141
+        },
+        {
+          "index": 65,
+          "mean_rgb_difference": 3.4087
+        }
+      ],
+      "median_difference": 0.8313,
+      "static_corner_max_difference": 0.1797,
+      "master_bytes": 70114664
+    }
+  },
+  "artistic_approval": false,
+  "remaining_limits": [
+    "Stylized procedural character and garment anatomy require specialist refinement.",
+    "Controlled cloth and foam approximations; no fluid or cloth simulation."
+  ]
+}

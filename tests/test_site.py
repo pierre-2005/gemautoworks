@@ -48,6 +48,25 @@ def test_every_public_page_and_assets():
         assert client.get('/api/availability',params={'day':'2020-01-01','service_id':1}).json()['slots']==[]
 
 
+def test_cleaning_home_has_no_showroom_controls_or_duplicate_service_list():
+    with TestClient(app) as client:
+        home = client.get('/').text
+        assert '/static/js/detailing-player.js' in home
+        assert 'data-paint' not in home
+        assert 'car-experience.js' not in home
+        assert 'g-service-list' not in home
+        assert 'cleaning-sequence.png' not in home
+        assert '/static/detailing/mobile/finish.webp' in home
+        manifest = client.get('/static/detailing/manifest.json').json()
+        assert manifest['count'] == 160
+        for variant in manifest['variants'].values():
+            directory = Path(__file__).resolve().parents[1] / variant['path'].lstrip('/')
+            assert all((directory / f'{index:03}.webp').is_file() for index in range(manifest['count']))
+            for poster in ['poster.webp', 'finish.webp']:
+                assert client.get(variant['path'] + poster).status_code == 200
+        assert client.get('/services').status_code == 200
+
+
 def test_bookings_conflicts_admin_and_reviews():
     with TestClient(app) as client:
         csrf=token(client.get('/book').text)
