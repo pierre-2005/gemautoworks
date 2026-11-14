@@ -4,12 +4,16 @@ from __future__ import annotations
 import csv
 import io
 import json
+import math
 import secrets
+import tempfile
 from datetime import date, datetime, time, timedelta
 
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, RedirectResponse, StreamingResponse
 from PIL import Image, ImageOps, UnidentifiedImageError
+
+Image.MAX_IMAGE_PIXELS = 40_000_000   # a 40 MP photo is plenty; larger ones could exhaust the Pi's memory
 
 from .. import booking as bk
 from .. import config
@@ -38,6 +42,12 @@ def admin_id(request: Request) -> int | None:
 
 def need_admin(request: Request) -> int:
     aid = admin_id(request)
+    if aid:
+        with connection() as c:
+            row = c.execute('SELECT session_version FROM admins WHERE id=?', (aid,)).fetchone()
+        if not row or row['session_version'] != request.session.get('admin_sv', 0):
+            request.session.pop('admin_id', None)
+            aid = None
     if not aid:
         raise HTTPException(303, headers={'Location': '/admin/login'})
     return aid
@@ -85,6 +95,7 @@ def login(request: Request, csrf: str = Form(''), email: str = Form(''), passwor
         return _render(request, 'admin/login.html', error='That email and password do not match.')
     session_rotate(request)
     request.session['admin_id'] = row['id']
+    request.session['admin_sv'] = row['session_version']
     return RedirectResponse('/admin', 303)
 
 
@@ -166,24 +177,24 @@ async def new_appointment(request: Request):
         raise HTTPException(400, 'Write the customer name and a valid email.')
     with connection() as c:
         try:
-            q = bk.quote(c, int(g('service') or 0), g('size'), [int(x) for x in form.getlist('addons') if str(x).isdigit()],
+            q = bk.quote(c, _int(g('service'), 'Package'), g('size'), [int(x) for x in form.getlist('addons') if str(x).isdigit()],
                          email=g('email').lower())
-        except (bk.BookingError, ValueError) as e:
+        except bk.BookingError as e:
             raise HTTPException(400, str(e) or 'Choose a package and size.')
         if g('price').strip():
-            try:
-                q.price_cents = round(float(g('price').replace('$', '')) * 100)
-                q.discount_cents = 0
-            except ValueError:
-                raise HTTPException(400, 'Write the price as a number, like 149.')
+            q.price_cents = _dollars(g('price'))
+            q.discount_cents = 0
         cust = c.execute('SELECT id FROM customers WHERE email=?', (g('email').lower(),)).fetchone()
-        with transaction(c):
+        try:
+          with transaction(c):
             appt = bk.create_appointment(c, q=q, day=d, at=g('time'), name=g('name'), email=g('email').lower(), phone=g('phone'),
                                          vehicle_text=g('vehicle'), location_type=g('location_type') or 'mobile', address=g('address'),
                                          notes=g('notes', 600), customer_id=cust['id'] if cust else None, status='confirmed',
                                          source='admin', check_free=not form.get('override'))
             if form.get('notify'):
                 booking_emails(c, appt, 'confirmed')
+        except bk.BookingError:
+            raise HTTPException(400, 'That time overlaps another booking or falls outside your hours. Tick "Allow it to overlap" to book it anyway.')
     return back(f"/admin/appointments/{appt['id']}", 'created')
 
 
@@ -220,10 +231,7 @@ def appointment_update(request: Request, aid: int, csrf: str = Form(''), status:
             raise HTTPException(404, 'That booking was not found.')
         cents = a['price_cents']
         if price.strip():
-            try:
-                cents = round(float(price.replace('$', '').replace(',', '')) * 100) + (a['discount_cents'] or 0)
-            except ValueError:
-                raise HTTPException(400, 'Write the price as a number, like 149.')
+            cents = _dollars(price)
         with transaction(c):
             if status in bk.LIVE and a['status'] not in bk.LIVE:
                 start = bk.parse_local(a['start_local'])
@@ -366,8 +374,7 @@ def plan_action(request: Request, pid: int, action: str, csrf: str = Form('')):
         with transaction(c):
             c.execute('UPDATE plans SET status=?, updated_at=? WHERE id=?', (status, stamp(), pid))
             if status in ('paused', 'cancelled'):
-                c.execute("UPDATE appointments SET status='cancelled', updated_at=? WHERE plan_id=? AND start_local>=? AND status IN ('pending','confirmed','needs_time')",
-                          (stamp(), pid, bk.now_local().strftime('%Y-%m-%dT00:00')))
+                bk.drop_future_plan_visits(c, pid)
             created = bk.fill_plan(c, pid) if status == 'active' else []
             if action == 'approve':
                 from ..mail import queue, link
@@ -394,9 +401,20 @@ def _dollars(v: str) -> int | None:
     if not v:
         return None
     try:
-        return round(float(v) * 100)
+        amount = float(v)
     except ValueError:
-        raise HTTPException(400, f'Write prices as numbers, like 119. "{v}" is not a number.')
+        amount = float('nan')
+    if not math.isfinite(amount) or not 0 <= amount <= 100000:
+        raise HTTPException(400, f'Write prices as numbers from 0 to 100000, like 119. "{v[:20]}" is not one.')
+    return round(amount * 100)
+
+
+def _int(v, label: str, lo: int = -10**6, hi: int = 10**6) -> int:
+    try:
+        n = int(str(v).strip() or 0)
+    except ValueError:
+        raise HTTPException(400, f'{label} must be a whole number.')
+    return max(lo, min(hi, n))
 
 
 @router.post('/services/save')
@@ -404,7 +422,7 @@ async def save_service(request: Request):
     need_admin(request)
     form = await request.form()
     check_csrf(request, form.get('csrf'))
-    sid = int(form.get('id') or 0)
+    sid = _int(form.get('id'), 'Package id', 0)
     name = clean(str(form.get('name', '')), 60)
     if not name:
         raise HTTPException(400, 'Give the package a name.')
@@ -414,18 +432,15 @@ async def save_service(request: Request):
             if sid:
                 c.execute('UPDATE services SET name=?, summary=?, includes=?, active=?, sort_order=? WHERE id=?',
                           (name, clean(str(form.get('summary', '')), 300), json.dumps(includes), int(bool(form.get('active'))),
-                           int(form.get('sort_order') or 0), sid))
+                           _int(form.get('sort_order'), 'Order', -999, 999), sid))
             else:
                 slug = '-'.join(name.lower().split())[:40] + '-' + secrets.token_hex(2)
                 sid = c.execute('INSERT INTO services(slug,name,summary,includes,active,sort_order) VALUES(?,?,?,?,?,?)',
                                 (slug, name, clean(str(form.get('summary', '')), 300), json.dumps(includes), int(bool(form.get('active'))),
-                                 int(form.get('sort_order') or 99))).lastrowid
+                                 _int(form.get('sort_order') or 99, 'Order', -999, 999))).lastrowid
             for size, _ in SIZES:
                 cents = _dollars(str(form.get(f'price_{size}', '')))
-                try:
-                    minutes = int(form.get(f'minutes_{size}') or 0)
-                except ValueError:
-                    raise HTTPException(400, 'Write the time in minutes, like 150.')
+                minutes = _int(form.get(f'minutes_{size}'), 'Time in minutes', 0, 24 * 60)
                 if cents is None or minutes < 15:
                     raise HTTPException(400, f'Set a price and a time of at least 15 minutes for {SIZE_LABEL[size]}.')
                 c.execute('INSERT INTO service_prices(service_id,size,price_cents,minutes) VALUES(?,?,?,?) '
@@ -595,9 +610,11 @@ def _save_image(upload: UploadFile, data: bytes, stem: str) -> str:
         raise HTTPException(400, 'Photos must be under 15 MB.')
     try:
         img = Image.open(io.BytesIO(data))
+        if img.width * img.height > Image.MAX_IMAGE_PIXELS:
+            raise HTTPException(400, 'That photo is too large. Use one under 40 megapixels.')
         img.verify()
         img = ImageOps.exif_transpose(Image.open(io.BytesIO(data))).convert('RGB')
-    except (UnidentifiedImageError, OSError):
+    except (UnidentifiedImageError, OSError, Image.DecompressionBombError, ValueError):
         raise HTTPException(400, 'That file is not a photo we can read. Use a JPG, PNG, HEIC-exported JPG or WebP.')
     for w in (480, 960, 1600):
         if w > img.width and w != 480:
@@ -762,7 +779,8 @@ def admin_password(request: Request, csrf: str = Form(''), current: str = Form('
         row = c.execute('SELECT * FROM admins WHERE id=?', (aid,)).fetchone()
         if not verify_password(row['password_hash'], current):
             raise HTTPException(400, 'Your current password is not right.')
-        c.execute('UPDATE admins SET password_hash=? WHERE id=?', (hash_password(new), aid))
+        c.execute('UPDATE admins SET password_hash=?, session_version=session_version+1 WHERE id=?', (hash_password(new), aid))
+        request.session['admin_sv'] = c.execute('SELECT session_version FROM admins WHERE id=?', (aid,)).fetchone()[0]
     return back('/admin/system#security', 'password')
 
 
@@ -785,13 +803,14 @@ def export(request: Request):
     need_admin(request)
     buf = io.StringIO()
     w = csv.writer(buf)
+    safe = lambda v: "'" + v if isinstance(v, str) and v[:1] in ('=', '+', '-', '@', '\t', '\r') else v  # noqa: E731  (spreadsheet formula injection)
     w.writerow(['reference', 'start', 'minutes', 'status', 'package', 'size', 'vehicle', 'where', 'address', 'price', 'discount',
                 'name', 'email', 'phone', 'notes', 'source', 'created'])
     with connection() as c:
         for r in c.execute('SELECT * FROM appointments ORDER BY start_local'):
-            w.writerow([r['reference'], r['start_local'], r['minutes'], r['status'], r['service_name'], r['size'], r['vehicle_text'],
+            w.writerow([safe(v) for v in (r['reference'], r['start_local'], r['minutes'], r['status'], r['service_name'], r['size'], r['vehicle_text'],
                         r['location_type'], r['address'], bk.money(r['price_cents']), bk.money(r['discount_cents']), r['name'],
-                        r['email'], r['phone'], r['notes'], r['source'], r['created_at']])
+                        r['email'], r['phone'], r['notes'], r['source'], r['created_at'])])
     buf.seek(0)
     return StreamingResponse(iter([buf.getvalue()]), media_type='text/csv',
                              headers={'Content-Disposition': f'attachment; filename="gem-bookings-{date.today()}.csv"'})
@@ -801,4 +820,6 @@ def export(request: Request):
 def backup(request: Request):
     need_admin(request)
     path = backup_copy()
-    return FileResponse(path, filename=f'gem-backup-{datetime.now().strftime("%Y%m%d-%H%M")}.sqlite3')
+    from starlette.background import BackgroundTask
+    return FileResponse(path, filename=f'gem-backup-{datetime.now().strftime("%Y%m%d-%H%M")}.sqlite3',
+                        background=BackgroundTask(path.unlink, missing_ok=True))

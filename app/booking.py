@@ -98,12 +98,13 @@ class Quote:
 
 
 def is_returning(c: sqlite3.Connection, email: str | None, customer_id: int | None) -> bool:
+    """Any booking that is waiting, confirmed or done means the first-detail offer is used."""
     if customer_id:
-        row = c.execute("SELECT 1 FROM appointments WHERE customer_id=? AND status IN ('confirmed','completed') LIMIT 1", (customer_id,)).fetchone()
+        row = c.execute("SELECT 1 FROM appointments WHERE customer_id=? AND status IN ('pending','confirmed','completed','needs_time') LIMIT 1", (customer_id,)).fetchone()
         if row:
             return True
     if email:
-        row = c.execute("SELECT 1 FROM appointments WHERE email=? AND status IN ('confirmed','completed') LIMIT 1", (email,)).fetchone()
+        row = c.execute("SELECT 1 FROM appointments WHERE email=? AND status IN ('pending','confirmed','completed','needs_time') LIMIT 1", (email,)).fetchone()
         if row:
             return True
     return False
@@ -222,7 +223,8 @@ def next_opening(c: sqlite3.Connection, minutes: int = 150) -> datetime | None:
 def create_appointment(c: sqlite3.Connection, *, q: Quote, day: date, at: str, name: str, email: str, phone: str,
                        vehicle_text: str, location_type: str, address: str, notes: str,
                        customer_id: int | None = None, vehicle_id: int | None = None, plan_id: int | None = None,
-                       status: str | None = None, source: str = 'web', check_free: bool = True) -> dict:
+                       status: str | None = None, source: str = 'web', check_free: bool = True,
+                       plan_date: str | None = None) -> dict:
     s = get_settings(c)
     if check_free and at not in slots(c, day, q.minutes, s):
         raise BookingError('That time was just taken. Pick another time.')
@@ -233,11 +235,11 @@ def create_appointment(c: sqlite3.Connection, *, q: Quote, day: date, at: str, n
     token = secrets.token_urlsafe(24)
     c.execute('''INSERT INTO appointments(reference,manage_token,customer_id,vehicle_id,plan_id,service_id,service_name,size,addons,
                  vehicle_text,location_type,address,start_local,minutes,status,price_cents,discount_cents,name,email,phone,notes,
-                 source,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+                 source,created_at,updated_at,plan_date) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
               (ref, token, customer_id, vehicle_id, plan_id, q.service['id'], q.service['name'], q.size,
                json.dumps([{'id': a['id'], 'name': a['name']} for a in q.addons]), vehicle_text, location_type, address,
                f'{day.isoformat()}T{at}', q.minutes, status, q.price_cents, q.discount_cents, name, email, phone, notes,
-               source, now, now))
+               source, now, now, plan_date))
     return dict(c.execute('SELECT * FROM appointments WHERE reference=?', (ref,)).fetchone())
 
 
@@ -281,8 +283,10 @@ def plan_dates(plan: sqlite3.Row | dict, after: date, count: int) -> list[date]:
 
 
 def fill_plan(c: sqlite3.Connection, plan_id: int) -> list[dict]:
-    """Keep the next N visits of an active plan on the calendar. A visit that cannot keep its usual time
-    takes the nearest free time that day; with none free it is saved as 'needs_time' for the admin."""
+    """Keep the next N visits of an active plan on the calendar. Each visit remembers the date it was planned for
+    (plan_date): moving a visit never makes its slot look empty, and a visit the customer skipped stays skipped.
+    A visit that cannot keep its usual time takes the nearest free time that day; with none free it is saved as
+    'needs_time' (it holds no calendar time) for the admin to place."""
     plan = c.execute('SELECT * FROM plans WHERE id=?', (plan_id,)).fetchone()
     if not plan or plan['status'] != 'active':
         return []
@@ -292,31 +296,29 @@ def fill_plan(c: sqlite3.Connection, plan_id: int) -> list[dict]:
     cust = c.execute('SELECT * FROM customers WHERE id=?', (plan['customer_id'],)).fetchone()
     if not vehicle or not cust:
         return []
-    today = now_local().date()
-    upcoming = c.execute("SELECT start_local, status FROM appointments WHERE plan_id=? AND start_local>=?",
-                         (plan_id, today.isoformat())).fetchall()
-    have = {r['start_local'][:10] for r in upcoming}
-    holding = sum(1 for r in upcoming if r['status'] != 'cancelled')
+    now = now_local()
+    tomorrow = now.date() + timedelta(days=1)
+    rows = c.execute('SELECT plan_date, start_local, status FROM appointments WHERE plan_id=? AND plan_date>=?',
+                     (plan_id, tomorrow.isoformat())).fetchall()
+    taken = {r['plan_date'] for r in rows}                       # scheduled, moved or skipped: never refilled
+    holding = sum(1 for r in rows if r['status'] in ('pending', 'confirmed', 'needs_time'))
     created = []
-    for d in plan_dates(plan, today + timedelta(days=1), horizon + len(have)):
+    for d in plan_dates(plan, tomorrow, horizon + len(taken)):
         if holding >= horizon:
             break
-        if d.isoformat() in have:
-            continue      # already scheduled or skipped by the customer (a cancelled visit stays skipped)
+        if d.isoformat() in taken:
+            continue
         q = quote(c, plan['service_id'], vehicle['size'], email=cust['email'], customer_id=cust['id'], settings=s)
-        free = slots(c, d, q.minutes, s, ignore_window=True)
-        free = [t for t in free if datetime.combine(d, time.fromisoformat(t)) > now_local()]
+        free = [t for t in slots(c, d, q.minutes, s, ignore_window=True) if datetime.combine(d, time.fromisoformat(t)) > now]
         want = hm(plan['preferred_time'])
-        status, at, check = 'confirmed', plan['preferred_time'], True
         if free:
-            at = min(free, key=lambda t: abs(hm(t) - want))
+            status, at = 'confirmed', min(free, key=lambda t: abs(hm(t) - want))
         else:
-            status, check = 'needs_time', False
-        vtext = vehicle_label(vehicle)
+            status, at = 'needs_time', plan['preferred_time']
         appt = create_appointment(c, q=q, day=d, at=at, name=cust['name'], email=cust['email'], phone=cust['phone'],
-                                  vehicle_text=vtext, location_type=plan['location_type'], address=plan['address'],
+                                  vehicle_text=vehicle_label(vehicle), location_type=plan['location_type'], address=plan['address'],
                                   notes=plan['notes'], customer_id=cust['id'], vehicle_id=vehicle['id'], plan_id=plan_id,
-                                  status=status, source='plan', check_free=check)
+                                  status=status, source='plan', check_free=False, plan_date=d.isoformat())
         created.append(appt)
         holding += 1
     if created:
@@ -324,10 +326,29 @@ def fill_plan(c: sqlite3.Connection, plan_id: int) -> list[dict]:
     return created
 
 
+def drop_future_plan_visits(c: sqlite3.Connection, plan_id: int) -> None:
+    """Pausing or cancelling a plan removes its upcoming visits (they were never booked by hand), so resuming later
+    starts again on the plan's normal rhythm instead of treating them as skipped."""
+    c.execute("DELETE FROM appointments WHERE plan_id=? AND status IN ('pending','confirmed','needs_time') AND start_local>=?",
+              (plan_id, now_local().strftime('%Y-%m-%dT%H:%M')))
+
+
 def fill_all_plans(c: sqlite3.Connection) -> int:
+    """Run by the background worker. Each plan is filled in its own BEGIN IMMEDIATE transaction (so it cannot
+    interleave with a web booking), and one plan's problem never stops the others or the email queue."""
+    import logging
     n = 0
     for p in c.execute("SELECT id FROM plans WHERE status='active'").fetchall():
-        n += len(fill_plan(c, p['id']))
+        try:
+            c.execute('BEGIN IMMEDIATE')
+            try:
+                n += len(fill_plan(c, p['id']))
+                c.execute('COMMIT')
+            except BaseException:
+                c.execute('ROLLBACK')
+                raise
+        except Exception:  # noqa: BLE001
+            logging.getLogger('gem.plans').exception('could not fill plan %s', p['id'])
     return n
 
 

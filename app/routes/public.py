@@ -232,12 +232,13 @@ def api_slots(service: int, size: str, day: str, addons: str = ''):
 
 
 @router.get('/api/quote')
-def api_quote(request: Request, service: int, size: str, addons: str = '', email: str = ''):
+def api_quote(request: Request, service: int, size: str, addons: str = ''):
     from .account import current_customer
     cust = current_customer(request)
     with connection() as c:
         try:
-            q = bk.quote(c, service, size, _ids(addons.split(',')), email=email.lower() or (cust['email'] if cust else None),
+            # only a signed-in customer's own history is looked up, so the estimate never reveals who has booked before
+            q = bk.quote(c, service, size, _ids(addons.split(',')), email=cust['email'] if cust else None,
                          customer_id=cust['id'] if cust else None)
         except bk.BookingError as e:
             raise HTTPException(400, str(e))
@@ -313,6 +314,11 @@ async def book_submit(request: Request):
         if errors or not q or not d:
             return _rerender_book(request, c, site, cust, f, addon_ids, errors)
         throttle(request, 'book', 10, 3600)
+        live = c.execute("SELECT COUNT(*) FROM appointments WHERE (email=? OR phone=?) AND status IN ('pending','confirmed') AND start_local>=?",
+                         (email, phone, bk.now_local().strftime('%Y-%m-%dT%H:%M'))).fetchone()[0]
+        if live >= 4:
+            errors['time'] = f"You already have {live} upcoming bookings. Call or text {site['phone']} to add more."
+            return _rerender_book(request, c, site, cust, f, addon_ids, errors)
         vtext = bk.vehicle_label(vehicle) if vehicle else ' '.join(x for x in (f['year'], f['make'], f['model']) if x) + (f", {f['color']}" if f['color'] else '')
         try:
             with transaction(c):
@@ -404,6 +410,9 @@ def manage_reschedule(request: Request, token: str, csrf: str = Form(''), day: s
             time.fromisoformat(at)
         except ValueError:
             raise HTTPException(400, 'Pick a day and a start time.')
+        cutoff = int(site.get('cancel_cutoff_hours') or 24)
+        if datetime.combine(d, time.fromisoformat(at)) - bk.now_local() < timedelta(hours=cutoff):
+            raise HTTPException(400, f"Online changes need at least {cutoff} hours' notice. Call or text {site['phone']} for a sooner time.")
         with transaction(c):
             if at not in bk.slots(c, d, a['minutes'], site, exclude_id=a['id']):
                 raise HTTPException(400, 'That time was just taken. Go back and pick another time.')

@@ -1,7 +1,7 @@
 {
- "page": "http://127.0.0.1:8000/?r=3",
- "url": "http://127.0.0.1:8000/?r=3",
- "at": "2026-11-14T08:02:24.389Z",
+ "page": "http://127.0.0.1:8000/?r=6",
+ "url": "http://127.0.0.1:8000/?r=6",
+ "at": "2026-11-14T08:23:58.240Z",
  "out": "/home/claude/gemautoworks/.taste-skill/gate/consistency",
  "widths": [
   {
@@ -57,7 +57,7 @@
      "sel": "section#plans / section#about",
      "text": "",
      "stop": 5,
-     "msg": "334px between these sections, +31% against the median 254px of gaps at a change of ground",
+     "msg": "343px between these sections, +35% against the median 254px of gaps at a change of ground",
      "crop": "1440-03-section-gaps.jpg",
      "fix": "use one gap between sections (all within 25% of each other)"
     },
@@ -67,7 +67,7 @@
      "sel": "section#plans / section#about",
      "text": "",
      "stop": 5,
-     "msg": "uneven space at the edge of a band: 114px outside its edge, 220px inside it (the space on either side of a change of ground reads as one gap only when the two match)",
+     "msg": "uneven space at the edge of a band: 114px outside its edge, 229px inside it (the space on either side of a change of ground reads as one gap only when the two match)",
      "crop": "1440-04-section-gaps.jpg",
      "fix": "use one gap between sections (all within 25% of each other)"
     },
@@ -76,7 +76,7 @@
      "sev": "WARN",
      "sel": "header.nav.nav--centre > div.wrap.nav__bar > div.nav__actions > a.btn.btn--primary:nth-of-type(2)",
      "text": "book a detail",
-     "stop": 11,
+     "stop": 10,
      "msg": "\"book a detail\" shows 2 times on the first screen at 1440px (nav, hero): the nav's button and the hero's; nothing else on the screen may repeat it",
      "crop": "1440-07-action-repeat.jpg",
      "fix": "show the action once a screen besides the nav's button: the hero's, the close's or the phone bar's, never all at once"
@@ -130,6 +130,16 @@
      "msg": "116px between these sections, -43% against the median 204px",
      "crop": "390-03-section-gaps.jpg",
      "fix": "use one gap between sections (all within 25% of each other)"
+    },
+    {
+     "check": "photo-set",
+     "sev": "WARN",
+     "sel": "section#about > div.wrap.grid > div.frame.frame--photo > img.frame__img",
+     "text": "owner-senna-480.webp",
+     "stop": 8,
+     "msg": "9 photographs in more than one look: warm and cool photographs mixed (b* -5 to +11); the odd one out is owner-senna-480.webp",
+     "crop": "390-05-photo-set.jpg",
+     "fix": "grade the photographs to one look (light, colour, warmth), or replace the odd one out"
     }
    ],
    "glAsked": 0
@@ -170,7 +180,7 @@
  },
  "counts": {
   "FAIL": 3,
-  "WARN": 8
+  "WARN": 9
  },
  "checks": {
   "assets": "PASS",
@@ -243,7 +253,7 @@
   "links": "PASS",
   "forms": "not checked",
   "photo-upscale": "PASS",
-  "photo-set": "PASS",
+  "photo-set": "WARN",
   "photo-credit": "PASS",
   "nav-family": "PASS",
   "nav-labels": "PASS",

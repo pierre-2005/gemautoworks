@@ -99,7 +99,7 @@
         </ul>
         <p class="packages__more"><a class="link" href="{{ '/account#plans' if customer else '/account/signup?next=/account' }}">{{ 'Set up a plan' if customer else 'Create your garage' }}</a></p>
       </div>
-      <div class="span-6 start-7 plan-demo" role="img" aria-label="A cleaning plan in the GEM garage: an SUV on the GEM Detail every four weeks, with the next three Saturday visits listed">
+      <div class="span-6 start-7 plan-demo" role="img" aria-label="An example cleaning plan in the GEM garage: an SUV on the GEM Detail every four weeks, with the next three Saturday visits listed">
         <div class="plan-demo__card">
           <div class="plan-demo__head"><span class="plan-demo__car">Family SUV</span><span class="pill pill--ok">Active</span></div>
           <p class="plan-demo__meta">GEM Detail · SUV or crossover · every 4 weeks · Saturdays around 9 am</p>
@@ -107,6 +107,7 @@
             {% for i in range(3) %}<li><span>Visit {{ i + 1 }}</span><span>Saturday, 9:00 am</span><span class="muted">{{ 'Reminder the day before' if i == 0 else 'Held for you' }}</span></li>{% endfor %}
           </ol>
           <div class="plan-demo__actions"><span class="btn btn--secondary" aria-hidden="true">Skip next visit</span><span class="btn btn--secondary" aria-hidden="true">Pause plan</span></div>
+          <p class="plan-demo__example">An example plan, as it looks in your garage.</p>
         </div>
       </div>
     </div>

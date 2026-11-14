@@ -154,6 +154,14 @@ MIGRATIONS: list[str] = [
         expires_at TEXT NOT NULL, used INTEGER NOT NULL DEFAULT 0
     );
     ''',
+    # 2: plan visits remember the date they were planned for (moving or skipping one never shifts the plan);
+    #    a session version per account so a password change signs out other devices
+    '''
+    ALTER TABLE appointments ADD COLUMN plan_date TEXT;
+    ALTER TABLE customers ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE admins ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0;
+    UPDATE appointments SET plan_date = substr(start_local, 1, 10) WHERE plan_id IS NOT NULL;
+    ''',
 ]
 
 
@@ -281,21 +289,19 @@ def migrate() -> None:
     with connection() as c:
         c.execute('PRAGMA journal_mode=WAL')
         c.execute('CREATE TABLE IF NOT EXISTS schema_version (version INTEGER NOT NULL)')
-        row = c.execute('SELECT version FROM schema_version').fetchone()
-        current = row['version'] if row else 0
+        if not c.execute('SELECT 1 FROM schema_version').fetchone():
+            c.execute('INSERT INTO schema_version(version) VALUES(0)')
+        current = c.execute('SELECT version FROM schema_version').fetchone()['version']
         fresh = current == 0
         for number, script in enumerate(MIGRATIONS, start=1):
             if number <= current:
                 continue
-            c.executescript('BEGIN;' + script + 'COMMIT;')
-            if row:
-                c.execute('UPDATE schema_version SET version=?', (number,))
-            else:
-                c.execute('INSERT INTO schema_version(version) VALUES(?)', (number,))
-                row = {'version': number}
+            # the schema change and its version number commit together, so a crash never leaves a half-migrated file
+            c.executescript(f'BEGIN;{script}UPDATE schema_version SET version={number};COMMIT;')
             log.info('database migrated to version %s', number)
         if fresh:
             seed(c)
+        if not c.execute("SELECT 1 FROM settings WHERE key='legacy_import_done'").fetchone():
             import_legacy(c)
         ensure_admin(c)
 
@@ -320,39 +326,65 @@ def seed(c: sqlite3.Connection) -> None:
 
 
 def import_legacy(c: sqlite3.Connection) -> None:
-    """Copy the v1 admin login, bookings, reviews and photos. The v1 file itself is never written to."""
+    """Copy the v1 admin login, bookings, hours, days off, blocks, contact settings, reviews and photos in one
+    transaction. The v1 file is opened read-only and never written to. Success is recorded so it runs once."""
     path: Path = config.LEGACY_DB_PATH
     if not path.exists():
+        set_setting(c, 'legacy_import_done', 'no v1 database')
         return
     try:
         old = sqlite3.connect(f'file:{path}?mode=ro', uri=True)
         old.row_factory = sqlite3.Row
         tables = {r[0] for r in old.execute("SELECT name FROM sqlite_master WHERE type='table'")}
         now = stamp()
-        if 'admin_users' in tables:
-            for r in old.execute('SELECT email, password_hash FROM admin_users'):
-                c.execute('INSERT OR IGNORE INTO admins(email,password_hash,created_at) VALUES(?,?,?)', (r['email'], r['password_hash'], now))
-        if 'appointments' in tables:
-            services = {r['id']: r['title'] for r in old.execute('SELECT id, title FROM services')} if 'services' in tables else {}
-            for r in old.execute('SELECT * FROM appointments'):
-                start = f"{r['day']}T{r['at_time']}"
-                c.execute('''INSERT OR IGNORE INTO appointments(reference,manage_token,service_name,vehicle_text,start_local,minutes,
-                             status,name,email,phone,notes,source,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
-                          (r['reference'], secrets.token_urlsafe(24), services.get(r['service_id'], 'Appointment'), r['vehicle'],
-                           start, r['duration'], r['status'], r['name'], r['email'], r['phone'], r['notes'], 'v1',
-                           r['created_at'], r['updated_at']))
-        if 'reviews' in tables:
-            for r in old.execute('SELECT * FROM reviews'):
-                c.execute('INSERT INTO reviews(name,rating,message,status,created_at) VALUES(?,?,?,?,?)',
-                          (r['name'], r['rating'], r['message'], r['status'], r['created_at']))
-        if 'gallery' in tables:
-            for r in old.execute("SELECT * FROM gallery WHERE image_path LIKE '/uploads/%'"):
-                c.execute('INSERT INTO gallery(title,alt,after_path,sort_order,created_at) VALUES(?,?,?,?,?)',
-                          (r['title'], r['alt'], r['image_path'], 100 + r['sort_order'], now))
-        old.close()
+        c.execute('BEGIN IMMEDIATE')
+        try:
+            if 'admin_users' in tables:
+                for r in old.execute('SELECT email, password_hash FROM admin_users'):
+                    c.execute('INSERT OR IGNORE INTO admins(email,password_hash,created_at) VALUES(?,?,?)', (r['email'], r['password_hash'], now))
+            if 'appointments' in tables:
+                services = {r['id']: r['title'] for r in old.execute('SELECT id, title FROM services')} if 'services' in tables else {}
+                for r in old.execute('SELECT * FROM appointments'):
+                    c.execute('''INSERT OR IGNORE INTO appointments(reference,manage_token,service_name,vehicle_text,start_local,minutes,
+                                 status,name,email,phone,notes,source,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)''',
+                              (r['reference'], secrets.token_urlsafe(24), services.get(r['service_id'], 'Appointment'), r['vehicle'],
+                               f"{r['day']}T{r['at_time']}", r['duration'], r['status'], r['name'], r['email'], r['phone'], r['notes'], 'v1',
+                               r['created_at'], r['updated_at']))
+            if 'hours' in tables:
+                for r in old.execute('SELECT * FROM hours'):
+                    c.execute('UPDATE hours SET open_at=?, close_at=?, closed=? WHERE weekday=?', (r['open_at'], r['close_at'], r['closed'], r['weekday']))
+            if 'exceptions' in tables:
+                for r in old.execute('SELECT * FROM exceptions'):
+                    c.execute('INSERT OR REPLACE INTO date_overrides(day,closed,open_at,close_at,note) VALUES(?,?,?,?,?)',
+                              (r['day'], r['closed'], r['open_at'], r['close_at'], r['note'] or ''))
+            if 'blocks' in tables:
+                for r in old.execute('SELECT * FROM blocks'):
+                    c.execute('INSERT INTO blocks(start_local,end_local,note,created_at) VALUES(?,?,?,?)',
+                              (f"{r['day']}T{r['start_at']}", f"{r['day']}T{r['end_at']}", r['note'] or '', r['created_at']))
+            if 'settings' in tables:
+                keep = {'phone': 'phone', 'email': 'email', 'facebook': 'facebook_url', 'booking_requires_approval': 'booking_requires_approval',
+                        'booking_lead_hours': 'booking_lead_hours', 'booking_window_days': 'booking_window_days', 'slot_step_minutes': 'slot_step_minutes'}
+                for r in old.execute('SELECT key, value FROM settings'):
+                    if r['key'] in keep and (r['value'] or '').strip():
+                        set_setting(c, keep[r['key']], r['value'].strip())
+            if 'reviews' in tables:
+                for r in old.execute('SELECT * FROM reviews'):
+                    c.execute('INSERT INTO reviews(name,rating,message,status,created_at) VALUES(?,?,?,?,?)',
+                              (r['name'], r['rating'], r['message'], r['status'], r['created_at']))
+            if 'gallery' in tables:
+                for r in old.execute("SELECT * FROM gallery WHERE image_path LIKE '/uploads/%'"):
+                    c.execute('INSERT INTO gallery(title,alt,after_path,sort_order,created_at) VALUES(?,?,?,?,?)',
+                              (r['title'], r['alt'], r['image_path'], 100 + r['sort_order'], now))
+            set_setting(c, 'legacy_import_done', now)
+            c.execute('COMMIT')
+        except BaseException:
+            c.execute('ROLLBACK')
+            raise
+        finally:
+            old.close()
         log.warning('Imported v1 data from %s (the old file was left untouched).', path)
-    except sqlite3.Error:
-        log.exception('Could not import v1 data; continuing with a fresh database')
+    except Exception:  # noqa: BLE001 - a broken v1 file must not stop the site; it is retried on the next start
+        log.exception('Could not import v1 data; the site starts without it and tries again next start')
 
 
 def ensure_admin(c: sqlite3.Connection) -> None:
@@ -368,7 +400,11 @@ def ensure_admin(c: sqlite3.Connection) -> None:
 
 def backup_copy() -> Path:
     """A consistent copy of the live database for the admin's download button."""
-    target = config.DATA_DIR / 'backup-latest.sqlite3'
+    import tempfile
+    fd, name = tempfile.mkstemp(prefix='backup-', suffix='.sqlite3', dir=config.DATA_DIR)
+    import os
+    os.close(fd)
+    target = Path(name)
     with connection() as c:
         dst = sqlite3.connect(str(target))
         c.backup(dst)

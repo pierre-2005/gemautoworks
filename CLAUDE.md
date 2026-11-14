@@ -2,16 +2,17 @@
 
 ## Stack
 - Python 3.12 · FastAPI · Jinja2 server-rendered templates · SQLite (WAL) · Argon2 · itsdangerous sessions
-- Frontend: hand-written CSS (design tokens in `static/css/tokens.css`) + small vanilla JS modules. No build step, no framework.
+- Frontend: the Taste kit (`static/kit/`) + page CSS (`static/css/site.css`, `app.css`, `admin.css`; tokens in the `:root` block of `templates/base.html`) + small vanilla JS. No build step, no framework.
 - Fonts self-hosted in `static/fonts/` (no third-party requests).
 - Deploy: push to `main` → GitHub Actions runs tests → publishes `ghcr.io/pierre-2005/gemautoworks:latest` (arm64 + amd64) → Portainer stack on the Raspberry Pi pulls it. Data lives in the `gem_data` volume at `/data`.
 
 ## Layout
 ```
-app/            main.py (app + middleware), db.py (schema/migrations), auth.py, booking.py (availability, plans), mail.py, routes/{public,account,admin}.py
-templates/      base.html, partials/, public/, account/, admin/, email/
-static/         css/, js/, img/ (optimized webp/avif + srcset sizes), fonts/
-tests/          pytest unit/integration; visual_smoke.py (Playwright screenshots 390/1440)
+app/            main.py (app, middleware, picture()), config.py, db.py (schema, migrations, seed, v1 import), security.py,
+                booking.py (prices, availability, plans), mail.py (outbox, reminders, worker), routes/{public,account,admin}.py
+templates/      base.html, app_base.html, partials/, public/, book/, account/, admin/
+static/         kit/ (Taste, do not edit), css/, js/, img/ (WebP srcset widths), fonts/
+tests/          test_app.py (pytest flows); visual_smoke.py, flow_smoke.py, admin_shots.py (Chromium, need a running server)
 ```
 
 ## Conventions
@@ -29,7 +30,7 @@ tests/          pytest unit/integration; visual_smoke.py (Playwright screenshots
 pip install -r requirements.txt -r requirements-dev.txt
 SECRET_KEY=$(python -c "import secrets;print(secrets.token_urlsafe(48))") COOKIE_SECURE=false DATA_DIR=./data \
   ADMIN_EMAIL=admin@example.test ADMIN_PASSWORD=change-me-please-123 uvicorn app.main:app --reload
-python -m pytest -q
+python -m pytest -q tests/test_app.py
 python tests/visual_smoke.py        # screenshots → visual-artifacts/
 python scripts/build_images.py      # regenerate responsive images
 ```

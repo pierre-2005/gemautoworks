@@ -1,30 +1,39 @@
 {
- "start": "2026-11-14T07:59:36.968Z",
+ "start": "2026-11-14T08:19:20.020Z",
  "round": 2,
  "idle": 0,
  "errors": 0,
  "status": "pass",
  "history": [
   {
-   "at": "2026-11-14T08:01:23.382Z",
+   "at": "2026-11-14T08:21:06.187Z",
    "mode": "manual",
    "status": "fail",
-   "fails": 6,
+   "fails": 2,
    "round": 1,
    "reused": false,
    "stopHookActive": false
   },
   {
-   "at": "2026-11-14T08:01:59.227Z",
+   "at": "2026-11-14T08:23:34.565Z",
    "mode": "manual",
    "status": "fail",
-   "fails": 1,
+   "fails": 3,
+   "round": 2,
+   "reused": false,
+   "stopHookActive": false
+  },
+  {
+   "at": "2026-11-14T08:23:40.119Z",
+   "mode": "manual",
+   "status": "fail",
+   "fails": 3,
    "round": 2,
    "reused": true,
    "stopHookActive": false
   },
   {
-   "at": "2026-11-14T08:04:09.896Z",
+   "at": "2026-11-14T08:25:41.614Z",
    "mode": "manual",
    "status": "pass",
    "fails": 0,
@@ -36,22 +45,22 @@
  "max": 3,
  "marker": {
   "page": null,
-  "url": "http://127.0.0.1:8000/?r=3",
+  "url": "http://127.0.0.1:8000/?r=6",
   "root": null,
   "kind": "service",
   "category": "mobile car detailing",
   "primary": "Book a detail",
   "rounds": 3,
-  "start": "2026-11-14T07:59:36.968Z",
+  "start": "2026-11-14T08:19:20.020Z",
   "by": "gate.mjs --start"
  },
  "manual": true,
- "roundKey": "91df3befc3862a5b:ec785cc7",
+ "roundKey": "fddc07cbecafc91e:ec785cc7",
  "roundFree": false,
  "idleFree": false,
  "blockKey": null,
- "fp": "8ba6f44fe5e63f43",
- "page": "http://127.0.0.1:8000/?r=3",
+ "fp": "4cf9eb72d1ab8fe6",
+ "page": "http://127.0.0.1:8000/?r=6",
  "found": {
   "fails": [
    {
@@ -145,7 +154,7 @@
    {
     "check": "section-gaps",
     "where": "section#plans / section#about",
-    "msg": "334px between these sections, +31% against the median 254px of gaps at a change of ground",
+    "msg": "343px between these sections, +35% against the median 254px of gaps at a change of ground",
     "fix": "use one gap between sections (all within 25% of each other)",
     "widths": [
      1440
@@ -171,12 +180,22 @@
      390
     ],
     "from": "consistency"
+   },
+   {
+    "check": "photo-set",
+    "where": "section#about > div.wrap.grid > div.frame.frame--photo > img.frame__img \"owner-senna-480.webp\"",
+    "msg": "9 photographs in more than one look: warm and cool photographs mixed (b* -5 to +11); the odd one out is owner-senna-480.webp",
+    "fix": "grade the photographs to one look (light, colour, warmth), or replace the odd one out",
+    "widths": [
+     390
+    ],
+    "from": "consistency"
    }
   ],
   "crashed": [],
   "seconds": {
-   "consistency": 102,
-   "layout": 4
+   "consistency": 100,
+   "layout": 3
   }
  },
  "open": [],
@@ -250,6 +269,6 @@
    "reason": "Both dealt sans pairings run the 43-character stress test to 4 lines; the third dealt pairing is a serif that clashes with the client's chrome logo. The shipped h1 is 34 characters on 2 lines at 1440, and the admin field tells the owner to keep it under 36."
   }
  ],
- "warnCount": 5,
- "at": "2026-11-14T08:04:09.897Z"
+ "warnCount": 6,
+ "at": "2026-11-14T08:25:41.615Z"
 }

@@ -90,8 +90,14 @@ app.mount('/static', StaticFiles(directory=STATIC), name='static')
 app.mount('/uploads', StaticFiles(directory=config.UPLOAD_DIR), name='uploads')
 
 
+MAX_BODY = 32 * 1024 * 1024   # two 15 MB photos plus the form
+
+
 @app.middleware('http')
 async def headers(request: Request, call_next):
+    length = request.headers.get('content-length')
+    if length and length.isdigit() and int(length) > MAX_BODY:
+        return PlainTextResponse('That upload is too large. Photos must be under 15 MB each.', status_code=413)
     response = await call_next(request)
     response.headers.setdefault('X-Content-Type-Options', 'nosniff')
     response.headers.setdefault('X-Frame-Options', 'DENY')

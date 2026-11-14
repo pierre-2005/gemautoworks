@@ -180,3 +180,81 @@ def test_admin_pages_and_service_mode(client):
     form['service_mode'] = 'both'
     client.post('/admin/settings/service', data=form)
     assert 'We come to you' in client.get('/book').text
+
+
+# ---------------------------------------------------------------- regressions from the code review
+
+def _plan(client, email, interval=8, weekday=2):
+    signup(client, email)
+    t = csrf(client, '/account')
+    client.post('/account/vehicles', data={'csrf': t, 'make': 'Ford', 'model': 'Escape', 'size': 'suv'})
+    client.post('/account/addresses', data={'csrf': t, 'street': '9 Birch Ln', 'town': 'Auburn'})
+    with connection() as c:
+        cid = c.execute('SELECT id FROM customers WHERE email=?', (email,)).fetchone()[0]
+        vid = c.execute('SELECT id FROM vehicles WHERE customer_id=?', (cid,)).fetchone()[0]
+        aid = c.execute('SELECT id FROM addresses WHERE customer_id=?', (cid,)).fetchone()[0]
+    client.post('/account/plans', data={'csrf': t, 'vehicle_id': vid, 'service_id': services()['exterior']['id'], 'interval_weeks': interval,
+                                        'weekday': weekday, 'preferred_time': '09:00', 'location_type': 'mobile', 'address_id': aid})
+    with connection() as c:
+        pid = c.execute('SELECT id FROM plans WHERE customer_id=?', (cid,)).fetchone()[0]
+        c.execute("UPDATE plans SET status='active' WHERE id=?", (pid,))
+    return pid
+
+
+def _visits(pid):
+    with connection() as c:
+        return c.execute("SELECT plan_date, start_local, status FROM appointments WHERE plan_id=? ORDER BY plan_date", (pid,)).fetchall()
+
+
+def test_long_plan_past_booking_window_does_not_break_the_worker(client):
+    pid = _plan(client, 'long-plan@example.test', interval=8)
+    with connection() as c:
+        assert bk.fill_all_plans(c) >= 3          # third visit is ~16 weeks out, past the 60-day window
+    assert len([v for v in _visits(pid) if v['status'] != 'cancelled']) == 3
+    from app.mail import housekeeping
+    housekeeping()                               # must not raise
+
+
+def test_moving_a_plan_visit_does_not_add_a_duplicate(client):
+    pid = _plan(client, 'move-plan@example.test', interval=2)
+    with connection() as c:
+        bk.fill_plan(c, pid)
+        first = c.execute("SELECT id, start_local FROM appointments WHERE plan_id=? ORDER BY start_local LIMIT 1", (pid,)).fetchone()
+        moved = (bk.parse_local(first['start_local']) + timedelta(days=1)).strftime('%Y-%m-%dT%H:%M')
+        c.execute('UPDATE appointments SET start_local=? WHERE id=?', (moved, first['id']))
+        bk.fill_plan(c, pid)
+    assert len([v for v in _visits(pid) if v['status'] != 'cancelled']) == 3
+
+
+def test_pause_and_resume_keeps_the_rhythm(client):
+    pid = _plan(client, 'pause-plan@example.test', interval=4)
+    with connection() as c:
+        bk.fill_plan(c, pid)
+    before = [v['plan_date'] for v in _visits(pid)]
+    t = csrf(client, '/account')
+    client.post(f'/account/plans/{pid}/pause', data={'csrf': t})
+    assert _visits(pid) == []
+    client.post(f'/account/plans/{pid}/resume', data={'csrf': csrf(client, '/account')})
+    assert [v['plan_date'] for v in _visits(pid)] == before
+
+
+def test_signup_does_not_take_over_guest_bookings(client):
+    r, _ = book(client, email='victim@example.test')
+    assert r.status_code == 303
+    client.cookies.clear()
+    signup(client, 'VICTIM@example.test')
+    assert '12 Elm St' not in client.get('/account').text
+
+
+def test_csv_export_neutralises_formulas(client):
+    book(client, email='csv@example.test', name='=HYPERLINK("http://x")')
+    client.post('/admin/login', data={'csrf': csrf(client, '/admin/login'), 'email': 'owner@example.test', 'password': 'owner-password-123'})
+    body = client.get('/admin/export/bookings.csv').text
+    assert '\'=HYPERLINK' in body and ',=HYPERLINK' not in body
+
+
+def test_bad_admin_numbers_are_400_not_500(client):
+    client.post('/admin/login', data={'csrf': csrf(client, '/admin/login'), 'email': 'owner@example.test', 'password': 'owner-password-123'})
+    t = csrf(client, '/admin/services')
+    r = client.post('/admin/services/save', data={'csrf': t, 'id': 'abc', 'name': 'X', 'price_sedan': 'inf'})
+    assert r.status_code == 400

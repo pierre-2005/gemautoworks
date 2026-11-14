@@ -15,8 +15,8 @@
 
 {% if attention %}
 <section class="adm-section"><h2>Needs you</h2>
-  <div class="table-wrap"><table class="table"><thead><tr><th>When</th><th>Customer</th><th>Package</th><th>Status</th><th></th></tr></thead><tbody>
-  {% for a in attention %}<tr><td>{{ a.start.strftime('%a %b %-d') }}, {{ a.time_text }}</td><td>{{ a.name }}</td><td>{{ a.service_name }}, {{ a.size_text }}</td><td><span class="pill pill--wait">{{ a.status_text }}</span></td><td><a class="link" href="/admin/appointments/{{ a.id }}">Open</a></td></tr>{% endfor %}
+  <div class="table-wrap"><table class="table table--stack"><thead><tr><th>When</th><th>Customer</th><th>Package</th><th>Status</th><th></th></tr></thead><tbody>
+  {% for a in attention %}<tr><td>{{ a.start.strftime('%a %b %-d') }}, {{ a.time_text }}</td><td data-label="Customer">{{ a.name }}</td><td data-label="Package">{{ a.service_name }}, {{ a.size_text }}</td><td><span class="pill pill--wait">{{ a.status_text }}</span></td><td><a class="link" href="/admin/appointments/{{ a.id }}">Open</a></td></tr>{% endfor %}
   </tbody></table></div>
 </section>
 {% endif %}

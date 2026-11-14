@@ -30,7 +30,7 @@ def main() -> int:
                 page.goto(BASE + path, wait_until='networkidle')
                 page.wait_for_timeout(300)
                 name = (path.strip('/').replace('/', '_') or 'home')
-                page.screenshot(path=str(OUT / f'{label}-{name}.png'), full_page=True)
+                page.evaluate('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)'); page.wait_for_timeout(150); page.screenshot(path=str(OUT / f'{label}-{name}.png'), full_page=True)
                 over = page.evaluate('document.documentElement.scrollWidth - innerWidth')
                 if over > 1:
                     problems.append(f'{label} {path}: scrolls sideways by {over}px')

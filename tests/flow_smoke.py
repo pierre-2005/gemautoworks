@@ -27,14 +27,14 @@ def run(width: int, height: int, label: str, email: str) -> None:
         first_day.locator('xpath=..').click()
         page.locator('[name="time"]').first.wait_for(state='attached', timeout=10000)
         page.locator('[name="time"]').first.locator('xpath=..').click()
-        page.fill('#b-name', 'Flow Tester'); page.fill('#b-phone', '508-555-0123'); page.fill('#b-email', email)
+        page.fill('#b-name', 'Flow Tester'); page.fill('#b-phone', f'508-555-{__import__("random").randint(1000, 9999)}'); page.fill('#b-email', email)
         expect(page.locator('[data-t-total]')).not_to_have_text('–')
         page.wait_for_timeout(400)
-        page.screenshot(path=str(OUT / f'flow-{label}-book-filled.png'), full_page=True)
+        page.evaluate('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)'); page.wait_for_timeout(150); page.screenshot(path=str(OUT / f'flow-{label}-book-filled.png'), full_page=True)
         page.locator('aside button[type="submit"]').click()
         page.wait_for_url('**/booking/**')
         expect(page.get_by_text('Your request is in')).to_be_visible()
-        page.screenshot(path=str(OUT / f'flow-{label}-manage.png'), full_page=True)
+        page.evaluate('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)'); page.wait_for_timeout(150); page.screenshot(path=str(OUT / f'flow-{label}-manage.png'), full_page=True)
         assert not errors, errors
         b.close()
     print(f'{label}: booked and reached the manage page')
@@ -42,5 +42,5 @@ def run(width: int, height: int, label: str, email: str) -> None:
 
 if __name__ == '__main__':
     OUT.mkdir(exist_ok=True)
-    run(1440, 900, 'desktop', 'flow-desktop@example.test')
-    run(390, 844, 'phone', 'flow-phone@example.test')
+    run(1440, 900, 'desktop', f'flow-desktop-{int(__import__("time").time())}@example.test')
+    run(390, 844, 'phone', f'flow-phone-{int(__import__("time").time())}@example.test')

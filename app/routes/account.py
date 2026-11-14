@@ -21,8 +21,8 @@ def current_customer(request: Request) -> dict | None:
     if not cid:
         return None
     with connection() as c:
-        row = c.execute('SELECT id, email, name, phone FROM customers WHERE id=?', (cid,)).fetchone()
-    if not row:
+        row = c.execute('SELECT id, email, name, phone, session_version FROM customers WHERE id=?', (cid,)).fetchone()
+    if not row or row['session_version'] != request.session.get('customer_sv', 0):
         request.session.pop('customer_id', None)
         return None
     return dict(row)
@@ -42,10 +42,6 @@ def _render(request, name, **ctx):
 
 def _safe_next(value: str) -> str:
     return value if value.startswith('/') and not value.startswith('//') else '/account'
-
-
-def _claim_guest_bookings(c, cust_id: int, email: str) -> None:
-    c.execute('UPDATE appointments SET customer_id=? WHERE customer_id IS NULL AND email=?', (cust_id, email))
 
 
 @router.get('/signup')
@@ -86,9 +82,9 @@ def signup(request: Request, csrf: str = Form(''), name: str = Form(''), email: 
             else:
                 cid = c.execute('INSERT INTO customers(email,password_hash,name,phone,created_at) VALUES(?,?,?,?,?)',
                                 (form['email'], hash_password(password), form['name'], form['phone'], stamp())).lastrowid
-            _claim_guest_bookings(c, cid, form['email'])
     session_rotate(request)
     request.session['customer_id'] = cid
+    request.session['customer_sv'] = 0
     return RedirectResponse(_safe_next(next) + ('?welcome=1' if _safe_next(next) == '/account' else ''), 303)
 
 
@@ -105,16 +101,16 @@ def login(request: Request, csrf: str = Form(''), email: str = Form(''), passwor
     throttle(request, 'login', 10, 900)
     email = clean(email, 254).lower()
     with connection() as c:
-        row = c.execute('SELECT id, password_hash FROM customers WHERE email=?', (email,)).fetchone()
+        row = c.execute('SELECT id, password_hash, session_version FROM customers WHERE email=?', (email,)).fetchone()
         ok = verify_password(row['password_hash'] if row else None, password)
         if ok:
             c.execute('UPDATE customers SET last_login_at=? WHERE id=?', (stamp(), row['id']))
-            _claim_guest_bookings(c, row['id'], email)
     if not ok:
         return _render(request, 'account/auth.html', mode='login', errors={'form': 'That email and password do not match. Try again or reset your password.'},
                        form={'email': email}, next=_safe_next(next))
     session_rotate(request)
     request.session['customer_id'] = row['id']
+    request.session['customer_sv'] = row['session_version']
     return RedirectResponse(_safe_next(next), 303)
 
 
@@ -170,7 +166,7 @@ def reset(request: Request, token: str, csrf: str = Form(''), password: str = Fo
         row = _reset_row(c, token)
         if problem:
             return _render(request, 'account/auth.html', mode='reset', errors={'password': problem}, form={}, token=token, next='/account')
-        c.execute('UPDATE customers SET password_hash=? WHERE id=?', (hash_password(password), row['customer_id']))
+        c.execute('UPDATE customers SET password_hash=?, session_version=session_version+1 WHERE id=?', (hash_password(password), row['customer_id']))
         c.execute('UPDATE password_resets SET used=1 WHERE customer_id=?', (row['customer_id'],))
     return RedirectResponse('/account/login?reset=1', 303)
 
@@ -233,7 +229,8 @@ def change_password(request: Request, csrf: str = Form(''), current: str = Form(
             raise HTTPException(400, 'Your current password is not right. Go back and try again.')
         if problem:
             raise HTTPException(400, problem)
-        c.execute('UPDATE customers SET password_hash=? WHERE id=?', (hash_password(new), cust['id']))
+        c.execute('UPDATE customers SET password_hash=?, session_version=session_version+1 WHERE id=?', (hash_password(new), cust['id']))
+        request.session['customer_sv'] = c.execute('SELECT session_version FROM customers WHERE id=?', (cust['id'],)).fetchone()[0]
     return RedirectResponse('/account?saved=password#profile', 303)
 
 
@@ -282,7 +279,7 @@ def remove_vehicle(request: Request, vid: int, csrf: str = Form('')):
     check_csrf(request, csrf)
     cust = need_customer(request)
     with connection() as c:
-        if c.execute("SELECT 1 FROM plans WHERE vehicle_id=? AND status IN ('requested','active','paused')", (vid,)).fetchone():
+        if c.execute("SELECT 1 FROM plans WHERE vehicle_id=? AND customer_id=? AND status IN ('requested','active','paused')", (vid, cust['id'])).fetchone():
             raise HTTPException(400, 'This car is on a cleaning plan. Cancel the plan first, then remove the car.')
         # archived, not deleted, so past bookings keep their car
         c.execute('UPDATE vehicles SET archived=1 WHERE id=? AND customer_id=?', (vid, cust['id']))
@@ -365,16 +362,13 @@ def plan_action(request: Request, pid: int, action: str, csrf: str = Form('')):
         with transaction(c):
             if action == 'pause' and p['status'] == 'active':
                 c.execute("UPDATE plans SET status='paused', updated_at=? WHERE id=?", (stamp(), pid))
-                c.execute("UPDATE appointments SET status='cancelled', updated_at=? WHERE plan_id=? AND start_local>=? AND status IN ('pending','confirmed','needs_time')",
-                          (stamp(), pid, today))
+                bk.drop_future_plan_visits(c, pid)
             elif action == 'resume' and p['status'] == 'paused':
-                c.execute("UPDATE plans SET status='active', start_on=?, updated_at=? WHERE id=?",
-                          (bk.now_local().date().isoformat(), stamp(), pid))
+                c.execute("UPDATE plans SET status='active', updated_at=? WHERE id=?", (stamp(), pid))
                 bk.fill_plan(c, pid)
             elif action == 'cancel' and p['status'] != 'cancelled':
                 c.execute("UPDATE plans SET status='cancelled', updated_at=? WHERE id=?", (stamp(), pid))
-                c.execute("UPDATE appointments SET status='cancelled', updated_at=? WHERE plan_id=? AND start_local>=? AND status IN ('pending','confirmed','needs_time')",
-                          (stamp(), pid, today))
+                bk.drop_future_plan_visits(c, pid)
             elif action == 'skip' and p['status'] == 'active':
                 nxt = c.execute("SELECT * FROM appointments WHERE plan_id=? AND start_local>=? AND status IN ('pending','confirmed','needs_time') ORDER BY start_local LIMIT 1",
                                 (pid, today)).fetchone()

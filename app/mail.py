@@ -69,7 +69,7 @@ def send_pending() -> int:
         return 0
     sent = 0
     with connection() as c:
-        rows = c.execute("SELECT * FROM email_outbox WHERE state IN ('pending','failed') AND attempts<6 ORDER BY id LIMIT 20").fetchall()
+        rows = c.execute("SELECT * FROM email_outbox WHERE state IN ('pending','failed') AND attempts<40 ORDER BY id LIMIT 20").fetchall()
         for m in rows:
             try:
                 msg = EmailMessage()

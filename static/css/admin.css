@@ -98,3 +98,17 @@ body.admin { background: var(--p-bg); }
   .adm__nav { min-width: 0; flex: 1; }
 }
 .adm__main .notice { margin-bottom: var(--s-5); }
+
+.table .pill { white-space: normal; }
+@media (max-width: 639px) { .table th, .table td { padding: 10px; } }
+
+/* phone: tables read as stacked rows (each cell on its own line, the column name beside it) */
+@media (max-width: 639px) {
+  .table--stack thead { display: none; }
+  .table--stack, .table--stack tbody, .table--stack tr, .table--stack td { display: block; width: 100%; }
+  .table--stack tr { padding: 12px 14px; border-bottom: 1px solid var(--line); }
+  .table--stack tr:last-child { border-bottom: 0; }
+  .table--stack td { padding: 2px 0; border: 0; }
+  .table--stack td[data-label]::before { content: attr(data-label) " "; color: var(--p-muted); font-size: 13px; }
+  .table--stack td:first-child { font-weight: 500; white-space: nowrap; }
+}

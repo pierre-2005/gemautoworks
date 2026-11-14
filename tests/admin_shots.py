@@ -29,7 +29,8 @@ def main() -> None:
             page.select_option('#new-size', 'suv'); page.fill('#new-color', 'Silver')
             page.locator('form[action="/account/vehicles"] button[type="submit"]').click()
             page.wait_for_load_state('networkidle')
-            page.screenshot(path=str(OUT / f'{label}-account.png'), full_page=True)
+            page.goto(f'{BASE}/account')
+            page.evaluate('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)'); page.wait_for_timeout(150); page.screenshot(path=str(OUT / f'{label}-account.png'), full_page=True)
             # admin
             page.goto(f'{BASE}/admin/login')
             page.fill('#ad-email', 'admin@example.test'); page.fill('#ad-pw', 'change-me-please-123')
@@ -38,7 +39,7 @@ def main() -> None:
             for path in ('', '/calendar', '/appointments', '/services', '/availability', '/site', '/gallery', '/plans'):
                 page.goto(f'{BASE}/admin{path}')
                 page.wait_for_load_state('networkidle')
-                page.screenshot(path=str(OUT / f'{label}-admin{path.replace("/", "-") or "-today"}.png'), full_page=True)
+                page.evaluate('document.activeElement && document.activeElement.blur(); window.scrollTo(0, 0)'); page.wait_for_timeout(150); page.screenshot(path=str(OUT / f'{label}-admin{path.replace("/", "-") or "-today"}.png'), full_page=True)
             over = page.evaluate('document.documentElement.scrollWidth - innerWidth')
             print(label, 'errors:', errors, 'sideways:', over)
             ctx.close()

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import ipaddress
 import re
 import secrets
 import time
@@ -61,7 +62,15 @@ def check_csrf(request: Request, token: str | None) -> None:
 
 
 def client_ip(request: Request) -> str:
-    return request.client.host if request.client else 'unknown'
+    """The visitor's address. Behind the Cloudflare tunnel every request arrives from the tunnel (loopback or a private
+    Docker address), so only then is Cloudflare's own CF-Connecting-IP header believed; a visitor cannot set it."""
+    host = request.client.host if request.client else 'unknown'
+    try:
+        trusted = ipaddress.ip_address(host).is_private or ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        trusted = False
+    cf = request.headers.get('cf-connecting-ip', '').strip()
+    return cf[:64] if trusted and cf else host
 
 
 def throttle(request: Request, purpose: str, max_count: int = 8, seconds: int = 3600) -> None:
