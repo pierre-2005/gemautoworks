@@ -118,35 +118,62 @@ def contact_send(request: Request, csrf: str = Form(''), name: str = Form(''), e
     return RedirectResponse('/contact?sent=1#message', 303)
 
 
+def _review_booking(c, token: str):
+    """A review link from a completed booking: /reviews?b=<the booking's manage token>."""
+    if not token:
+        return None
+    row = c.execute("SELECT * FROM appointments WHERE manage_token=? AND status='completed'", (token,)).fetchone()
+    return dict(row) if row else None
+
+
+def _approved_reviews(c):
+    return [dict(r) for r in c.execute("SELECT * FROM reviews WHERE status='approved' ORDER BY verified DESC, id DESC")]
+
+
 @router.get('/reviews')
-def reviews(request: Request, sent: int = 0):
+def reviews(request: Request, sent: int = 0, b: str = ''):
     with connection() as c:
-        rows = [dict(r) for r in c.execute("SELECT * FROM reviews WHERE status='approved' ORDER BY id DESC")]
-    return _render(request, 'public/reviews.html', reviews=rows, sent=bool(sent), errors={}, form={})
+        rows = _approved_reviews(c)
+        appt = _review_booking(c, b)
+    form = {'name': appt['name'].split(' ')[0], 'email': appt['email'], 'vehicle': appt['vehicle_text']} if appt else {}
+    return _render(request, 'public/reviews.html', reviews=rows, sent=bool(sent), errors={}, form=form,
+                   booking_token=b if appt else '', booking=appt)
 
 
 @router.post('/reviews')
-def review_send(request: Request, csrf: str = Form(''), name: str = Form(''), rating: str = Form(''), vehicle: str = Form(''),
-                message: str = Form(''), website: str = Form('')):
+def review_send(request: Request, csrf: str = Form(''), name: str = Form(''), email: str = Form(''), rating: str = Form(''),
+                vehicle: str = Form(''), message: str = Form(''), booking: str = Form(''), website: str = Form('')):
     check_csrf(request, csrf)
     if website:
         return RedirectResponse('/reviews?sent=1', 303)
-    form = {'name': clean(name, 80), 'rating': rating, 'vehicle': clean(vehicle, 80), 'message': clean(message, 1500)}
+    form = {'name': clean(name, 80), 'email': clean(email, 254).lower(), 'rating': rating, 'vehicle': clean(vehicle, 80),
+            'message': clean(message, 1500)}
     errors = {}
     if not form['name']:
         errors['name'] = 'Write the name to show with your review.'
+    if not email_ok(form['email']):
+        errors['email'] = 'Write the email you booked with, so we can match your review to your detail.'
     if rating not in {'1', '2', '3', '4', '5'}:
         errors['rating'] = 'Choose a rating from 1 to 5 stars.'
     if len(form['message']) < 10:
         errors['message'] = 'Write at least a sentence about your detail.'
-    if errors:
-        with connection() as c:
-            rows = [dict(r) for r in c.execute("SELECT * FROM reviews WHERE status='approved' ORDER BY id DESC")]
-        return _render(request, 'public/reviews.html', reviews=rows, sent=False, errors=errors, form=form)
-    throttle(request, 'review', 4, 3600)
     with connection() as c:
-        c.execute('INSERT INTO reviews(name,rating,vehicle,message,created_at) VALUES(?,?,?,?,?)',
-                  (form['name'], int(rating), form['vehicle'], form['message'], stamp()))
+        appt = _review_booking(c, booking)
+        if errors:
+            return _render(request, 'public/reviews.html', reviews=_approved_reviews(c), sent=False, errors=errors, form=form,
+                           booking_token=booking if appt else '', booking=appt)
+        throttle(request, 'review', 4, 3600)
+        if not appt:
+            # match the email to the most recent completed booking; the admin sees whether it matched
+            row = c.execute("SELECT * FROM appointments WHERE email=? AND status='completed' ORDER BY start_local DESC LIMIT 1",
+                            (form['email'],)).fetchone()
+            appt = dict(row) if row else None
+        c.execute('INSERT INTO reviews(name,email,rating,vehicle,message,appointment_id,verified,created_at) VALUES(?,?,?,?,?,?,?,?)',
+                  (form['name'], form['email'], int(rating), form['vehicle'], form['message'], appt['id'] if appt else None,
+                   1 if appt else 0, stamp()))
+        site = get_settings(c)
+        queue(c, site['email'], f"New {rating}-star review from {form['name']}" + (' (verified customer)' if appt else ' (no matching booking)'),
+              f"{form['message']}\n\nApprove or deny it: /admin/reviews")
     return RedirectResponse('/reviews?sent=1#write', 303)
 
 

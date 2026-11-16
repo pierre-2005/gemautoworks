@@ -1,43 +1,16 @@
 {
- "start": "2026-11-14T08:19:20.020Z",
- "round": 2,
+ "start": "2026-11-16T05:17:21.431Z",
+ "round": 1,
  "idle": 0,
  "errors": 0,
- "status": "pass",
+ "status": "fail",
  "history": [
   {
-   "at": "2026-11-14T08:21:06.187Z",
+   "at": "2026-11-16T05:19:03.219Z",
    "mode": "manual",
    "status": "fail",
-   "fails": 2,
+   "fails": 8,
    "round": 1,
-   "reused": false,
-   "stopHookActive": false
-  },
-  {
-   "at": "2026-11-14T08:23:34.565Z",
-   "mode": "manual",
-   "status": "fail",
-   "fails": 3,
-   "round": 2,
-   "reused": false,
-   "stopHookActive": false
-  },
-  {
-   "at": "2026-11-14T08:23:40.119Z",
-   "mode": "manual",
-   "status": "fail",
-   "fails": 3,
-   "round": 2,
-   "reused": true,
-   "stopHookActive": false
-  },
-  {
-   "at": "2026-11-14T08:25:41.614Z",
-   "mode": "manual",
-   "status": "pass",
-   "fails": 0,
-   "round": 2,
    "reused": false,
    "stopHookActive": false
   }
@@ -45,22 +18,22 @@
  "max": 3,
  "marker": {
   "page": null,
-  "url": "http://127.0.0.1:8000/?r=6",
+  "url": "http://127.0.0.1:8000/?r=7",
   "root": null,
   "kind": "service",
   "category": "mobile car detailing",
   "primary": "Book a detail",
   "rounds": 3,
-  "start": "2026-11-14T08:19:20.020Z",
+  "start": "2026-11-16T05:17:21.431Z",
   "by": "gate.mjs --start"
  },
  "manual": true,
- "roundKey": "fddc07cbecafc91e:ec785cc7",
+ "roundKey": "6d7bfe96621028fc:ec785cc7",
  "roundFree": false,
  "idleFree": false,
  "blockKey": null,
- "fp": "4cf9eb72d1ab8fe6",
- "page": "http://127.0.0.1:8000/?r=6",
+ "fp": "6d7bfe96621028fc",
+ "page": "http://127.0.0.1:8000/?r=7",
  "found": {
   "fails": [
    {
@@ -96,19 +69,136 @@
     ]
    },
    {
-    "check": "contrast",
-    "where": "div.wrap.grid > div.span-5 > p.packages__more > a.link \"Compare what each package includes\"",
-    "msg": "body text over a effect reads at 2.8:1 at its worst tenth (needs 4.5:1) (and 1 more like it: \"See all the work\")",
-    "fix": "put the text on a calm part of the picture, or on a solid panel",
+    "check": "section-height",
+    "where": "section#promise \"We come to you anywhere in Central Massa\"",
+    "msg": "the scene's section is 511px tall (0.6 screens), 389px short of one screen (900px): every section after the hero is one screen or two, 2px either way; a pinned scene is (hold + 1) screens tall, so write data-big-scene-opts='{\"hold\": 1}' (two screens) and keep --h on the section (SR-2)",
+    "fix": "set the section to one screen or two (height: calc(var(--h,1) * 100vh), --h 1 or 2) and cut or split its content to fit",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-height",
+     "screen-short",
+     "screen-height"
+    ],
+    "wheres": [
+     "section#promise \"We come to you anywhere in Central Massa\"",
+     "#promise section.section.ground-surface \"We come to you anywhere in Centr\""
+    ]
+   },
+   {
+    "check": "section-height",
+    "where": "section#plans \"Cleaning plans, every 2 to 8 weeks Save \"",
+    "msg": "the section starts at 4111px, 389px above the screen grid (5 x 900px): sections start on whole screens (SR-2)",
+    "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-height"
+    ],
+    "wheres": [
+     "section#plans \"Cleaning plans, every 2 to 8 weeks Save \""
+    ]
+   },
+   {
+    "check": "section-height",
+    "where": "footer#contact \"Book your next detail From $89, with 10%\"",
+    "msg": "the section starts at 5011px, 389px above the screen grid (6 x 900px): sections start on whole screens (SR-2)",
+    "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "section-height"
+    ],
+    "wheres": [
+     "footer#contact \"Book your next detail From $89, with 10%\""
+    ]
+   },
+   {
+    "check": "one-section",
+    "where": "h2#plans-h \"Cleaning plans, every 2 to 8 weeks\"",
+    "msg": "the screen at scroll 3600px (stride 4) shows 389px of section 6 and the heading of section 6 whole and the content of 2 sections, over 24px each beside section 5: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+    "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "one-section"
+    ],
+    "wheres": [
+     "h2#plans-h \"Cleaning plans, every 2 to 8 weeks\""
+    ]
+   },
+   {
+    "check": "one-section",
+    "where": "h2#close-h \"Book your next detail\"",
+    "msg": "the screen at scroll 4500px (stride 5) shows 389px of section 7 and the heading of section 7 whole and the content of 2 sections, over 24px each beside section 6: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+    "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "one-section"
+    ],
+    "wheres": [
+     "h2#close-h \"Book your next detail\""
+    ]
+   },
+   {
+    "check": "one-heading",
+    "where": "h2#plans-h \"Cleaning plans, every 2 to 8 weeks\"",
+    "msg": "headings of two sections show whole on one screen at 11 of 101 scroll positions (10.9%; at scroll 3450, 3500, 3550, 3600px), here with \"We\": at most 3% on a desktop (SR-5)",
+    "fix": "make the sections one screen tall so their headings sit a screen apart and two never share one",
+    "widths": [
+     1440
+    ],
+    "from": "consistency",
+    "ids": [
+     "one-heading"
+    ],
+    "wheres": [
+     "h2#plans-h \"Cleaning plans, every 2 to 8 weeks\""
+    ]
+   },
+   {
+    "check": "scroll-reveal",
+    "where": "footer#contact > div.wrap > div.closing__cta.close--type > a.btn.btn--primary \"Book a detail\"",
+    "msg": "starts \"color\" (0.1 s) the moment it is scrolled into view (an IntersectionObserver)",
+    "fix": "show it at rest: no fade, rise or unmask when it is scrolled into view",
     "widths": [
      390
     ],
     "from": "consistency",
     "ids": [
-     "contrast"
+     "scroll-reveal"
     ],
     "wheres": [
-     "div.wrap.grid > div.span-5 > p.packages__more > a.link \"Compare what each package includes\""
+     "footer#contact > div.wrap > div.closing__cta.close--type > a.btn.btn--primary \"Book a detail\""
+    ]
+   },
+   {
+    "check": "neighbour",
+    "where": "#promise section.section.ground-surface \"We come to you anywhere in Centr\"",
+    "msg": "framed, 293px of #plans section.section.ground-surface \"Cleaning plans, every 2 to 8 wee\" shows",
+    "fix": "keep the next section's heading and picture out of this screen",
+    "widths": [
+     1440,
+     390
+    ],
+    "from": "layout",
+    "ids": [
+     "neighbour"
+    ],
+    "wheres": [
+     "#promise section.section.ground-surface \"We come to you anywhere in Centr\""
     ]
    },
    {
@@ -142,7 +232,7 @@
    },
    {
     "check": "section-gaps",
-    "where": "main#top > section.hero.hero--split / section#packages",
+    "where": "main#top > section.hero.hero--split / section#about",
     "msg": "178px between these sections, -30% against the median 254px",
     "fix": "use one gap between sections (all within 25% of each other)",
     "widths": [
@@ -153,9 +243,19 @@
    },
    {
     "check": "section-gaps",
-    "where": "section#plans / section#about",
-    "msg": "343px between these sections, +35% against the median 254px of gaps at a change of ground",
+    "where": "section#plans / footer#contact",
+    "msg": "367px between these sections, +44% against the median 254px of gaps at a change of ground",
     "fix": "use one gap between sections (all within 25% of each other)",
+    "widths": [
+     1440
+    ],
+    "from": "consistency"
+   },
+   {
+    "check": "one-screen",
+    "where": "section#promise \"We come to you anywhere in Central Massa\"",
+    "msg": "1 section is shorter than the screen, so the next one's heading or picture shows with it: \"We come to you anywhere in Central Massa\" is 511px of the 828px under the nav, and \"Cleaning plans, every 2 to 8 w\" shows below it",
+    "fix": "give each section the screen (min-height: 100svh less the nav, its content centred), or join two short ones into one",
     "widths": [
      1440
     ],
@@ -170,35 +270,149 @@
      1440
     ],
     "from": "consistency"
-   },
-   {
-    "check": "nav",
-    "where": "header.nav.nav--centre > div.wrap.nav__bar > button.nav__toggle",
-    "msg": "the nav is lopsided: its last item ends 13px inside the content's edge (366px), while its first starts on the other edge",
-    "fix": "start the nav's first item and end its last on the content's two edges",
-    "widths": [
-     390
-    ],
-    "from": "consistency"
-   },
-   {
-    "check": "photo-set",
-    "where": "section#about > div.wrap.grid > div.frame.frame--photo > img.frame__img \"owner-senna-480.webp\"",
-    "msg": "9 photographs in more than one look: warm and cool photographs mixed (b* -5 to +11); the odd one out is owner-senna-480.webp",
-    "fix": "grade the photographs to one look (light, colour, warmth), or replace the odd one out",
-    "widths": [
-     390
-    ],
-    "from": "consistency"
    }
   ],
   "crashed": [],
   "seconds": {
-   "consistency": 100,
+   "consistency": 97,
    "layout": 3
   }
  },
- "open": [],
+ "open": [
+  {
+   "check": "section-height",
+   "where": "section#promise \"We come to you anywhere in Central Massa\"",
+   "msg": "the scene's section is 511px tall (0.6 screens), 389px short of one screen (900px): every section after the hero is one screen or two, 2px either way; a pinned scene is (hold + 1) screens tall, so write data-big-scene-opts='{\"hold\": 1}' (two screens) and keep --h on the section (SR-2)",
+   "fix": "set the section to one screen or two (height: calc(var(--h,1) * 100vh), --h 1 or 2) and cut or split its content to fit",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-height",
+    "screen-short",
+    "screen-height"
+   ],
+   "wheres": [
+    "section#promise \"We come to you anywhere in Central Massa\"",
+    "#promise section.section.ground-surface \"We come to you anywhere in Centr\""
+   ]
+  },
+  {
+   "check": "section-height",
+   "where": "section#plans \"Cleaning plans, every 2 to 8 weeks Save \"",
+   "msg": "the section starts at 4111px, 389px above the screen grid (5 x 900px): sections start on whole screens (SR-2)",
+   "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-height"
+   ],
+   "wheres": [
+    "section#plans \"Cleaning plans, every 2 to 8 weeks Save \""
+   ]
+  },
+  {
+   "check": "section-height",
+   "where": "footer#contact \"Book your next detail From $89, with 10%\"",
+   "msg": "the section starts at 5011px, 389px above the screen grid (6 x 900px): sections start on whole screens (SR-2)",
+   "fix": "make every section above it exactly one or two screens tall, so this one starts on a whole screen",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "section-height"
+   ],
+   "wheres": [
+    "footer#contact \"Book your next detail From $89, with 10%\""
+   ]
+  },
+  {
+   "check": "one-section",
+   "where": "h2#plans-h \"Cleaning plans, every 2 to 8 weeks\"",
+   "msg": "the screen at scroll 3600px (stride 4) shows 389px of section 6 and the heading of section 6 whole and the content of 2 sections, over 24px each beside section 5: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+   "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "one-section"
+   ],
+   "wheres": [
+    "h2#plans-h \"Cleaning plans, every 2 to 8 weeks\""
+   ]
+  },
+  {
+   "check": "one-section",
+   "where": "h2#close-h \"Book your next detail\"",
+   "msg": "the screen at scroll 4500px (stride 5) shows 389px of section 7 and the heading of section 7 whole and the content of 2 sections, over 24px each beside section 6: a screen shows one section (another may peek 8px, 24px WARN) (SR-4)",
+   "fix": "make each section exactly one screen or two, so a screen shows one section and no neighbour peeks",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "one-section"
+   ],
+   "wheres": [
+    "h2#close-h \"Book your next detail\""
+   ]
+  },
+  {
+   "check": "one-heading",
+   "where": "h2#plans-h \"Cleaning plans, every 2 to 8 weeks\"",
+   "msg": "headings of two sections show whole on one screen at 11 of 101 scroll positions (10.9%; at scroll 3450, 3500, 3550, 3600px), here with \"We\": at most 3% on a desktop (SR-5)",
+   "fix": "make the sections one screen tall so their headings sit a screen apart and two never share one",
+   "widths": [
+    1440
+   ],
+   "from": "consistency",
+   "ids": [
+    "one-heading"
+   ],
+   "wheres": [
+    "h2#plans-h \"Cleaning plans, every 2 to 8 weeks\""
+   ]
+  },
+  {
+   "check": "scroll-reveal",
+   "where": "footer#contact > div.wrap > div.closing__cta.close--type > a.btn.btn--primary \"Book a detail\"",
+   "msg": "starts \"color\" (0.1 s) the moment it is scrolled into view (an IntersectionObserver)",
+   "fix": "show it at rest: no fade, rise or unmask when it is scrolled into view",
+   "widths": [
+    390
+   ],
+   "from": "consistency",
+   "ids": [
+    "scroll-reveal"
+   ],
+   "wheres": [
+    "footer#contact > div.wrap > div.closing__cta.close--type > a.btn.btn--primary \"Book a detail\""
+   ]
+  },
+  {
+   "check": "neighbour",
+   "where": "#promise section.section.ground-surface \"We come to you anywhere in Centr\"",
+   "msg": "framed, 293px of #plans section.section.ground-surface \"Cleaning plans, every 2 to 8 wee\" shows",
+   "fix": "keep the next section's heading and picture out of this screen",
+   "widths": [
+    1440,
+    390
+   ],
+   "from": "layout",
+   "ids": [
+    "neighbour"
+   ],
+   "wheres": [
+    "#promise section.section.ground-surface \"We come to you anywhere in Centr\""
+   ]
+  }
+ ],
  "waived": [
   {
    "check": "phone-number",
@@ -235,23 +449,6 @@
    "reason": "The tel: link for the client's own published business number, so phone visitors can tap to call."
   },
   {
-   "check": "contrast",
-   "where": "div.wrap.grid > div.span-5 > p.packages__more > a.link \"Compare what each package includes\"",
-   "msg": "body text over a effect reads at 2.8:1 at its worst tenth (needs 4.5:1) (and 1 more like it: \"See all the work\")",
-   "fix": "put the text on a calm part of the picture, or on a solid panel",
-   "widths": [
-    390
-   ],
-   "from": "consistency",
-   "ids": [
-    "contrast"
-   ],
-   "wheres": [
-    "div.wrap.grid > div.span-5 > p.packages__more > a.link \"Compare what each package includes\""
-   ],
-   "reason": "The sampled ground is the kit .link's own underline and arrow, which stay drawn while the text is hidden; the link is ink #0b0f14 on #eef1f4 (16.9:1)."
-  },
-  {
    "check": "hero-lines",
    "where": "section.hero h1",
    "msg": "the check fills the h1 to 43 characters (this hero's maxChars in heroes.json), not the page's own: it takes 4 lines at 1440, 3 at most",
@@ -269,6 +466,6 @@
    "reason": "Both dealt sans pairings run the 43-character stress test to 4 lines; the third dealt pairing is a serif that clashes with the client's chrome logo. The shipped h1 is 34 characters on 2 lines at 1440, and the admin field tells the owner to keep it under 36."
   }
  ],
- "warnCount": 6,
- "at": "2026-11-14T08:25:41.615Z"
+ "warnCount": 5,
+ "at": "2026-11-16T05:19:03.219Z"
 }

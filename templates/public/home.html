@@ -36,6 +36,24 @@
     </div></div>
   </section>
 
+  <section class="section" id="about" aria-labelledby="about-h">
+    {% set owner = picture('/static/img/work/owner-senna') %}
+    <div class="wrap grid grid--top">
+      <div class="span-5">
+        <div class="section-head">
+          <h2 id="about-h">{{ site.about_title }}</h2>
+        </div>
+        <p class="t-lead">{{ site.about_text }}</p>
+        <p class="about__more">{{ site.about_text_2 }}</p>
+        <p class="packages__more"><a class="link" href="/about">Read Pavly’s story</a></p>
+      </div>
+      <div class="frame frame--photo frame--fill span-6 start-7">
+        <img class="frame__img" src="{{ owner.src }}" srcset="{{ owner.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Pavly, owner of GEM Autoworks, standing beside a black McLaren Senna at a car museum" style="object-position: 70% 40%" loading="lazy" width="1200" height="1600">
+      </div>
+    </div>
+  </section>
+
+
   <section class="section" id="packages" aria-labelledby="packages-h">
     {% set rear = picture('/static/img/work/kia-k5-rear') %}
     <div class="wrap grid grid--top">
@@ -109,23 +127,6 @@
           <div class="plan-demo__actions"><span class="btn btn--secondary" aria-hidden="true">Skip next visit</span><span class="btn btn--secondary" aria-hidden="true">Pause plan</span></div>
           <p class="plan-demo__example">An example plan, as it looks in your garage.</p>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="about" aria-labelledby="about-h">
-    {% set owner = picture('/static/img/work/owner-senna') %}
-    <div class="wrap grid grid--top">
-      <div class="span-5">
-        <div class="section-head">
-          <h2 id="about-h">{{ site.about_title }}</h2>
-        </div>
-        <p class="t-lead">{{ site.about_text }}</p>
-        <p class="about__more">{{ site.about_text_2 }}</p>
-        <p class="packages__more"><a class="link" href="/about">Read Pavly’s story</a></p>
-      </div>
-      <div class="frame frame--photo frame--fill span-6 start-7">
-        <img class="frame__img" src="{{ owner.src }}" srcset="{{ owner.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Pavly, owner of GEM Autoworks, standing beside a black McLaren Senna at a car museum" style="object-position: 70% 40%" loading="lazy" width="1200" height="1600">
       </div>
     </div>
   </section>

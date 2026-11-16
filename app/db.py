@@ -162,6 +162,12 @@ MIGRATIONS: list[str] = [
     ALTER TABLE admins ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0;
     UPDATE appointments SET plan_date = substr(start_local, 1, 10) WHERE plan_id IS NOT NULL;
     ''',
+    # 3: reviews are matched to real customers: the reviewer's email (never shown) and the completed booking it matches
+    '''
+    ALTER TABLE reviews ADD COLUMN email TEXT NOT NULL DEFAULT '';
+    ALTER TABLE reviews ADD COLUMN appointment_id INTEGER REFERENCES appointments(id) ON DELETE SET NULL;
+    ALTER TABLE reviews ADD COLUMN verified INTEGER NOT NULL DEFAULT 0;
+    ''',
 ]
 
 

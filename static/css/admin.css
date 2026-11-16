@@ -112,3 +112,7 @@ body.admin { background: var(--p-bg); }
   .table--stack td[data-label]::before { content: attr(data-label) " "; color: var(--p-muted); font-size: 13px; }
   .table--stack td:first-child { font-weight: 500; white-space: nowrap; }
 }
+.review-card--pending { border-color: #e9c46a; background: #fffaf0; }
+.review-card--denied { opacity: 0.6; }
+.review-card__body { max-width: 72ch; }
+.review-card .job__meta .pill { margin-right: 6px; }

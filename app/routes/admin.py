@@ -242,6 +242,12 @@ def appointment_update(request: Request, aid: int, csrf: str = Form(''), status:
             fresh = dict(c.execute('SELECT * FROM appointments WHERE id=?', (aid,)).fetchone())
             if notify and status != a['status'] and status in ('confirmed', 'cancelled'):
                 booking_emails(c, fresh, status)
+            if notify and status == 'completed' and a['status'] != 'completed':
+                from ..mail import link, queue
+                site = get_settings(c)
+                queue(c, fresh['email'], 'How did your GEM detail go?',
+                      f"Hi {fresh['name'].split(' ')[0]},\n\nThanks for choosing GEM Autoworks. If you have a minute, a short review "
+                      f"helps a small business a lot:\n{link('/reviews?b=' + fresh['manage_token'])}\n\nGEM Autoworks, {site['phone']}")
     return back(f'/admin/appointments/{aid}')
 
 
@@ -707,7 +713,14 @@ def post_action(request: Request, pid: int, action: str, csrf: str = Form('')):
 def reviews(request: Request, msg: str = ''):
     need_admin(request)
     with connection() as c:
-        rows = [dict(r) for r in c.execute("SELECT * FROM reviews ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, id DESC")]
+        rows = []
+        for r in c.execute("SELECT * FROM reviews ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, id DESC"):
+            d = dict(r)
+            d['booking'] = bk.appointment_view(c.execute('SELECT * FROM appointments WHERE id=?', (r['appointment_id'],)).fetchone()) \
+                if r['appointment_id'] else None
+            # any bookings at all under this email, even if none completed yet
+            d['other'] = c.execute("SELECT COUNT(*) FROM appointments WHERE email=? AND status!='cancelled'", (r['email'],)).fetchone()[0] if r['email'] else 0
+            rows.append(d)
     return _render(request, 'admin/reviews.html', section='reviews', rows=rows, msg=msg)
 
 
@@ -716,7 +729,7 @@ def review_action(request: Request, rid: int, action: str, csrf: str = Form(''))
     need_admin(request)
     check_csrf(request, csrf)
     with connection() as c:
-        if action in ('approved', 'hidden', 'pending'):
+        if action in ('approved', 'denied', 'pending'):
             c.execute('UPDATE reviews SET status=? WHERE id=?', (action, rid))
         elif action == 'delete':
             c.execute('DELETE FROM reviews WHERE id=?', (rid,))

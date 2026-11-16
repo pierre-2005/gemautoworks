@@ -109,7 +109,7 @@ def test_contact_and_review(client):
     r = client.post('/contact', data={'csrf': csrf(client, '/contact'), 'name': 'Sam', 'email': 'sam@example.test',
                                       'message': 'Can you do a 3-row SUV?'}, follow_redirects=False)
     assert r.status_code == 303
-    r = client.post('/reviews', data={'csrf': csrf(client, '/reviews'), 'name': 'Sam', 'rating': '5',
+    r = client.post('/reviews', data={'csrf': csrf(client, '/reviews'), 'name': 'Sam', 'email': 'sam@example.test', 'rating': '5',
                                       'message': 'Great job on my truck, like new.'}, follow_redirects=False)
     assert r.status_code == 303
     assert 'Great job on my truck' not in client.get('/reviews').text   # waits for approval
@@ -258,3 +258,29 @@ def test_bad_admin_numbers_are_400_not_500(client):
     t = csrf(client, '/admin/services')
     r = client.post('/admin/services/save', data={'csrf': t, 'id': 'abc', 'name': 'X', 'price_sedan': 'inf'})
     assert r.status_code == 400
+
+
+def test_reviews_are_verified_against_completed_bookings(client):
+    r, _ = book(client, email='reviewer@example.test')
+    token = r.headers['location'].split('/')[2].split('?')[0]
+    with connection() as c:
+        c.execute("UPDATE appointments SET status='completed' WHERE manage_token=?", (token,))
+    page = client.get(f'/reviews?b={token}').text
+    assert 'reviewer@example.test' in page                      # the review link fills in the booking
+    client.post('/reviews', data={'csrf': csrf(client, '/reviews'), 'name': 'Rita', 'email': 'reviewer@example.test', 'rating': '5',
+                                  'message': 'Spotless inside, on time.', 'booking': token})
+    client.post('/reviews', data={'csrf': csrf(client, '/reviews'), 'name': 'Stranger', 'email': 'nobody@example.test', 'rating': '1',
+                                  'message': 'Never actually booked here.'})
+    with connection() as c:
+        rows = {r['name']: r for r in c.execute('SELECT * FROM reviews')}
+    assert rows['Rita']['verified'] == 1 and rows['Rita']['appointment_id']
+    assert rows['Stranger']['verified'] == 0 and rows['Stranger']['status'] == 'pending'
+    admin = TestClient(app)
+    admin.post('/admin/login', data={'csrf': csrf(admin, '/admin/login'), 'email': 'owner@example.test', 'password': 'owner-password-123'})
+    listing = admin.get('/admin/reviews').text
+    assert 'Verified customer' in listing and 'No booking found' in listing
+    t = csrf(admin, '/admin/reviews')
+    admin.post(f"/admin/reviews/{rows['Rita']['id']}/approved", data={'csrf': t})
+    admin.post(f"/admin/reviews/{rows['Stranger']['id']}/denied", data={'csrf': t})
+    public = client.get('/reviews').text
+    assert 'Spotless inside' in public and 'Verified customer' in public and 'Never actually booked' not in public

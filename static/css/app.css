@@ -204,3 +204,4 @@ details.panel-box > summary { font-size: 16px; }
 .split-2 > .field, .split-3 > .field, .form-grid > .field { margin-top: 0 !important; }
 .step > .split-2 + .field, .step > .split-3 + .field, .new-car > .split-3 + .field__error + .field, .new-car > .split-3 + .field { margin-top: var(--s-4); }
 .new-car > .field + .field__legend { margin-top: var(--s-5); }
+footer.closing.closing--links { height: auto; min-height: 0; border-top: 1px solid var(--line); }

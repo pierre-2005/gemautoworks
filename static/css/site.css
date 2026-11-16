@@ -165,3 +165,67 @@ html { accent-color: var(--p-accent); caret-color: var(--p-accent); }
 .stars__off { color: color-mix(in oklab, var(--p-ink) 18%, transparent); }
 .empty-line { font-size: 18px; color: var(--p-muted); }
 @media (max-width: 639px) { #plans .ticks { display: none; } }
+
+/* ------------------------------------------------ card forms (contact, reviews): one clean column on a white card */
+.card-form { background: #fff; border-radius: var(--r-lg); padding: var(--s-7); box-shadow: 0 1px 2px rgb(11 15 20 / 0.05), 0 18px 40px -24px rgb(11 15 20 / 0.25); display: grid; gap: var(--s-5); }
+@media (max-width: 639px) { .card-form { padding: var(--s-5); margin-top: var(--s-6); } }
+.cf-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-4); }
+@media (max-width: 639px) { .cf-row { grid-template-columns: 1fr; gap: var(--s-5); } }
+.cf-field { display: grid; gap: 8px; min-width: 0; }
+.cf-label { font: 500 15px/1.3 var(--font-text); color: var(--p-ink); padding: 0; }
+.cf-opt { font-weight: 400; color: var(--p-muted); font-size: 14px; }
+.card-form input[type="text"], .card-form input[type="email"], .card-form input[type="tel"], .card-form textarea {
+  width: 100%; min-height: 48px; padding: 12px 14px; border: 1px solid color-mix(in oklab, var(--p-ink) 16%, transparent); border-radius: var(--r-sm);
+  background: var(--p-bg); font: 16px/1.5 var(--font-text); color: var(--p-ink);
+  transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out), background-color 150ms var(--ease-out); }
+.card-form textarea { min-height: 132px; resize: vertical; }
+.card-form input:focus, .card-form textarea:focus { outline: none; background: #fff; border-color: var(--p-action); box-shadow: 0 0 0 3px color-mix(in oklab, var(--p-action) 20%, transparent); }
+.card-form [aria-invalid="true"] { border-color: #b42318; }
+.card-form ::placeholder { color: color-mix(in oklab, var(--p-muted) 70%, transparent); }
+.cf-hint { margin: 0; font-size: 14px; color: var(--p-muted); }
+.cf-error { margin: 0; font-size: 14px; color: #b42318; }
+.form-alert { margin: 0; padding: 12px 14px; border-radius: var(--r-sm); background: #fbe4e4; color: #7f1d1d; font-size: 15px; }
+.cf-submit { justify-self: start; }
+.card-form.sent { gap: var(--s-3); }
+.card-form.sent p { margin: 0; }
+.stars--big { font-size: 28px; letter-spacing: 4px; color: #f5a524; }
+
+/* star picker: five real radio inputs; hovering or choosing a star fills it and every star before it */
+.star-pick { border: 0; margin: 0; padding: 0; display: grid; gap: 10px; }
+.star-pick__row { display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; gap: 6px; }
+.star-pick__row input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.star-pick__row label { cursor: pointer; padding: 2px; border-radius: 8px; line-height: 0; }
+.star-pick__row svg { width: 40px; height: 40px; fill: color-mix(in oklab, var(--p-ink) 12%, transparent); transition: fill 120ms ease, transform 160ms var(--ease-out); }
+.star-pick__row input:checked ~ label svg, .star-pick__row label:hover svg, .star-pick__row label:hover ~ label svg { fill: #f5a524; }
+.star-pick__row label:active svg { transform: scale(0.9); }
+.star-pick__row input:focus-visible + label { outline: 2px solid var(--p-action); outline-offset: 2px; }
+.review .pill { margin-left: 6px; vertical-align: 1px; }
+.stars { color: #f5a524; }
+@media (prefers-reduced-motion: reduce) { .star-pick__row svg { transition: none; } }
+
+/* ------------------------------------------------ black nav with GEM's full chrome logo on its native dark ground */
+.gem-logo--full { display: flex; align-items: center; height: 100%; }
+.gem-logo--full img { height: 60px; width: auto; display: block; }
+@media (max-width: 1023px) { .gem-logo--full img { height: 46px; } }
+
+/* menu button: three lines that fold into an X. The lines are drawn on the button itself (pseudo-elements and a
+   middle background line), so they survive the kit swapping the button's icon markup, and can animate. */
+.gem-burger { position: relative; width: 44px; height: 44px; color: currentColor; }
+.gem-burger > * { display: none !important; }
+.gem-burger::before, .gem-burger::after { content: ""; position: absolute; left: 12px; right: 12px; height: 2px; border-radius: 2px; background: currentColor;
+  transition: transform 260ms var(--ease-out), top 260ms var(--ease-out); }
+.gem-burger::before { top: 15px; }
+.gem-burger::after { top: 27px; }
+.gem-burger { background-image: linear-gradient(currentColor, currentColor); background-repeat: no-repeat; background-size: 20px 2px; background-position: center;
+  transition: background-size 200ms var(--ease-out); }
+.gem-burger[aria-expanded="true"] { background-size: 0 2px; }
+.gem-burger[aria-expanded="true"]::before { top: 21px; transform: rotate(45deg); }
+.gem-burger[aria-expanded="true"]::after { top: 21px; transform: rotate(-45deg); }
+@media (prefers-reduced-motion: reduce) { .gem-burger, .gem-burger::before, .gem-burger::after { transition: none; } }
+
+/* the statement sits on the same ground as the plans below it: no full screen of its own, so no empty band */
+main > section#promise { height: auto; min-height: 0; padding-bottom: 0; }
+main > section#promise + section#plans { padding-top: var(--s-9, 96px); }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.star-pick > legend { float: left; width: 100%; margin-bottom: 10px; }
+.star-pick > legend + * { clear: both; }

@@ -15,7 +15,7 @@
           <div class="field"><label for="pr">Final price (before the offer)</label><input id="pr" name="price" inputmode="decimal" value="{{ '%.2f'|format(a.price_cents / 100) if a.price_cents is not none else '' }}"></div>
           <div class="field full"><label for="an">Private notes</label><textarea id="an" name="admin_notes" rows="3">{{ a.admin_notes }}</textarea></div>
         </div>
-        <label class="check"><input type="checkbox" name="notify" value="1" checked><span>Email the customer when I confirm or cancel</span></label>
+        <label class="check"><input type="checkbox" name="notify" value="1" checked><span>Email the customer when I confirm or cancel, and ask for a review when I mark it completed</span></label>
         <div class="actions"><button class="btn btn--primary" type="submit">Save</button></div>
       </form></section>
     <section class="panel-box" id="move"><h2 class="app-h3">Move to another time</h2>

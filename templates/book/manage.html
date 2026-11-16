@@ -55,6 +55,12 @@
     <p class="notice">It’s less than {{ site.cancel_cutoff_hours }} hours to your visit, so changes go through Pavly. Call or text <a class="link" href="{{ tel(site.phone) }}">{{ site.phone }}</a>.</p>
     {% elif a.status == 'cancelled' %}
     <p><a class="btn btn--primary" href="/book">Book a detail</a></p>
+    {% elif a.status == 'completed' %}
+    <section class="panel-box panel-box--surface" aria-labelledby="rev-h">
+      <h2 class="app-h2" id="rev-h">How did it go?</h2>
+      <p>A short review helps a small business a lot.</p>
+      <div class="actions"><a class="btn btn--primary" href="/reviews?b={{ token }}#write">Write a review</a><a class="btn btn--secondary" href="/book">Book again</a></div>
+    </section>
     {% endif %}
 
     {% if not customer %}

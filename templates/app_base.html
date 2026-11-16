@@ -9,10 +9,13 @@
     {% block content %}{% endblock %}
   </div>
 </main>
-<footer class="app-footer">
-  <div class="wrap app-footer__row">
-    <a class="nav__logo gem-logo" href="/"><img src="/static/img/gem-mark-96.webp" alt="" width="36" height="36"><span>GEM Autoworks</span></a>
-    <span class="t-small muted">Mobile car detailing in {{ site.service_area }} · <a class="link" href="{{ tel(site.phone) }}">{{ site.phone }}</a> · <a class="link" href="/privacy">Privacy</a> · <a class="link" href="/terms">Terms</a></span>
+{% if full_footer %}
+{% include 'partials/closing.html' %}
+{% else %}
+<footer class="footer closing closing--links" aria-label="Site footer">
+  <div class="wrap">
+{% include 'partials/footer_links.html' %}
   </div>
 </footer>
+{% endif %}
 {% endblock %}

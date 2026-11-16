@@ -11,8 +11,8 @@
         <div class="btn-row"><a class="btn btn--primary" href="/book">Book a detail</a><a class="btn btn--secondary" href="#message">Send a message</a></div>
       </div>
       <div class="hero__media span-6 start-7">
-        {% set hp = picture('/static/img/work/altima-console-after') %}
-        <img src="{{ hp.src }}" srcset="{{ hp.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Nissan Altima center console after a GEM interior detail" style="--ly-pos: 45% 50%" fetchpriority="high" width="2048" height="1536">
+        {% set hp = picture('/static/img/work/owner-senna') %}
+        <img src="{{ hp.src }}" srcset="{{ hp.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Pavly, owner of GEM Autoworks, beside a black McLaren Senna" style="--ly-pos: 72% 40%" fetchpriority="high" width="1200" height="1600">
       </div>
     </div></div>
   </section>
@@ -20,40 +20,39 @@
   <section class="section ground-surface" id="message" style="--hm: 2" aria-labelledby="msg-h">
     <div class="wrap grid grid--top">
       <div class="span-5">
-        <div class="section-head"><h2 id="msg-h">Send a message</h2><p>Tell us the car, what it needs and the town. We reply by email or text, usually the same day.</p></div>
+        <div class="section-head"><h2 id="msg-h">Send a message</h2><p>Tell us the car, what it needs and your town. Pavly replies by email or text, usually the same day.</p></div>
         <dl class="contact-list">
           <div><dt>Call or text</dt><dd><a class="link" href="{{ tel(site.phone) }}">{{ site.phone }}</a></dd></div>
           <div><dt>Email</dt><dd><a class="link" href="mailto:{{ site.email }}">{{ site.email }}</a></dd></div>
           <div><dt>Instagram</dt><dd><a class="link" href="{{ site.instagram_url }}" rel="noopener">{{ site.instagram_handle }}</a></dd></div>
         </dl>
       </div>
-      <div class="span-6 start-7 form-panel">
+      <div class="span-6 start-7">
         {% if sent %}
-        <div class="sent" role="status">
-          <h2 class="sent__title">Your message is in</h2>
-          <p>Pavly replies by email or text, usually the same day. Want a time now? <a class="link" href="/book">Book a detail</a>.</p>
+        <div class="card-form sent" role="status">
+          <h3 class="sent__title">Your message is in</h3>
+          <p>We reply by email or text, usually the same day. Want a time now? <a class="link" href="/book">Book a detail</a></p>
         </div>
         {% else %}
-        <form class="form" action="/contact" method="post" novalidate>
+        <form class="card-form" action="/contact" method="post" novalidate>
           <input type="hidden" name="csrf" value="{{ csrf }}">
           <div class="hp" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
-          {% if errors %}<p class="form__status form__status--bad" role="alert">{{ errors|length }} field{{ 's' if errors|length > 1 }} to fix before sending.</p>{% endif %}
-          <div class="split-fields">
-            <div class="field"><label for="f-name">Name</label>
-              <input id="f-name" name="name" type="text" autocomplete="name" required value="{{ form.name or '' }}" aria-describedby="f-name-err"{% if errors.name %} aria-invalid="true" autofocus{% endif %}>
-              <p class="field__error" id="f-name-err"{% if not errors.name %} hidden{% endif %}>{{ errors.name or 'Write your name so we know who to reply to.' }}</p></div>
-            <div class="field"><label for="f-phone">Phone, if you prefer a text</label>
-              <input id="f-phone" name="phone" type="tel" autocomplete="tel" value="{{ form.phone or '' }}" aria-describedby="f-phone-err"{% if errors.phone %} aria-invalid="true"{% endif %}>
-              <p class="field__error" id="f-phone-err"{% if not errors.phone %} hidden{% endif %}>{{ errors.phone or '' }}</p></div>
+          {% if errors %}<p class="form-alert" role="alert">{{ errors|length }} thing{{ 's' if errors|length > 1 }} to fix before sending.</p>{% endif %}
+          <div class="cf-row">
+            <div class="cf-field"><label class="cf-label" for="f-name">Name</label>
+              <input id="f-name" name="name" type="text" autocomplete="name" value="{{ form.name or '' }}"{% if errors.name %} aria-invalid="true"{% endif %} aria-describedby="f-name-err">
+              {% if errors.name %}<p class="cf-error" id="f-name-err">{{ errors.name }}</p>{% endif %}</div>
+            <div class="cf-field"><label class="cf-label" for="f-phone">Phone <span class="cf-opt">optional</span></label>
+              <input id="f-phone" name="phone" type="tel" autocomplete="tel" value="{{ form.phone or '' }}"{% if errors.phone %} aria-invalid="true"{% endif %} aria-describedby="f-phone-err">
+              {% if errors.phone %}<p class="cf-error" id="f-phone-err">{{ errors.phone }}</p>{% endif %}</div>
           </div>
-          <div class="field"><label for="f-email">Email</label>
-            <input id="f-email" name="email" type="email" autocomplete="email" inputmode="email" required value="{{ form.email or '' }}" aria-describedby="f-email-err"{% if errors.email %} aria-invalid="true"{% endif %}>
-            <p class="field__error" id="f-email-err"{% if not errors.email %} hidden{% endif %}>{{ errors.email or 'Write an email address with an @, like name@example.com.' }}</p></div>
-          <div class="field"><label for="f-message">Your car and your question</label>
-            <textarea id="f-message" name="message" rows="5" required aria-describedby="f-message-err"{% if errors.message %} aria-invalid="true"{% endif %}>{{ form.message or '' }}</textarea>
-            <p class="field__error" id="f-message-err"{% if not errors.message %} hidden{% endif %}>{{ errors.message or 'Write a few words about your car or your question.' }}</p></div>
-          <div class="btn-row"><button class="btn btn--primary" type="submit">Send the message</button></div>
-          <p class="t-small muted">We reply by email or text, usually the same day.</p>
+          <div class="cf-field"><label class="cf-label" for="f-email">Email</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" inputmode="email" value="{{ form.email or '' }}"{% if errors.email %} aria-invalid="true"{% endif %} aria-describedby="f-email-err">
+            {% if errors.email %}<p class="cf-error" id="f-email-err">{{ errors.email }}</p>{% endif %}</div>
+          <div class="cf-field"><label class="cf-label" for="f-message">Message</label>
+            <textarea id="f-message" name="message" rows="5" placeholder="The car, what it needs, and your town"{% if errors.message %} aria-invalid="true"{% endif %} aria-describedby="f-message-err">{{ form.message or '' }}</textarea>
+            {% if errors.message %}<p class="cf-error" id="f-message-err">{{ errors.message }}</p>{% endif %}</div>
+          <button class="btn btn--primary cf-submit" type="submit">Send message</button>
         </form>
         {% endif %}
       </div>
