@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {# Pages people work in (booking, account, legal, errors): the same system and tokens, but normal page flow
    instead of the marketing pages' one-section-per-screen rhythm. #}
-{% block head %}<link rel="stylesheet" href="/static/css/app.css">{% endblock %}
+{% block head %}<link rel="stylesheet" href="/static/css/app.css?v={{ asset_v }}">{% endblock %}
 {% block body_class %}app-page{% endblock %}
 {% block body %}
 <main id="top" class="app-main">

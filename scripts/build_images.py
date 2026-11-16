@@ -41,6 +41,10 @@ def build_logo() -> None:
     logo = Image.open(SRC / 'gem-logo.png').convert('RGBA')
     logo.save(OUT / 'gem-logo.webp', 'WEBP', quality=90, method=6)
     logo.resize((310, round(logo.height * 310 / logo.width)), Image.LANCZOS).save(OUT / 'gem-logo-310.webp', 'WEBP', quality=90)
+    # the nav uses the logo cropped to its own edges, so its height is all logo
+    tight = logo.crop(logo.getbbox())
+    tight.save(OUT / 'gem-logo-nav.webp', 'WEBP', quality=92)
+    tight.resize((tight.width // 2, tight.height // 2), Image.LANCZOS).save(OUT / 'gem-logo-nav-300.webp', 'WEBP', quality=92)
     # the diamond mark, cut from the logo itself (never redrawn), on its native dark tile
     mark = logo.crop((139, 14, 472, 250))
     side = 300

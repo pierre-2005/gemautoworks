@@ -17,11 +17,11 @@
 <meta name="page-type" content="service">
 <link rel="preload" href="/static/fonts/red-hat-display-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/static/fonts/red-hat-text-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/static/css/fonts.css">
-<link rel="stylesheet" href="/static/kit/system.css">
-<link rel="stylesheet" href="/static/kit/ui/cards.css">
-<link rel="stylesheet" href="/static/kit/motion/motion.css">
-<link rel="stylesheet" href="/static/kit/layout/layout.css">
+<link rel="stylesheet" href="/static/css/fonts.css?v={{ asset_v }}">
+<link rel="stylesheet" href="/static/kit/system.css?v={{ asset_v }}">
+<link rel="stylesheet" href="/static/kit/ui/cards.css?v={{ asset_v }}">
+<link rel="stylesheet" href="/static/kit/motion/motion.css?v={{ asset_v }}">
+<link rel="stylesheet" href="/static/kit/layout/layout.css?v={{ asset_v }}">
 <style>
 :root {
   --p-bg: #eef1f4; --p-surface: #e2e7ec; --p-ink: #0b0f14; --p-muted: #4b5563;
@@ -35,17 +35,17 @@
   --display-tracking-xl: -0.035em;
 }
 </style>
-<link rel="stylesheet" href="/static/css/site.css">
+<link rel="stylesheet" href="/static/css/site.css?v={{ asset_v }}">
 {% block head %}{% endblock %}
 <script>document.documentElement.classList.add('m-enter');setTimeout(()=>document.documentElement.classList.add('m-enter-done'),700)</script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
 {% include 'partials/nav.html' %}
 {% block body %}{% endblock %}
-<script type="module" src="/static/kit/system.js"></script>
-<script type="module" src="/static/kit/motion/motion.js"></script>
-<script type="module" src="/static/kit/layout/layout.js"></script>
-<script type="module" src="/static/js/site.js"></script>
+<script type="module" src="/static/kit/system.js?v={{ asset_v }}"></script>
+<script type="module" src="/static/kit/motion/motion.js?v={{ asset_v }}"></script>
+<script type="module" src="/static/kit/layout/layout.js?v={{ asset_v }}"></script>
+<script type="module" src="/static/js/site.js?v={{ asset_v }}"></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -25,23 +25,30 @@
   </section>
 
   <section class="section ground-surface" id="write" style="--hm: 2" aria-labelledby="write-h">
-    <div class="wrap grid grid--top">
-      <div class="span-5">
-        <div class="section-head">
-          <h2 id="write-h">Write a review</h2>
-          <p>Tell other drivers how your detail went. Reviews from customers we’ve detailed show a Verified customer badge.</p>
-        </div>
-        {% if booking %}<p class="notice notice--ok">Reviewing your {{ booking.service_name }}{% if booking.vehicle_text %} on the {{ booking.vehicle_text }}{% endif %}.</p>{% endif %}
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="write-h">Write a review</h2>
+        <p>Tell other drivers how your detail went.</p>
       </div>
-      <div class="span-6 start-7">
+      <div class="split-card">
+        <aside class="split-card__info" aria-label="About reviews">
+          <p class="split-card__title">{% if booking %}Your {{ booking.service_name }}{% else %}Your review helps a small business{% endif %}</p>
+          {% if booking %}<p class="split-card__lede">{{ booking.vehicle_text or booking.size_text }} · {{ booking.day_text }}</p>{% endif %}
+          <ul class="methods methods--static">
+            <li><span class="method"><span class="method__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><span class="method__label">Verified customer badge</span><span class="method__value method__value--sm">When your email matches a GEM booking</span></span></span></li>
+            <li><span class="method"><span class="method__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span><span><span class="method__label">Your email stays private</span><span class="method__value method__value--sm">Only your name and car are shown</span></span></span></li>
+            <li><span class="method"><span class="method__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><span><span class="method__label">Takes about a minute</span><span class="method__value method__value--sm">Stars and a sentence or two is plenty</span></span></span></li>
+          </ul>
+        </aside>
+        <div class="split-card__form">
         {% if sent %}
-        <div class="card-form sent" role="status">
+        <div class="sent-state" role="status">
           <p class="stars stars--big" aria-hidden="true">★★★★★</p>
           <h3 class="sent__title">Thanks for your review</h3>
           <p>It means a lot to a small business. <a class="link" href="/book">Book your next detail</a></p>
         </div>
         {% else %}
-        <form class="card-form" action="/reviews" method="post" novalidate>
+        <form class="card-form card-form--flat" action="/reviews" method="post" novalidate>
           <input type="hidden" name="csrf" value="{{ csrf }}">
           <input type="hidden" name="booking" value="{{ booking_token }}">
           <div class="hp" aria-hidden="true"><label for="r-website">Website</label><input id="r-website" name="website" tabindex="-1" autocomplete="off"></div>
@@ -69,6 +76,7 @@
           <button class="btn btn--primary cf-submit" type="submit">Post my review</button>
         </form>
         {% endif %}
+        </div>
       </div>
     </div>
   </section>

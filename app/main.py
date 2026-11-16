@@ -58,7 +58,13 @@ def tel(phone: str) -> str:
     return f'tel:+{digits}'
 
 
-templates.env.globals.update(picture=picture, money=money, tel=tel, SIZES=SIZES, SIZE_LABEL=SIZE_LABEL,
+def _asset_version() -> str:
+    """Changes whenever a CSS or JS file changes, so browsers fetch new files after each deploy."""
+    newest = max((f.stat().st_mtime_ns for f in STATIC.rglob('*') if f.suffix in ('.css', '.js')), default=0)
+    return format(newest // 1_000_000 % 0xFFFFFFFF, 'x')
+
+
+templates.env.globals.update(asset_v=_asset_version(), picture=picture, money=money, tel=tel, SIZES=SIZES, SIZE_LABEL=SIZE_LABEL,
                              nice_time=nice_time, current_year=lambda: date.today().year)
 
 

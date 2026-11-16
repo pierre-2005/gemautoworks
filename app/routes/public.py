@@ -123,7 +123,7 @@ def _review_booking(c, token: str):
     if not token:
         return None
     row = c.execute("SELECT * FROM appointments WHERE manage_token=? AND status='completed'", (token,)).fetchone()
-    return dict(row) if row else None
+    return bk.appointment_view(row) if row else None
 
 
 def _approved_reviews(c):

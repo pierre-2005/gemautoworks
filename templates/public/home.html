@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% block head %}
 <script>document.documentElement.classList.add('mo-js');setTimeout(()=>document.documentElement.classList.add('mo-safe'),2500)</script>
-<link rel="modulepreload" href="/static/kit/moments/moments.js">
-<link rel="modulepreload" href="/static/kit/moments/lib.js">
-<link rel="modulepreload" href="/static/kit/moments/word-highlight/moment.js">
-<link rel="stylesheet" href="/static/kit/moments/word-highlight/moment.css">
+<link rel="modulepreload" href="/static/kit/moments/moments.js?v={{ asset_v }}">
+<link rel="modulepreload" href="/static/kit/moments/lib.js?v={{ asset_v }}">
+<link rel="modulepreload" href="/static/kit/moments/word-highlight/moment.js?v={{ asset_v }}">
+<link rel="stylesheet" href="/static/kit/moments/word-highlight/moment.css?v={{ asset_v }}">
 {% endblock %}
 {% block body %}
 <!-- type: service

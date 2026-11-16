@@ -205,8 +205,8 @@ html { accent-color: var(--p-accent); caret-color: var(--p-accent); }
 
 /* ------------------------------------------------ black nav with GEM's full chrome logo on its native dark ground */
 .gem-logo--full { display: flex; align-items: center; height: 100%; }
-.gem-logo--full img { height: 60px; width: auto; display: block; }
-@media (max-width: 1023px) { .gem-logo--full img { height: 46px; } }
+.gem-logo--full img { height: 70px; width: auto; display: block; }
+@media (max-width: 1023px) { .gem-logo--full img { height: 50px; } }
 
 /* menu button: three lines that fold into an X. The lines are drawn on the button itself (pseudo-elements and a
    middle background line), so they survive the kit swapping the button's icon markup, and can animate. */
@@ -229,3 +229,50 @@ main > section#promise + section#plans { padding-top: var(--s-9, 96px); }
 .visually-hidden { position: absolute !important; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .star-pick > legend { float: left; width: 100%; margin-bottom: 10px; }
 .star-pick > legend + * { clear: both; }
+
+/* a taller bar so the full logo can be read: 88px on desktop, 64px on tablets and phones */
+:root { --nav: 88px; }
+@media (max-width: 1023px) { :root { --nav: 64px; } }
+
+/* ------------------------------------------------ split cards (contact, reviews): graphite info panel + white form, one object */
+.split-card { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); border-radius: var(--r-lg); overflow: hidden; background: #fff;
+  box-shadow: 0 1px 2px rgb(11 15 20 / 0.05), 0 24px 56px -28px rgb(11 15 20 / 0.32); }
+.split-card__info { background: var(--p-inv-bg); color: var(--p-inv-ink); padding: var(--s-8, 48px) var(--s-7); display: flex; flex-direction: column; gap: var(--s-5); }
+.split-card__title { margin: 0; font: var(--display-weight) clamp(24px, 1vw + 16px, 30px)/1.2 var(--font-display); letter-spacing: -0.015em; }
+.split-card__lede { margin: calc(-1 * var(--s-3)) 0 0; color: var(--p-inv-muted); font-size: 15px; }
+.split-card__note { margin: auto 0 0; display: flex; align-items: center; gap: 10px; color: var(--p-inv-muted); font-size: 14px; padding-top: var(--s-5); border-top: 1px solid rgb(255 255 255 / 0.12); }
+.split-card__form { padding: var(--s-8, 48px) var(--s-8, 48px); }
+.card-form--flat { background: none; box-shadow: none; padding: 0; border-radius: 0; }
+.methods { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.method { display: flex; align-items: center; gap: 14px; padding: 12px; margin: 0 -12px; border-radius: var(--r-md); color: inherit; text-decoration: none;
+  transition: background-color 150ms var(--ease-out); }
+a.method:hover { background: rgb(255 255 255 / 0.07); }
+a.method:focus-visible { outline: 2px solid #5fb4ef; outline-offset: 2px; }
+.method__icon { flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: rgb(95 180 239 / 0.14); color: #8fd0f5; }
+.method__icon svg { width: 22px; height: 22px; }
+.method__icon--sm { width: 28px; height: 28px; border-radius: 8px; background: none; }
+.method__icon--sm svg { width: 18px; height: 18px; }
+.method__label { display: block; font-size: 14px; color: var(--p-inv-muted); line-height: 1.3; }
+.method__value { display: block; font-size: 17px; font-weight: 500; line-height: 1.35; overflow-wrap: anywhere; }
+.method__value--sm { font-size: 15px; font-weight: 400; color: var(--p-inv-ink); opacity: 0.85; }
+.methods--static .method__label { color: var(--p-inv-ink); font-size: 16px; font-weight: 500; }
+.sent-state { display: grid; gap: var(--s-3); align-content: center; min-height: 260px; }
+.sent-state p { margin: 0; }
+@media (max-width: 1023px) {
+  .split-card { grid-template-columns: 1fr; }
+  .split-card__info { padding: var(--s-6); }
+  .split-card__form { padding: var(--s-6); }
+  .split-card__note { margin-top: 0; }
+}
+@media (max-width: 639px) {
+  .split-card__info, .split-card__form { padding: var(--s-5); }
+  .card-form--flat { margin-top: 0; }
+}
+
+/* bigger logo: the bar grows to hold it */
+:root { --nav: 88px; }
+.gem-logo--full img { height: 70px; }
+@media (max-width: 1023px) { :root { --nav: 72px; } .gem-logo--full img { height: 56px; } }
+@media (max-width: 639px) { :root { --nav: 68px; } .gem-logo--full img { height: 52px; } }
+/* the form sections size to their form, never clipped */
+main > section#write, main > section#message { height: auto; min-height: 0; }
