@@ -1,0 +1,50 @@
+{% extends 'admin/base.html' %}
+{% block title %}Website{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Website</h1><p>Changes show on the site straight away.</p></div><a class="btn btn--secondary" href="/" target="_blank" rel="noopener">View the site</a></div>
+
+<section class="panel-box" id="service"><h2 class="app-h3">How you work</h2>
+  <form method="post" action="/admin/settings/service" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <fieldset><legend class="field__legend">Service type, used in booking and across the site</legend>
+      <div class="mode-switch choices">
+        {% for k, t, d in [('mobile','Mobile only','You go to every customer'),('shop','Shop only','Customers drop the car off'),('both','Both','Customers choose when booking')] %}
+        <label class="choice"><input type="radio" name="service_mode" value="{{ k }}" {% if s.service_mode == k %}checked{% endif %}><span class="choice__body"><span class="choice__title">{{ t }}</span><span class="choice__meta">{{ d }}</span></span></label>
+        {% endfor %}
+      </div></fieldset>
+    <div class="form-grid">
+      <div class="field"><label for="w-area">Service area</label><input id="w-area" name="service_area" value="{{ s.service_area }}"></div>
+      <div class="field"><label for="w-towns">Towns you cover, optional, comma separated</label><input id="w-towns" name="service_towns" value="{{ s.service_towns }}" placeholder="Worcester, Shrewsbury, Auburn"></div>
+      <div class="field"><label for="w-shop">Shop address, shown when shop drop-off is on</label><input id="w-shop" name="shop_address" value="{{ s.shop_address }}"></div>
+      <div class="field"><label for="w-shopnote">Shop note if no address is shown</label><input id="w-shopnote" name="shop_note" value="{{ s.shop_note }}"></div>
+      <div class="field full"><label for="w-pn">Pricing note</label><input id="w-pn" name="pricing_note" value="{{ s.pricing_note }}"></div>
+    </div>
+    <div class="actions"><button class="btn btn--primary btn--small" type="submit">Save</button></div></form></section>
+
+<section class="panel-box" id="offer" style="margin-top: var(--s-5)"><h2 class="app-h3">First-detail offer</h2>
+  <form method="post" action="/admin/settings/offer" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <label class="check"><input type="checkbox" name="offer_enabled" value="1" {% if s.offer_enabled == '1' %}checked{% endif %}><span>Take a discount off a new customer’s first detail</span></label>
+    <div class="form-grid"><div class="field"><label for="o-pct">Percent off</label><input id="o-pct" name="offer_percent" inputmode="numeric" value="{{ s.offer_percent }}"></div>
+      <div class="field"><label for="o-text">How it reads on the site</label><input id="o-text" name="offer_text" value="{{ s.offer_text }}"></div></div>
+    <div class="actions"><button class="btn btn--primary btn--small" type="submit">Save</button></div></form></section>
+
+<section class="panel-box" id="business" style="margin-top: var(--s-5)"><h2 class="app-h3">Contact details</h2>
+  <form method="post" action="/admin/settings/business" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="form-grid">
+      {% for k, label in [('business_name','Business name'),('tagline','Tagline'),('phone','Phone'),('email','Email (bookings are sent here too)'),('instagram_url','Instagram link'),('instagram_handle','Instagram handle'),('facebook_url','Facebook page link, optional')] %}
+      <div class="field"><label for="b-{{ k }}">{{ label }}</label><input id="b-{{ k }}" name="{{ k }}" value="{{ s[k] }}"></div>
+      {% endfor %}
+    </div>
+    <div class="actions"><button class="btn btn--primary btn--small" type="submit">Save</button></div></form></section>
+
+<section class="panel-box" id="copy" style="margin-top: var(--s-5)"><h2 class="app-h3">Words on the site</h2>
+  <form method="post" action="/admin/settings/copy" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="field"><label for="c-ht">Home headline</label><input id="c-ht" name="hero_title" value="{{ s.hero_title }}" maxlength="60"><p class="field__hint">Keep it under 36 characters so it fits on two or three lines. Say what you do and where.</p></div>
+    <div class="field"><label for="c-hl">Home line under the headline</label><textarea id="c-hl" name="hero_lead" rows="2">{{ s.hero_lead }}</textarea></div>
+    <div class="field"><label for="c-at">About heading</label><input id="c-at" name="about_title" value="{{ s.about_title }}"></div>
+    <div class="field"><label for="c-a1">About, first paragraph</label><textarea id="c-a1" name="about_text" rows="3">{{ s.about_text }}</textarea></div>
+    <div class="field"><label for="c-a2">About, second paragraph</label><textarea id="c-a2" name="about_text_2" rows="3">{{ s.about_text_2 }}</textarea></div>
+    <div class="field"><label for="c-pt">Plans heading</label><input id="c-pt" name="plans_title" value="{{ s.plans_title }}"></div>
+    <div class="field"><label for="c-px">Plans text</label><textarea id="c-px" name="plans_text" rows="2">{{ s.plans_text }}</textarea></div>
+    <div class="field"><label for="c-seo">Search engine description</label><textarea id="c-seo" name="seo_description" rows="2">{{ s.seo_description }}</textarea></div>
+    <div class="actions"><button class="btn btn--primary btn--small" type="submit">Save</button></div></form></section>
+{% endblock %}

@@ -1,0 +1,182 @@
+{% extends 'app_base.html' %}
+{% block title %}Book a detail: GEM Autoworks{% endblock %}
+{% block description %}Pick a package, your car and a real open time. Mobile car detailing in {{ site.service_area }}.{% endblock %}
+{% block content %}
+{% set approval = site.booking_requires_approval == '1' %}
+<div class="book-head">
+  <h1 class="app-title">Book a detail</h1>
+  <p class="app-lead">Choose a package, your car and an open time. {% if approval %}Pavly confirms by email or text, usually the same day.{% else %}You get a confirmation by email straight away.{% endif %}
+  {% if not customer %}<br><a class="link" href="/account/login?next=/book">Sign in</a> to use the cars in your garage.{% endif %}</p>
+</div>
+
+<form class="app-grid" id="book-form" action="/book" method="post" novalidate data-book
+      data-returning="{{ 1 if returning else 0 }}" data-offer="{{ site.offer_percent if site.offer_enabled == '1' else 0 }}">
+  <div>
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="hp" aria-hidden="true"><label for="b-website">Website</label><input id="b-website" name="website" tabindex="-1" autocomplete="off"></div>
+    {% if errors %}
+    <div class="notice notice--bad" role="alert" tabindex="-1" id="book-errors">
+      <strong>{{ errors|length }} thing{{ 's' if errors|length > 1 }} to fix:</strong>
+      <ul class="error-list">{% for k, v in errors.items() %}<li><a href="#step-{{ {'service':'package','size':'car','vehicle':'car','location_type':'where','address':'where','day':'time','time':'time'}.get(k, 'details') }}">{{ v }}</a></li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <fieldset class="step" id="step-package">
+      <legend class="step__head"><span class="step__num">1</span><span class="step__title">Package</span></legend>
+      <div class="choices choices--3">
+        {% for s in services %}
+        <label class="choice">
+          <input type="radio" name="service" value="{{ s.id }}" data-name="{{ s.name }}" data-prices='{{ s.prices|tojson }}' {% if sel.service == s.id %}checked{% endif %} required>
+          <span class="choice__body">
+            <span class="choice__title">{{ s.name }}</span>
+            <span class="choice__meta">{{ s.summary }}</span>
+            <span class="choice__price" data-price-for="{{ s.id }}">from {{ money(s.from_cents) }}</span>
+          </span>
+        </label>
+        {% endfor %}
+      </div>
+      <p class="field__hint"><a class="link" href="/services#prices">Compare what each package includes</a></p>
+      {% if addons %}
+      <div class="addon-list">
+        <p class="field__legend">Add-ons</p>
+        {% for a in addons %}
+        <label class="check"><input type="checkbox" name="addons" value="{{ a.id }}" {% if form.addons and a.id in form.addons %}checked{% endif %}><span>{{ a.name }} <span class="muted">· {{ money(a.price_cents) }}{% if a.minutes %} · {{ a.minutes }} min{% endif %}</span></span></label>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </fieldset>
+
+    <fieldset class="step" id="step-car">
+      <legend class="step__head"><span class="step__num">2</span><span class="step__title">Your car</span></legend>
+      {% if vehicles %}
+      <div class="choices choices--2 garage-pick">
+        {% for v in vehicles %}
+        <label class="choice">
+          <input type="radio" name="vehicle_id" value="{{ v.id }}" data-size="{{ v.size }}" {% if sel.vehicle == v.id or (not sel.vehicle and loop.first and not form.make) %}checked{% endif %}>
+          <span class="choice__body">
+            <span class="choice__title">{{ v.nickname or (v.year ~ ' ' ~ v.make ~ ' ' ~ v.model)|trim }}</span>
+            <span class="choice__meta">{% if v.nickname %}{{ v.year }} {{ v.make }} {{ v.model }} · {% endif %}{{ SIZE_LABEL[v.size] }}</span>
+          </span>
+        </label>
+        {% endfor %}
+        <label class="choice">
+          <input type="radio" name="vehicle_id" value="" {% if form.make %}checked{% endif %}>
+          <span class="choice__body"><span class="choice__title">Another car</span><span class="choice__meta">Type its details below</span></span>
+        </label>
+      </div>
+      {% endif %}
+      <div class="new-car" {% if vehicles and not form.make %}hidden{% endif %} data-new-car>
+        <div class="split-3">
+          <div class="field"><label for="b-year">Year</label><input id="b-year" name="year" inputmode="numeric" maxlength="4" autocomplete="off" value="{{ form.year or '' }}"></div>
+          <div class="field"><label for="b-make">Make</label><input id="b-make" name="make" autocomplete="off" value="{{ form.make or '' }}" {% if errors.vehicle %}aria-invalid="true"{% endif %} aria-describedby="b-vehicle-err"></div>
+          <div class="field"><label for="b-model">Model</label><input id="b-model" name="model" autocomplete="off" value="{{ form.model or '' }}" {% if errors.vehicle %}aria-invalid="true"{% endif %} aria-describedby="b-vehicle-err"></div>
+        </div>
+        <p class="field__error" id="b-vehicle-err" {% if not errors.vehicle %}hidden{% endif %}>{{ errors.vehicle or 'Write the make and model, like Honda Civic.' }}</p>
+        <div class="field"><label for="b-color">Color, optional</label><input id="b-color" name="color" autocomplete="off" value="{{ form.color or '' }}"></div>
+        <p class="field__legend" id="size-label">Size</p>
+        <div class="choices choices--3" role="radiogroup" aria-labelledby="size-label">
+          {% for key, label in SIZES %}
+          <label class="choice">
+            <input type="radio" name="size" value="{{ key }}" {% if sel.size == key %}checked{% endif %}>
+            <span class="choice__body"><span class="choice__title">{{ label }}</span><span class="choice__meta" data-size-price="{{ key }}"></span></span>
+          </label>
+          {% endfor %}
+        </div>
+        <p class="field__error" {% if not errors.size %}hidden{% endif %}>{{ errors.size or '' }}</p>
+        {% if customer %}<label class="check save-car"><input type="checkbox" name="save_vehicle" value="1" checked><span>Save this car to my garage</span></label>{% endif %}
+      </div>
+    </fieldset>
+
+    <fieldset class="step" id="step-where">
+      <legend class="step__head"><span class="step__num">3</span><span class="step__title">Where</span></legend>
+      {% if modes|length > 1 %}
+      <div class="choices choices--2">
+        <label class="choice"><input type="radio" name="location_type" value="mobile" {% if (form.location_type or 'mobile') == 'mobile' %}checked{% endif %}>
+          <span class="choice__body"><span class="choice__title">We come to you</span><span class="choice__meta">At your home or work in {{ site.service_area }}</span></span></label>
+        <label class="choice"><input type="radio" name="location_type" value="shop" {% if form.location_type == 'shop' %}checked{% endif %}>
+          <span class="choice__body"><span class="choice__title">Drop it off</span><span class="choice__meta">{{ site.shop_address or site.shop_note }}</span></span></label>
+      </div>
+      {% else %}
+      <input type="hidden" name="location_type" value="{{ modes[0] }}">
+      <p class="where-fixed">{% if modes[0] == 'mobile' %}We come to you anywhere in {{ site.service_area }}.{% else %}Drop-off at our shop{% if site.shop_address %}: {{ site.shop_address }}{% else %}. {{ site.shop_note }}{% endif %}{% endif %}</p>
+      {% endif %}
+      {% if 'mobile' in modes %}
+      <div class="where-mobile" data-where-mobile {% if form.location_type == 'shop' %}hidden{% endif %}>
+        {% if addresses %}
+        <div class="field"><label for="b-address">Address</label>
+          <select id="b-address" name="address_id" data-address-select>
+            {% for a in addresses %}<option value="{{ a.id }}">{{ a.label }}: {{ a.street }}, {{ a.town }}</option>{% endfor %}
+            <option value="">Another address</option>
+          </select></div>
+        {% endif %}
+        <div class="split-2" data-new-address {% if addresses %}hidden{% endif %}>
+          <div class="field"><label for="b-street">Street address</label><input id="b-street" name="street" autocomplete="street-address" value="{{ form.street or '' }}" {% if errors.address %}aria-invalid="true"{% endif %} aria-describedby="b-address-err"></div>
+          <div class="field"><label for="b-town">Town</label><input id="b-town" name="town" autocomplete="address-level2" value="{{ form.town or '' }}" {% if errors.address %}aria-invalid="true"{% endif %} aria-describedby="b-address-err"></div>
+        </div>
+        <p class="field__error" id="b-address-err" {% if not errors.address %}hidden{% endif %}>{{ errors.address or '' }}</p>
+        <p class="field__hint">Park where there is room to walk all the way around the car.</p>
+      </div>
+      {% endif %}
+    </fieldset>
+
+    <fieldset class="step" id="step-time">
+      <legend class="step__head"><span class="step__num">4</span><span class="step__title">Day and time</span></legend>
+      <div data-days class="days-wrap" aria-live="polite">
+        {% if not sel.service or not sel.size %}<p class="empty" data-days-empty>Choose a package and your car’s size to see open days.</p>{% endif %}
+      </div>
+      <noscript>
+        <p class="field__hint">Pick a day, then press Show times.</p>
+        <div class="split-2"><div class="field"><label for="b-day-ns">Day</label><input id="b-day-ns" type="date" name="day" min="{{ today }}" value="{{ sel.day }}"></div></div>
+        <button class="btn btn--secondary" type="submit" formaction="/book" formmethod="get" formnovalidate>Show times</button>
+      </noscript>
+      <div data-times class="times-wrap" aria-live="polite">
+        {% if sel.day %}
+        <p class="field__legend">Start times</p>
+        {% if times %}
+        <div class="times">{% for t in times %}<label class="day"><input type="radio" name="time" value="{{ t }}" {% if form.time == t %}checked{% endif %}><span>{{ nice_time(t) }}</span></label>{% endfor %}</div>
+        {% else %}<p class="empty">No open times that day for this package. Try another day.</p>{% endif %}
+        {% endif %}
+      </div>
+      <input type="hidden" name="day" value="{{ sel.day }}" data-day-input>
+      <p class="field__error" {% if not errors.day and not errors.time %}hidden{% endif %}>{{ errors.day or errors.time or '' }}</p>
+    </fieldset>
+
+    <fieldset class="step" id="step-details">
+      <legend class="step__head"><span class="step__num">5</span><span class="step__title">Your details</span></legend>
+      <div class="split-2">
+        <div class="field"><label for="b-name">Name</label><input id="b-name" name="name" autocomplete="name" value="{{ form.name or (customer.name if customer else '') }}" {% if errors.name %}aria-invalid="true"{% endif %} aria-describedby="b-name-err">
+          <p class="field__error" id="b-name-err" {% if not errors.name %}hidden{% endif %}>{{ errors.name or '' }}</p></div>
+        <div class="field"><label for="b-phone">Mobile phone</label><input id="b-phone" name="phone" type="tel" autocomplete="tel" value="{{ form.phone or (customer.phone if customer else '') }}" {% if errors.phone %}aria-invalid="true"{% endif %} aria-describedby="b-phone-err">
+          <p class="field__error" id="b-phone-err" {% if not errors.phone %}hidden{% endif %}>{{ errors.phone or '' }}</p></div>
+      </div>
+      <div class="field"><label for="b-email">Email</label><input id="b-email" name="email" type="email" autocomplete="email" inputmode="email" value="{{ form.email or (customer.email if customer else '') }}" {% if errors.email %}aria-invalid="true"{% endif %} aria-describedby="b-email-err">
+        <p class="field__error" id="b-email-err" {% if not errors.email %}hidden{% endif %}>{{ errors.email or '' }}</p></div>
+      <div class="field"><label for="b-notes">Anything we should know, optional</label><textarea id="b-notes" name="notes" rows="3" placeholder="Pet hair, a spill, a gate code, where to park">{{ form.notes or '' }}</textarea></div>
+    </fieldset>
+  </div>
+
+  <aside aria-label="Your booking">
+    <div class="ticket" data-ticket>
+      <div class="ticket__head">
+        <img src="/static/img/gem-mark-96.webp" alt="" width="40" height="40">
+        <p class="ticket__title" data-t-service>Choose a package</p>
+      </div>
+      <dl class="ticket__rows">
+        <div><dt>Car</dt><dd data-t-car>–</dd></div>
+        <div><dt>Where</dt><dd data-t-where>–</dd></div>
+        <div><dt>When</dt><dd data-t-when>–</dd></div>
+        <div><dt>Time needed</dt><dd data-t-duration>–</dd></div>
+      </dl>
+      <div class="ticket__money">
+        <div class="ticket__line"><span>Package</span><span data-t-price>–</span></div>
+        <div class="ticket__line ticket__line--offer" data-t-offer-row hidden><span>{{ site.offer_text }}</span><span data-t-discount></span></div>
+        <div class="ticket__total"><span>Estimate</span><span data-t-total>–</span></div>
+      </div>
+      <p class="ticket__note">{{ site.pricing_note }} Nothing is charged online.</p>
+      <button class="btn btn--primary btn--block" type="submit">Book a detail</button>
+      <p class="ticket__after">{% if approval %}You’ll get an email now and a confirmation from Pavly soon after.{% else %}You’ll get a confirmation email straight away.{% endif %}</p>
+    </div>
+  </aside>
+</form>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/book.js?v={{ asset_v }}"></script>{% endblock %}

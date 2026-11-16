@@ -1,0 +1,24 @@
+{% extends 'admin/base.html' %}
+{% block title %}{{ name }}{% endblock %}
+{% block content %}
+<div class="adm-head"><div><p><a class="link" href="/admin/customers">Customers</a> / {{ name }}</p><h1>{{ name }}</h1><p>{{ email }}{% if acc and acc.phone %} · {{ acc.phone }}{% endif %} · {{ appts|length }} booking{{ 's' if appts|length != 1 }}</p></div>
+  <div class="actions"><a class="btn btn--secondary" href="mailto:{{ email }}">Email</a>{% if acc and acc.phone %}<a class="btn btn--secondary" href="{{ tel(acc.phone) }}">Call</a>{% endif %}</div></div>
+<div class="app-grid">
+  <div class="stack">
+    <section class="panel-box"><h2 class="app-h3">Bookings</h2>
+      {% if appts %}<ul class="list-plain">{% for a in appts %}<li><a class="link" href="/admin/appointments/{{ a.id }}">{{ a.start.strftime('%b %-d, %Y') }}, {{ a.time_text }}</a> · {{ a.service_name }} · {{ a.status_text }} · {{ a.total_text }}</li>{% endfor %}</ul>{% else %}<p class="muted">No bookings yet.</p>{% endif %}</section>
+    {% if plans %}<section class="panel-box"><h2 class="app-h3">Plans</h2><ul class="list-plain">{% for p in plans %}<li>{{ p.service_name }} every {{ p.interval_weeks }} weeks on {{ weekdays[p.weekday] }}s · {{ p.status }}</li>{% endfor %}</ul></section>{% endif %}
+  </div>
+  <aside class="stack">
+    {% if acc %}
+    <section class="panel-box"><h2 class="app-h3">Garage</h2>
+      {% if vehicles %}<ul class="list-plain">{% for v in vehicles %}<li>{{ v.year }} {{ v.make }} {{ v.model }}{% if v.color %}, {{ v.color }}{% endif %} · {{ SIZE_LABEL[v.size] }}{% if v.archived %} <span class="muted">(removed)</span>{% endif %}{% if v.notes %}<br><span class="muted">{{ v.notes }}</span>{% endif %}</li>{% endfor %}</ul>{% else %}<p class="muted">No cars saved.</p>{% endif %}
+      {% if addresses %}<h3 class="app-h3" style="margin-top: var(--s-4)">Addresses</h3><ul class="list-plain">{% for a in addresses %}<li>{{ a.label }}: {{ a.street }}, {{ a.town }}{% if a.notes %} · {{ a.notes }}{% endif %}</li>{% endfor %}</ul>{% endif %}
+    </section>
+    <form method="post" action="/admin/customers/notes" class="panel-box stack"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="email" value="{{ email }}">
+      <div class="field"><label for="cn">Private notes about this customer</label><textarea id="cn" name="notes" rows="4">{{ acc.notes }}</textarea></div>
+      <button class="btn btn--secondary btn--small" type="submit">Save notes</button></form>
+    {% else %}<p class="notice">Booked as a guest. They get a garage when they sign up with {{ email }}.</p>{% endif %}
+  </aside>
+</div>
+{% endblock %}

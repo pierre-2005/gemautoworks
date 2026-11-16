@@ -1,0 +1,47 @@
+{% extends 'admin/base.html' %}
+{% block title %}{{ a.reference }}{% endblock %}
+{% block content %}
+{% set tone = {'confirmed':'ok','completed':'ok','pending':'wait','needs_time':'wait','cancelled':'bad','no_show':'bad'}[a.status] %}
+<div class="adm-head"><div><p><a class="link" href="/admin/appointments">Bookings</a> / {{ a.reference }}</p>
+  <h1>{{ a.service_name }} · {{ a.name }}</h1><p>{{ a.day_text }}, {{ a.time_text }} to {{ a.end_text }} · <span class="pill pill--{{ tone }}">{{ a.status_text }}</span>{% if a.plan_id %} <span class="pill pill--info pill--plain">Plan visit</span>{% endif %}</p></div>
+  <div class="actions">{% if a.phone %}<a class="btn btn--secondary" href="{{ tel(a.phone) }}">Call</a><a class="btn btn--secondary" href="sms:{{ tel(a.phone)[4:] }}">Text</a>{% endif %}<a class="btn btn--secondary" href="mailto:{{ a.email }}">Email</a></div></div>
+<div class="app-grid">
+  <div class="stack">
+    <section class="panel-box"><h2 class="app-h3">Status and price</h2>
+      <form method="post" action="/admin/appointments/{{ a.id }}" class="stack">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <div class="form-grid">
+          <div class="field"><label for="st">Status</label><select id="st" name="status">{% for k, label in statuses.items() %}<option value="{{ k }}"{% if k == a.status %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+          <div class="field"><label for="pr">Final price (before the offer)</label><input id="pr" name="price" inputmode="decimal" value="{{ '%.2f'|format(a.price_cents / 100) if a.price_cents is not none else '' }}"></div>
+          <div class="field full"><label for="an">Private notes</label><textarea id="an" name="admin_notes" rows="3">{{ a.admin_notes }}</textarea></div>
+        </div>
+        <label class="check"><input type="checkbox" name="notify" value="1" checked><span>Email the customer when I confirm or cancel, and ask for a review when I mark it completed</span></label>
+        <div class="actions"><button class="btn btn--primary" type="submit">Save</button></div>
+      </form></section>
+    <section class="panel-box" id="move"><h2 class="app-h3">Move to another time</h2>
+      <form method="get" action="#move" data-autosubmit class="filters"><div class="field"><label for="mv-day">Day</label><input id="mv-day" type="date" name="day" value="{{ pick }}"></div><noscript><button class="btn btn--secondary" type="submit">Show times</button></noscript></form>
+      <form method="post" action="/admin/appointments/{{ a.id }}/move" class="stack">
+        <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="day" value="{{ pick }}">
+        {% if times %}<div class="times">{% for t in times %}<label class="day"><input type="radio" name="at" value="{{ t }}" required><span>{{ nice_time(t) }}</span></label>{% endfor %}</div>
+        {% else %}<p class="empty">No free times that day inside your hours.</p>
+        <div class="field" style="max-width:200px"><label for="mv-at">Time anyway</label><input id="mv-at" type="time" name="at" step="900"></div>
+        <label class="check"><input type="checkbox" name="override" value="1"><span>Book it even if it overlaps</span></label>{% endif %}
+        <label class="check"><input type="checkbox" name="notify" value="1" checked><span>Email the customer the new time</span></label>
+        <div class="actions"><button class="btn btn--secondary" type="submit">Move booking</button></div>
+      </form></section>
+    {% if history %}<section class="panel-box"><h2 class="app-h3">Other visits from this customer</h2>
+      <ul class="list-plain">{% for h in history %}<li><a class="link" href="/admin/appointments/{{ h.id }}">{{ h.start.strftime('%b %-d, %Y') }}</a> · {{ h.service_name }} · {{ h.status_text }} · {{ h.total_text }}</li>{% endfor %}</ul></section>{% endif %}
+  </div>
+  <aside class="panel-box"><h2 class="app-h3">Details</h2>
+    <dl class="kv">
+      <dt>Customer</dt><dd>{{ a.name }}{% if customer %} · <a class="link" href="/admin/customers/view?email={{ a.email|urlencode }}">has a garage</a>{% endif %}</dd>
+      <dt>Phone</dt><dd>{{ a.phone or '–' }}</dd><dt>Email</dt><dd>{{ a.email }}</dd>
+      <dt>Car</dt><dd>{{ a.vehicle_text or '–' }} ({{ a.size_text }})</dd>
+      <dt>Where</dt><dd>{% if a.location_type == 'mobile' %}{{ a.address }} · <a class="link" href="https://www.google.com/maps/dir/?api=1&destination={{ a.address|urlencode }}" target="_blank" rel="noopener">Directions</a>{% else %}Drop-off at the shop{% endif %}</dd>
+      {% if a.addon_list %}<dt>Add-ons</dt><dd>{{ a.addon_list|map(attribute='name')|join(', ') }}</dd>{% endif %}
+      <dt>Estimate</dt><dd>{{ money(a.price_cents) }}{% if a.discount_cents %} − {{ money(a.discount_cents) }} offer{% endif %} = {{ a.total_text }}</dd>
+      <dt>Notes</dt><dd>{{ a.notes or '–' }}</dd><dt>Booked</dt><dd>{{ a.created_at[:16]|replace('T', ' ') }} UTC via {{ a.source }}</dd>
+      <dt>Customer link</dt><dd><a class="link" href="/booking/{{ a.manage_token }}" target="_blank" rel="noopener">Open their page</a></dd>
+    </dl></aside>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'admin/base.html' %}
+{% block title %}Add a booking{% endblock %}
+{% block content %}
+<div class="adm-head"><div><p><a class="link" href="/admin/appointments">Bookings</a> / New</p><h1>Add a booking</h1><p>For calls, texts and DMs. It goes straight in as confirmed.</p></div></div>
+<form method="post" action="/admin/appointments/new" class="panel-box stack" style="max-width: 860px">
+  <input type="hidden" name="csrf" value="{{ csrf }}">
+  <div class="form-grid">
+    <div class="field"><label for="n-service">Package</label><select id="n-service" name="service" required>{% for s in services %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="n-size">Size</label><select id="n-size" name="size">{% for k, label in SIZES %}<option value="{{ k }}">{{ label }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="n-day">Day</label><input id="n-day" type="date" name="day" value="{{ today }}" required></div>
+    <div class="field"><label for="n-time">Start</label><input id="n-time" type="time" name="time" step="900" value="09:00" required></div>
+    <div class="field"><label for="n-name">Customer name</label><input id="n-name" name="name" required></div>
+    <div class="field"><label for="n-phone">Phone</label><input id="n-phone" name="phone" type="tel"></div>
+    <div class="field"><label for="n-email">Email</label><input id="n-email" name="email" type="email" required></div>
+    <div class="field"><label for="n-vehicle">Car</label><input id="n-vehicle" name="vehicle" placeholder="2020 Honda CR-V, grey"></div>
+    <div class="field"><label for="n-where">Where</label><select id="n-where" name="location_type"><option value="mobile">At the customer</option><option value="shop">Shop drop-off</option></select></div>
+    <div class="field"><label for="n-address">Address</label><input id="n-address" name="address"></div>
+    <div class="field"><label for="n-price">Price, leave empty for the list price</label><input id="n-price" name="price" inputmode="decimal"></div>
+    {% if addons %}<fieldset class="field"><legend class="field__legend">Add-ons</legend>{% for a in addons %}<label class="check"><input type="checkbox" name="addons" value="{{ a.id }}"><span>{{ a.name }}</span></label>{% endfor %}</fieldset>{% endif %}
+    <div class="field full"><label for="n-notes">Notes</label><textarea id="n-notes" name="notes" rows="2"></textarea></div>
+  </div>
+  <label class="check"><input type="checkbox" name="override" value="1"><span>Allow it to overlap another booking or sit outside my hours</span></label>
+  <label class="check"><input type="checkbox" name="notify" value="1" checked><span>Email the customer a confirmation</span></label>
+  <div class="actions"><button class="btn btn--primary" type="submit">Add booking</button></div>
+</form>
+{% endblock %}

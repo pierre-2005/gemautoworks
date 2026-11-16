@@ -1,0 +1,25 @@
+{% extends 'admin/base.html' %}
+{% block title %}Plans{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Cleaning plans</h1><p>Approve a plan and its next {{ site.plan_horizon_visits }} visits go on the calendar. New visits are added automatically as old ones pass.</p></div></div>
+{% if rows %}
+{% for p in rows %}
+<section class="panel-box" style="margin-bottom: var(--s-4)">
+  <div class="row-between">
+    <div>
+      <h2 class="app-h3">{{ p.customer_name }} · {{ p.year }} {{ p.make }} {{ p.model }} ({{ SIZE_LABEL[p.size] }})</h2>
+      <p class="job__meta">{{ p.service_name }} every {{ p.interval_weeks }} weeks · {{ weekdays[p.weekday] }}s around {{ nice_time(p.preferred_time) }} · {{ p.address if p.location_type == 'mobile' else 'Shop drop-off' }}</p>
+      <p class="job__meta">{{ p.email }} · {{ p.phone }}{% if p.notes %} · “{{ p.notes }}”{% endif %}</p>
+      <p>{% set tone = {'requested':'wait','active':'ok','paused':'','cancelled':'bad'}[p.status] %}<span class="pill pill--{{ tone }}">{{ {'requested':'Waiting for you','active':'Active','paused':'Paused','cancelled':'Cancelled'}[p.status] }}</span>
+        {% for a in p.upcoming %} <a class="pill pill--plain {{ 'pill--wait' if a.status == 'needs_time' else 'pill--info' }}" href="/admin/appointments/{{ a.id }}">{{ a.start.strftime('%b %-d') }} {{ a.time_text }}{% if a.status == 'needs_time' %} · needs a time{% endif %}</a>{% endfor %}</p>
+    </div>
+    <div class="actions">
+      {% for action, label, allowed in [('approve','Approve',['requested']),('pause','Pause',['active']),('resume','Resume',['paused']),('cancel','Cancel',['requested','active','paused'])] if p.status in allowed %}
+      <form method="post" action="/admin/plans/{{ p.id }}/{{ action }}" class="inline-form"{% if action == 'cancel' %} data-confirm="Cancel this plan and its upcoming visits?"{% endif %}><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn {{ 'btn--primary' if action == 'approve' else 'btn--secondary' }} btn--small{% if action == 'cancel' %} btn--danger{% endif %}" type="submit">{{ label }}</button></form>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endfor %}
+{% else %}<p class="empty">No plans yet. Customers set them up from their garage.</p>{% endif %}
+{% endblock %}

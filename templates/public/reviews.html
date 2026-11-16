@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}Customer reviews: GEM Autoworks mobile detailing{% endblock %}
+{% block description %}Read reviews from GEM Autoworks customers in {{ site.service_area }}, or leave one after your detail.{% endblock %}
+{% block body %}
+<main id="top">
+  <section class="hero hero--split" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h">Reviews from GEM customers</h1>
+        {% if reviews %}
+        <p class="hero__lead">{{ reviews|length }} review{{ 's' if reviews|length != 1 }} from customers in {{ site.service_area }}.</p>
+        {% else %}
+        <p class="hero__lead">GEM Autoworks is new, so the first reviews are still to come. Had a detail with us? Yours can be the first.</p>
+        {% endif %}
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/book">Book a detail<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+          <a class="btn btn--secondary" href="#write">Write a review</a>
+        </div>
+      </div>
+      <div class="hero__media span-6 start-7">
+        {% set hp = picture('/static/img/work/altima-after') %}
+        <img src="{{ hp.src }}" srcset="{{ hp.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Nissan Altima interior after a GEM detail" style="--ly-pos: 50% 55%" fetchpriority="high" width="1536" height="2048">
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section ground-surface" id="write" style="--hm: 2" aria-labelledby="write-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="write-h">Write a review</h2>
+        <p>Tell other drivers how your detail went.</p>
+      </div>
+      <div class="split-card">
+        <aside class="split-card__info" aria-label="About reviews">
+          <p class="split-card__title">{% if booking %}Your {{ booking.service_name }}{% else %}Your review helps a small business{% endif %}</p>
+          {% if booking %}<p class="split-card__lede">{{ booking.vehicle_text or booking.size_text }} · {{ booking.day_text }}</p>{% endif %}
+          <ul class="methods methods--static">
+            <li><span class="method"><span class="method__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span><span class="method__label">Verified customer badge</span><span class="method__value method__value--sm">When your email matches a GEM booking</span></span></span></li>
+            <li><span class="method"><span class="method__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></span><span><span class="method__label">Your email stays private</span><span class="method__value method__value--sm">Only your name and car are shown</span></span></span></li>
+            <li><span class="method"><span class="method__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span><span><span class="method__label">Takes about a minute</span><span class="method__value method__value--sm">Stars and a sentence or two is plenty</span></span></span></li>
+          </ul>
+        </aside>
+        <div class="split-card__form">
+        {% if sent %}
+        <div class="sent-state" role="status">
+          <p class="stars stars--big" aria-hidden="true">★★★★★</p>
+          <h3 class="sent__title">Thanks for your review</h3>
+          <p>It means a lot to a small business. <a class="link" href="/book">Book your next detail</a></p>
+        </div>
+        {% else %}
+        <form class="card-form card-form--flat" action="/reviews" method="post" novalidate>
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <input type="hidden" name="booking" value="{{ booking_token }}">
+          <div class="hp" aria-hidden="true"><label for="r-website">Website</label><input id="r-website" name="website" tabindex="-1" autocomplete="off"></div>
+          {% if errors %}<p class="form-alert" role="alert">{{ errors|length }} thing{{ 's' if errors|length > 1 }} to fix before sending.</p>{% endif %}
+          <fieldset class="star-pick">
+            <legend class="cf-label">How was your detail?</legend>
+            <div class="star-pick__row">
+              {% for n in [5,4,3,2,1] %}<input type="radio" id="star-{{ n }}" name="rating" value="{{ n }}"{% if form.rating == n|string %} checked{% endif %}><label for="star-{{ n }}" title="{{ n }} star{{ 's' if n > 1 }}"><span class="visually-hidden">{{ n }} star{{ 's' if n > 1 }}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg></label>{% endfor %}
+            </div>
+            {% if errors.rating %}<p class="cf-error">{{ errors.rating }}</p>{% endif %}
+          </fieldset>
+          <div class="cf-row">
+            <div class="cf-field"><label class="cf-label" for="r-name">Your name</label>
+              <input id="r-name" name="name" type="text" autocomplete="given-name" value="{{ form.name or '' }}"{% if errors.name %} aria-invalid="true"{% endif %} aria-describedby="r-name-err">
+              {% if errors.name %}<p class="cf-error" id="r-name-err">{{ errors.name }}</p>{% endif %}</div>
+            <div class="cf-field"><label class="cf-label" for="r-vehicle">Your car <span class="cf-opt">optional</span></label>
+              <input id="r-vehicle" name="vehicle" type="text" placeholder="2021 Honda CR-V" value="{{ form.vehicle or '' }}"></div>
+          </div>
+          <div class="cf-field"><label class="cf-label" for="r-email">Email you booked with</label>
+            <input id="r-email" name="email" type="email" autocomplete="email" inputmode="email" value="{{ form.email or '' }}"{% if errors.email %} aria-invalid="true"{% endif %} aria-describedby="r-email-hint">
+            <p class="cf-hint" id="r-email-hint">{% if errors.email %}<span class="cf-error">{{ errors.email }}</span>{% else %}Never shown. It matches your review to your detail.{% endif %}</p></div>
+          <div class="cf-field"><label class="cf-label" for="r-message">Your review</label>
+            <textarea id="r-message" name="message" rows="5" placeholder="What did we do, and how did the car come out?"{% if errors.message %} aria-invalid="true"{% endif %} aria-describedby="r-message-err">{{ form.message or '' }}</textarea>
+            {% if errors.message %}<p class="cf-error" id="r-message-err">{{ errors.message }}</p>{% endif %}</div>
+          <button class="btn btn--primary cf-submit" type="submit">Post my review</button>
+        </form>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if reviews %}
+  <section class="section" id="list" style="--h: {{ 1 if reviews|length <= 4 else 2 }}; --hm: {{ 1 if reviews|length <= 2 else 2 }}" aria-labelledby="list-h">
+    <div class="wrap">
+      <div class="section-head"><h2 id="list-h">What customers said</h2></div>
+      <div class="reviews-list">
+        {% for r in reviews[:8] %}
+        <figure class="review">
+          <div class="stars" aria-label="{{ r.rating }} out of 5 stars">{{ '★' * r.rating }}<span class="stars__off">{{ '★' * (5 - r.rating) }}</span></div>
+          <blockquote>{{ r.message }}</blockquote>
+          <figcaption class="t-small muted">{{ r.name }}{% if r.vehicle %}, {{ r.vehicle }}{% endif %}{% if r.verified %} <span class="pill pill--ok">Verified customer</span>{% endif %}</figcaption>
+        </figure>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+</main>
+{% include 'partials/closing.html' %}
+{% endblock %}

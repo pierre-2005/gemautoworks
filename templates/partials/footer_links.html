@@ -1,0 +1,26 @@
+    <div class="closing__links">
+      <div class="grid">
+        <div class="span-4 stack-4">
+          <a class="nav__logo gem-logo" href="/"><img src="/static/img/gem-mark-96.webp" alt="" width="36" height="36"><span>GEM Autoworks</span></a>
+          <p class="footer__lede">Mobile car detailing in {{ site.service_area }}.</p>
+        </div>
+        <div class="span-2 footer__col"><h3>Services</h3><ul>
+          <li><a href="/services#exterior">Exterior Detail</a></li><li><a href="/services#interior">Interior Detail</a></li>
+          <li><a href="/services#gem-detail">GEM Detail</a></li><li><a href="/services#plans">Regular cleanings</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Work</h3><ul>
+          <li><a href="/work">Before and after</a></li><li><a href="/reviews">Reviews</a></li>
+          <li><a href="{{ site.instagram_url }}" rel="noopener">Instagram</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>About</h3><ul>
+          <li><a href="/about">Meet Pavly</a></li><li><a href="/account">My garage</a></li><li><a href="/book">Booking</a></li></ul></div>
+        <div class="span-2 footer__col"><h3>Contact</h3><ul>
+          <li><a href="{{ tel(site.phone) }}">{{ site.phone }}</a></li><li><a href="mailto:{{ site.email }}">Email</a></li>
+          <li><a href="/contact">Send a message</a></li></ul></div>
+      </div>
+      <div class="footer__legal">
+        <span>&copy; {{ current_year() }} GEM Autoworks LLC &nbsp; <a href="/privacy">Privacy</a> &nbsp; <a href="/terms">Terms</a></span>
+        <div class="socials">
+          <a href="{{ site.instagram_url }}" aria-label="GEM Autoworks on Instagram" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor"/></svg></a>
+          {% if site.facebook_url %}<a href="{{ site.facebook_url }}" aria-label="GEM Autoworks on Facebook" rel="noopener"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M14 8h3V4.5h-3c-2.5 0-4 1.6-4 4V11H7.5v3.5H10V21h3.5v-6.5h3L17 11h-3.5V8.6c0-.4.2-.6.5-.6z" fill="currentColor"/></svg></a>{% endif %}
+        </div>
+      </div>
+    </div>

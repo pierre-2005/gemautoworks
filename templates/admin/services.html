@@ -1,0 +1,43 @@
+{% extends 'admin/base.html' %}
+{% block title %}Prices{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Packages and prices</h1><p>Prices and times by vehicle size. Times decide how much of the calendar a booking takes.</p></div></div>
+{% for s in services + [none] %}
+<details class="panel-box edit" style="margin-bottom: var(--s-4)" {% if not s %}{% endif %}>
+  <summary>{% if s %}<strong>{{ s.name }}</strong> · {% for k, label in SIZES %}{{ money(s.prices[k].cents) if k in s.prices else '–' }}{{ ' / ' if not loop.last }}{% endfor %}{% if not s.active %} · <span class="pill">Hidden</span>{% endif %}{% else %}Add a package{% endif %}</summary>
+  <form method="post" action="/admin/services/save" class="stack">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ s.id if s else 0 }}">
+    <div class="form-grid">
+      <div class="field"><label for="sv-name-{{ s.id if s else 0 }}">Name</label><input id="sv-name-{{ s.id if s else 0 }}" name="name" value="{{ s.name if s else '' }}" required></div>
+      <div class="field"><label for="sv-order-{{ s.id if s else 0 }}">Order on the site</label><input id="sv-order-{{ s.id if s else 0 }}" name="sort_order" inputmode="numeric" value="{{ s.sort_order if s else 9 }}"></div>
+      <div class="field full"><label for="sv-sum-{{ s.id if s else 0 }}">One-line summary</label><input id="sv-sum-{{ s.id if s else 0 }}" name="summary" value="{{ s.summary if s else '' }}"></div>
+      <div class="field full"><label for="sv-inc-{{ s.id if s else 0 }}">What’s included, one per line</label><textarea id="sv-inc-{{ s.id if s else 0 }}" name="includes" rows="6">{{ s.includes|join('\n') if s else '' }}</textarea></div>
+    </div>
+    <div class="table-wrap"><table class="table"><thead><tr><th>Size</th><th>Price ($)</th><th>Time (minutes)</th></tr></thead><tbody>
+      {% for k, label in SIZES %}<tr><td>{{ label }}</td>
+        <td><input aria-label="{{ label }} price" name="price_{{ k }}" inputmode="decimal" value="{{ '%g'|format(s.prices[k].cents / 100) if s and k in s.prices else '' }}" style="max-width:120px"></td>
+        <td><input aria-label="{{ label }} minutes" name="minutes_{{ k }}" inputmode="numeric" value="{{ s.prices[k].minutes if s and k in s.prices else '' }}" style="max-width:120px"></td></tr>{% endfor %}
+    </tbody></table></div>
+    <label class="check"><input type="checkbox" name="active" value="1" {% if not s or s.active %}checked{% endif %}><span>Show on the site and in booking</span></label>
+    <div class="actions"><button class="btn btn--primary btn--small" type="submit">{{ 'Save package' if s else 'Add package' }}</button></div>
+  </form>
+</details>
+{% endfor %}
+
+<section class="adm-section" id="addons"><h2>Add-ons</h2>
+  <p class="muted">Extras customers can tick when booking (pet hair, headlight restoration…). Leave the price empty for “price on request”.</p>
+  {% for a in addons + [none] %}
+  <form method="post" action="/admin/addons/save" class="panel-box form-grid form-grid--3" style="margin-bottom: var(--s-3); align-items:end">
+    <input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ a.id if a else 0 }}">
+    <div class="field"><label for="ad-n-{{ a.id if a else 0 }}">{{ 'Name' if a else 'New add-on' }}</label><input id="ad-n-{{ a.id if a else 0 }}" name="name" value="{{ a.name if a else '' }}"></div>
+    <div class="field"><label for="ad-p-{{ a.id if a else 0 }}">Price ($)</label><input id="ad-p-{{ a.id if a else 0 }}" name="price" inputmode="decimal" value="{{ '%g'|format(a.price_cents / 100) if a and a.price_cents is not none else '' }}"></div>
+    <div class="field"><label for="ad-m-{{ a.id if a else 0 }}">Extra minutes</label><input id="ad-m-{{ a.id if a else 0 }}" name="minutes" inputmode="numeric" value="{{ a.minutes if a else 0 }}"></div>
+    <div class="field full"><label for="ad-s-{{ a.id if a else 0 }}">Summary</label><input id="ad-s-{{ a.id if a else 0 }}" name="summary" value="{{ a.summary if a else '' }}"></div>
+    <input type="hidden" name="sort_order" value="{{ a.sort_order if a else 0 }}">
+    <label class="check"><input type="checkbox" name="active" value="1" {% if not a or a.active %}checked{% endif %}><span>Offered</span></label>
+    <div class="actions"><button class="btn btn--secondary btn--small" type="submit">{{ 'Save' if a else 'Add' }}</button>
+      {% if a %}<button class="btn btn--secondary btn--small btn--danger" type="submit" formaction="/admin/addons/{{ a.id }}/delete" formnovalidate>Delete</button>{% endif %}</div>
+  </form>
+  {% endfor %}
+</section>
+{% endblock %}

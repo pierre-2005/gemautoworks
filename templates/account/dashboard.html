@@ -1,0 +1,191 @@
+{% extends 'app_base.html' %}
+{% block title %}Your garage: GEM Autoworks{% endblock %}
+{% block content %}
+{% set saved_text = {'profile': 'Your details are saved.', 'password': 'Your password is changed.', 'vehicle': 'Your garage is updated.', 'removed': 'Removed.', 'address': 'Address saved.', 'plan': 'Your plan is updated.'} %}
+{% if saved and saved in saved_text %}<p class="toast" role="status" data-toast>{{ saved_text[saved] }}</p>{% endif %}
+
+<div class="row-between account-head">
+  <div>
+    <h1 class="app-title">{{ 'Welcome, ' if welcome else '' }}{{ customer.name.split(' ')[0] }}’s garage</h1>
+    <p class="app-lead">{{ vehicles|length }} car{{ 's' if vehicles|length != 1 }} · {{ upcoming|length }} upcoming visit{{ 's' if upcoming|length != 1 }} · {{ plans|length }} plan{{ 's' if plans|length != 1 }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn btn--primary" href="/book">Book a detail</a>
+    <form method="post" action="/account/logout" class="inline-form"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary" type="submit">Sign out</button></form>
+  </div>
+</div>
+
+<nav class="tabs" aria-label="Garage sections">
+  <a href="#visits">Visits</a><a href="#garage">Cars</a><a href="#plans">Plans</a><a href="#addresses">Addresses</a><a href="#profile">Profile</a>
+</nav>
+
+<section class="acc-section" id="visits" aria-labelledby="visits-h">
+  <h2 class="app-h2" id="visits-h">Upcoming visits</h2>
+  {% if upcoming %}
+  <ul class="list-plain panel-box">
+    {% for a in upcoming %}
+    <li class="visit">
+      <div class="visit__date"><span>{{ a.start.strftime('%a') }}</span><b>{{ a.start.day }}</b><span>{{ a.start.strftime('%b') }}</span></div>
+      <div>
+        <p class="visit__title">{{ a.service_name }} · {{ a.time_text }}</p>
+        <p class="visit__meta">{{ a.vehicle_text or a.size_text }} · {{ 'At ' ~ a.address if a.location_type == 'mobile' else 'Drop-off at the shop' }}{% if a.plan_id %} · Part of a plan{% endif %}</p>
+        <p class="visit__meta">{% set tone = {'confirmed':'ok','pending':'wait','needs_time':'wait'}[a.status] %}<span class="pill pill--{{ tone }}">{{ a.status_text }}</span> <span class="tabular">{{ a.total_text }}</span></p>
+      </div>
+      <div class="actions"><a class="btn btn--secondary btn--small" href="/booking/{{ a.manage_token }}">{{ 'Change or cancel' if a.can_change else 'See details' }}</a></div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty">No visits booked. <a class="link" href="/book">Book a detail</a>{% if vehicles %} or set up a plan below{% endif %}.</div>
+  {% endif %}
+</section>
+
+<section class="acc-section" id="garage" aria-labelledby="garage-h">
+  <div class="row-between"><h2 class="app-h2" id="garage-h">Your cars</h2></div>
+  <div class="bays">
+    {% for v in vehicles %}
+    <article class="bay">
+      <div class="bay__plate"><span class="bay__size">{{ SIZE_LABEL[v.size] }}</span></div>
+      <h3 class="bay__name">{{ v.nickname or (v.make ~ ' ' ~ v.model) }}</h3>
+      <p class="bay__meta">{{ v.year }} {{ v.make }} {{ v.model }}{% if v.color %} · {{ v.color }}{% endif %}</p>
+      {% if v.notes %}<p class="bay__meta">{{ v.notes }}</p>{% endif %}
+      <div class="actions">
+        <a class="btn btn--primary btn--small" href="/book?vehicle={{ v.id }}">Book this car</a>
+        <details class="edit"><summary>Edit</summary>
+          <form method="post" action="/account/vehicles/{{ v.id }}" class="stack">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            {% with v=v, pfx='v' ~ v.id %}{% include 'account/_vehicle_fields.html' %}{% endwith %}
+            <div class="actions"><button class="btn btn--primary btn--small" type="submit">Save</button></div>
+          </form>
+          <form method="post" action="/account/vehicles/{{ v.id }}/remove" data-confirm="Remove this car from your garage?" class="remove-form">
+            <input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small btn--danger" type="submit">Remove car</button>
+          </form>
+        </details>
+      </div>
+    </article>
+    {% endfor %}
+    <article class="bay bay--add">
+      <details class="edit" {% if not vehicles %}open{% endif %}><summary>Add a car</summary>
+        <form method="post" action="/account/vehicles" class="stack">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          {% with v=none, pfx='new' %}{% include 'account/_vehicle_fields.html' %}{% endwith %}
+          <div class="actions"><button class="btn btn--primary btn--small" type="submit">Add to my garage</button></div>
+        </form>
+      </details>
+    </article>
+  </div>
+</section>
+
+<section class="acc-section" id="plans" aria-labelledby="plans-h">
+  <h2 class="app-h2" id="plans-h">Cleaning plans</h2>
+  <p class="muted plan-intro">{{ site.plans_text }}</p>
+  {% for p in plans %}
+  <div class="panel-box plan">
+    <div class="row-between">
+      <div>
+        <h3 class="app-h3">{{ p.nickname or (p.make ~ ' ' ~ p.model) }} · {{ p.service_name }}</h3>
+        <p class="visit__meta">Every {{ p.interval_weeks }} weeks · {{ weekdays[p.weekday] }}s around {{ nice_time(p.preferred_time) }} · {{ 'At ' ~ p.address if p.location_type == 'mobile' else 'Drop-off' }}</p>
+        <p class="visit__meta">{% if p.status == 'requested' %}<span class="pill pill--wait">Waiting for Pavly to approve</span>{% elif p.status == 'active' %}<span class="pill pill--ok">Active</span>{% if p.next %} · Next: {{ p.next.day_text }}, {{ p.next.time_text }}{% endif %}{% else %}<span class="pill">Paused</span>{% endif %}</p>
+      </div>
+      <div class="actions">
+        {% if p.status == 'active' %}
+        <form method="post" action="/account/plans/{{ p.id }}/skip" class="inline-form" data-confirm="Skip the next visit on this plan?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small" type="submit">Skip next visit</button></form>
+        <form method="post" action="/account/plans/{{ p.id }}/pause" class="inline-form" data-confirm="Pause this plan? Its upcoming visits are cancelled."><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small" type="submit">Pause</button></form>
+        {% elif p.status == 'paused' %}
+        <form method="post" action="/account/plans/{{ p.id }}/resume" class="inline-form"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small" type="submit">Resume</button></form>
+        {% endif %}
+        <form method="post" action="/account/plans/{{ p.id }}/cancel" class="inline-form" data-confirm="Cancel this plan for good? Its upcoming visits are cancelled."><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small btn--danger" type="submit">Cancel plan</button></form>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% if vehicles %}
+  <details class="edit panel-box" {% if not plans %}open{% endif %}><summary>Set up a new plan</summary>
+    <form method="post" action="/account/plans" class="stack">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="split-2">
+        <div class="field"><label for="p-car">Car</label><select id="p-car" name="vehicle_id" required>{% for v in vehicles %}<option value="{{ v.id }}">{{ v.nickname or (v.year ~ ' ' ~ v.make ~ ' ' ~ v.model)|trim }}</option>{% endfor %}</select></div>
+        <div class="field"><label for="p-service">Package</label><select id="p-service" name="service_id" required>{% for s in services %}<option value="{{ s.id }}">{{ s.name }} · from {{ money(s.from_cents) }}</option>{% endfor %}</select></div>
+      </div>
+      <div class="split-3">
+        <div class="field"><label for="p-every">How often</label><select id="p-every" name="interval_weeks">{% for n, label in intervals %}<option value="{{ n }}"{% if n == 4 %} selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
+        <div class="field"><label for="p-day">Day</label><select id="p-day" name="weekday">{% for d in weekdays %}<option value="{{ loop.index0 }}"{% if loop.index0 == 5 %} selected{% endif %}>{{ d }}</option>{% endfor %}</select></div>
+        <div class="field"><label for="p-time">Usual time</label><select id="p-time" name="preferred_time">{% for h in range(8, 17) %}<option value="{{ '%02d:00'|format(h) }}"{% if h == 9 %} selected{% endif %}>{{ nice_time('%02d:00'|format(h)) }}</option>{% endfor %}</select></div>
+      </div>
+      <div class="split-2">
+        {% if modes|length > 1 %}
+        <div class="field"><label for="p-where">Where</label><select id="p-where" name="location_type"><option value="mobile">We come to you</option><option value="shop">Drop it off</option></select></div>
+        {% else %}<input type="hidden" name="location_type" value="{{ modes[0] }}">{% endif %}
+        {% if 'mobile' in modes %}
+        <div class="field"><label for="p-address">Address for the visits</label>
+          {% if addresses %}<select id="p-address" name="address_id">{% for a in addresses %}<option value="{{ a.id }}">{{ a.label }}: {{ a.street }}, {{ a.town }}</option>{% endfor %}</select>
+          {% else %}<p class="field__hint">Add an address below first.</p><input type="hidden" name="address_id" value="0">{% endif %}</div>
+        {% endif %}
+      </div>
+      <div class="split-2">
+        <div class="field"><label for="p-start">First visit on or after</label><input id="p-start" name="start_on" type="date" min="{{ today }}" value="{{ today }}"></div>
+        <div class="field"><label for="p-notes">Notes, optional</label><input id="p-notes" name="notes" maxlength="300"></div>
+      </div>
+      <p class="field__hint">Pavly approves new plans, then the next three visits appear under Upcoming visits.</p>
+      <div class="actions"><button class="btn btn--primary" type="submit">Request this plan</button></div>
+    </form>
+  </details>
+  {% else %}
+  <div class="empty">Add a car to your garage first, then set up a plan for it.</div>
+  {% endif %}
+</section>
+
+<section class="acc-section" id="addresses" aria-labelledby="addr-h">
+  <h2 class="app-h2" id="addr-h">Addresses</h2>
+  {% if addresses %}
+  <ul class="list-plain panel-box">
+    {% for a in addresses %}
+    <li class="row-between"><div><p class="visit__title">{{ a.label }}</p><p class="visit__meta">{{ a.street }}, {{ a.town }}{% if a.notes %} · {{ a.notes }}{% endif %}</p></div>
+      <form method="post" action="/account/addresses/{{ a.id }}/remove" data-confirm="Remove this address?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small btn--danger" type="submit">Remove</button></form></li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  <details class="edit panel-box" {% if not addresses %}open{% endif %}><summary>Add an address</summary>
+    <form method="post" action="/account/addresses" class="stack">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="split-3">
+        <div class="field"><label for="ad-label">Name it</label><input id="ad-label" name="label" value="Home" maxlength="30"></div>
+        <div class="field"><label for="ad-street">Street address</label><input id="ad-street" name="street" autocomplete="street-address" required></div>
+        <div class="field"><label for="ad-town">Town</label><input id="ad-town" name="town" autocomplete="address-level2" required></div>
+      </div>
+      <div class="field"><label for="ad-notes">Parking or gate notes, optional</label><input id="ad-notes" name="notes" maxlength="200"></div>
+      <div class="actions"><button class="btn btn--primary btn--small" type="submit">Save address</button></div>
+    </form>
+  </details>
+</section>
+
+{% if past %}
+<section class="acc-section" id="history" aria-labelledby="hist-h">
+  <h2 class="app-h2" id="hist-h">Past and cancelled visits</h2>
+  <div class="table-wrap"><table class="table">
+    <thead><tr><th>Date</th><th>Package</th><th>Car</th><th>Status</th><th>Total</th></tr></thead>
+    <tbody>{% for a in past %}<tr><td>{{ a.start.strftime('%b %-d, %Y') }}</td><td>{{ a.service_name }}</td><td>{{ a.vehicle_text or a.size_text }}</td><td>{{ a.status_text }}</td><td>{{ a.total_text }}</td></tr>{% endfor %}</tbody>
+  </table></div>
+</section>
+{% endif %}
+
+<section class="acc-section" id="profile" aria-labelledby="prof-h">
+  <h2 class="app-h2" id="prof-h">Profile</h2>
+  <div class="split-2">
+    <form method="post" action="/account/profile" class="panel-box stack">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="field"><label for="pr-name">Name</label><input id="pr-name" name="name" value="{{ customer.name }}" autocomplete="name" required></div>
+      <div class="field"><label for="pr-phone">Mobile phone</label><input id="pr-phone" name="phone" type="tel" value="{{ customer.phone }}" autocomplete="tel"></div>
+      <p class="field__hint">Email: {{ customer.email }}</p>
+      <div class="actions"><button class="btn btn--primary btn--small" type="submit">Save details</button></div>
+    </form>
+    <form method="post" action="/account/password" class="panel-box stack">
+      <input type="hidden" name="csrf" value="{{ csrf }}">
+      <div class="field"><label for="pw-cur">Current password</label><input id="pw-cur" name="current" type="password" autocomplete="current-password" required></div>
+      <div class="field"><label for="pw-new">New password</label><input id="pw-new" name="new" type="password" autocomplete="new-password" minlength="10" required></div>
+      <div class="actions"><button class="btn btn--secondary btn--small" type="submit">Change password</button></div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script type="module" src="/static/js/app.js?v={{ asset_v }}"></script>{% endblock %}

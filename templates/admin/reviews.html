@@ -1,0 +1,29 @@
+{% extends 'admin/base.html' %}
+{% block title %}Reviews{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Reviews</h1>
+  <p>Nothing shows on the site until you approve it. Each review is checked against your bookings by the email the customer gives (never shown publicly).</p></div></div>
+{% if rows %}{% for r in rows %}
+{% set st = 'denied' if r.status == 'hidden' else r.status %}
+<section class="panel-box review-card review-card--{{ st }}" style="margin-bottom: var(--s-3)">
+  <div class="row-between">
+    <div class="review-card__body">
+      <p class="stars" aria-label="{{ r.rating }} out of 5">{{ '★' * r.rating }}<span class="stars__off">{{ '★' * (5 - r.rating) }}</span></p>
+      <p class="msg-body">{{ r.message }}</p>
+      <p class="job__meta">{{ r.name }}{% if r.vehicle %} · {{ r.vehicle }}{% endif %} · {{ r.created_at[:10] }}{% if r.email %} · {{ r.email }}{% endif %}</p>
+      <p class="job__meta">
+        {% if r.verified and r.booking %}<span class="pill pill--ok">Verified customer</span> Completed {{ r.booking.service_name }} on {{ r.booking.start.strftime('%b %-d, %Y') }} · <a class="link" href="/admin/appointments/{{ r.booking.id }}">{{ r.booking.reference }}</a>
+        {% elif r.other %}<span class="pill pill--wait">Booked, not completed yet</span> This email has {{ r.other }} booking{{ 's' if r.other != 1 }}, none marked completed.
+        {% else %}<span class="pill pill--bad">No booking found</span> No booking under {{ r.email or 'this review' }}. It may be a different email, or not a customer.{% endif %}
+      </p>
+      <p class="job__meta">Status: <strong>{{ {'pending':'Waiting for you','approved':'Approved, on the site','denied':'Denied, not shown'}[st] }}</strong></p>
+    </div>
+    <div class="actions">
+      {% if st != 'approved' %}<form method="post" action="/admin/reviews/{{ r.id }}/approved"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--primary btn--small" type="submit">Approve</button></form>{% endif %}
+      {% if st != 'denied' %}<form method="post" action="/admin/reviews/{{ r.id }}/denied"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small" type="submit">Deny</button></form>{% endif %}
+      <form method="post" action="/admin/reviews/{{ r.id }}/delete" data-confirm="Delete this review for good?"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small btn--danger" type="submit">Delete</button></form>
+    </div>
+  </div>
+</section>
+{% endfor %}{% else %}<p class="empty">No reviews yet. When you mark a booking Completed with “Email the customer” ticked, they get a link to review it, and their review arrives here already verified.</p>{% endif %}
+{% endblock %}

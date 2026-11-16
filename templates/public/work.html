@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Before and after photos: GEM Autoworks mobile detailing{% endblock %}
+{% block description %}Before and after photos from real GEM Autoworks jobs around {{ site.service_area }}: Nissan Altima, Ford F-150, Kia K5 and more.{% endblock %}
+{% block body %}
+{% set hero = picture('/static/img/work/kia-k5-front') %}
+<main id="top">
+  <section class="hero hero--split" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h">Before and after photos from real jobs</h1>
+        <p class="hero__lead">Every photo here is a customer’s car detailed by GEM Autoworks in {{ site.service_area }}. Drag across a photo to see it before and after.</p>
+        <div class="btn-row">
+          <a class="btn btn--primary" href="/book">Book a detail<svg class="m-arrow" viewBox="0 0 12 12" aria-hidden="true"><path class="m-arrow__stem" d="M1 6h8"/><path class="m-arrow__head" d="M4.5 2.5 8 6l-3.5 3.5"/></svg></a>
+          <a class="btn btn--secondary" href="#pairs">See the before and after</a>
+        </div>
+      </div>
+      <div class="hero__media span-6 start-7">
+        <img src="{{ hero.src }}" srcset="{{ hero.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Kia K5 front cabin after a GEM interior detail" style="--ly-pos: 50% 55%" fetchpriority="high" width="1536" height="2048">
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section" id="pairs" style="--h: {{ ((pairs|length + 2) // 3) if pairs|length > 3 else 1 }}; --hm: {{ [pairs|length, 1]|max if pairs|length < 3 else ((pairs|length + 1) // 2) }}" aria-labelledby="pairs-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="pairs-h">Before and after, side by side</h2>
+        <p>Use the slider on each photo, or the arrow keys once it has focus.</p>
+      </div>
+      {% if pairs %}
+      <div class="grid">
+        {% for g in pairs %}
+        {% set b = picture(g.before_path) %}{% set a = picture(g.after_path) %}
+        <div class="compare span-4" data-compare>
+          <img class="compare__img" src="{{ a.src }}" srcset="{{ a.srcset }}" sizes="(min-width: 1024px) 560px, 100vw" alt="{{ g.alt }}" loading="lazy" width="1440" height="1440">
+          <div class="compare__before"><img class="compare__img" src="{{ b.src }}" srcset="{{ b.srcset }}" sizes="(min-width: 1024px) 560px, 100vw" alt="{{ g.before_alt }}" loading="lazy" width="1440" height="1440"></div>
+          <span class="compare__handle" aria-hidden="true"></span>
+          <label class="compare__tag compare__tag--before" for="cmp-{{ g.id }}">Before</label>
+          <label class="compare__tag compare__tag--after" for="cmp-{{ g.id }}">After</label>
+          <input class="compare__range" id="cmp-{{ g.id }}" type="range" min="0" max="100" value="50" aria-label="{{ g.title }}: slide to compare before and after">
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="empty-line">New before and after photos are on the way. Follow along on <a class="link" href="{{ site.instagram_url }}">Instagram</a>.</p>
+      {% endif %}
+    </div>
+  </section>
+
+</main>
+{% include 'partials/closing.html' %}
+{% endblock %}

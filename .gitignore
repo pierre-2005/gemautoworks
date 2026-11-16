@@ -6,3 +6,10 @@ __pycache__/
 *.sqlite3*
 data/
 /uploads/
+
+# local tooling and test output
+.taste-skill/chrome-*
+shots/
+visual-artifacts/
+.impeccable/review/
+__pycache__/

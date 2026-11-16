@@ -1,0 +1,54 @@
+{% extends 'admin/base.html' %}
+{% block title %}Hours{% endblock %}
+{% block content %}
+<div class="adm-head"><div><h1>Hours and booking rules</h1><p>Customers only see times inside these hours that don’t clash with a job, a block or the travel time between jobs.</p></div></div>
+<section class="panel-box" id="hours"><h2 class="app-h3">Weekly hours</h2>
+  <form method="post" action="/admin/availability/hours" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+    {% for h in hours %}
+    <div class="hours-row"><strong>{{ weekdays[h.weekday] }}</strong>
+      <label class="visually-hidden" for="o{{ h.weekday }}">{{ weekdays[h.weekday] }} opens</label><input id="o{{ h.weekday }}" type="time" name="open_{{ h.weekday }}" value="{{ h.open_at }}" step="900">
+      <label class="visually-hidden" for="c{{ h.weekday }}">{{ weekdays[h.weekday] }} closes</label><input id="c{{ h.weekday }}" type="time" name="close_{{ h.weekday }}" value="{{ h.close_at }}" step="900">
+      <label class="check"><input type="checkbox" name="closed_{{ h.weekday }}" value="1" {% if h.closed %}checked{% endif %}><span>Closed</span></label></div>
+    {% endfor %}
+    <div class="actions"><button class="btn btn--primary btn--small" type="submit">Save hours</button></div>
+  </form></section>
+
+<div class="split-2" style="margin-top: var(--s-5)">
+<section class="panel-box" id="days"><h2 class="app-h3">Days off and special hours</h2>
+  <form method="post" action="/admin/availability/override" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="form-grid"><div class="field"><label for="ov-day">Date</label><input id="ov-day" type="date" name="day" required></div>
+      <div class="field"><label for="ov-note">Note</label><input id="ov-note" name="note" placeholder="Vacation"></div>
+      <div class="field"><label for="ov-o">Opens</label><input id="ov-o" type="time" name="open_at" value="09:00" step="900"></div>
+      <div class="field"><label for="ov-c">Closes</label><input id="ov-c" type="time" name="close_at" value="14:00" step="900"></div></div>
+    <label class="check"><input type="checkbox" name="closed" value="1" checked><span>Closed all day</span></label>
+    <div class="actions"><button class="btn btn--secondary btn--small" type="submit">Add day</button></div></form>
+  {% if overrides %}<ul class="list-plain" style="margin-top: var(--s-4)">{% for o in overrides %}<li class="row-between"><span>{{ o.day }} · {{ 'Closed' if o.closed else nice_time(o.open_at) ~ '–' ~ nice_time(o.close_at) }}{% if o.note %} · {{ o.note }}{% endif %}</span>
+    <form method="post" action="/admin/availability/override/{{ o.day }}/delete"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small" type="submit">Remove</button></form></li>{% endfor %}</ul>{% endif %}
+</section>
+<section class="panel-box" id="blocks"><h2 class="app-h3">Block part of a day</h2>
+  <form method="post" action="/admin/availability/block" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="form-grid"><div class="field"><label for="bl-day">Date</label><input id="bl-day" type="date" name="day" required></div>
+      <div class="field"><label for="bl-note">Note</label><input id="bl-note" name="note" placeholder="Supply run"></div>
+      <div class="field"><label for="bl-s">From</label><input id="bl-s" type="time" name="start_at" value="12:00" step="900" required></div>
+      <div class="field"><label for="bl-e">To</label><input id="bl-e" type="time" name="end_at" value="13:00" step="900" required></div></div>
+    <div class="actions"><button class="btn btn--secondary btn--small" type="submit">Block time</button></div></form>
+  {% if blocks %}<ul class="list-plain" style="margin-top: var(--s-4)">{% for b in blocks %}<li class="row-between"><span>{{ b.start_local[:10] }} · {{ nice_time(b.start_local[11:]) }}–{{ nice_time(b.end_local[11:]) }}{% if b.note %} · {{ b.note }}{% endif %}</span>
+    <form method="post" action="/admin/availability/block/{{ b.id }}/delete"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn btn--secondary btn--small" type="submit">Remove</button></form></li>{% endfor %}</ul>{% endif %}
+</section>
+</div>
+
+<section class="panel-box" id="rules" style="margin-top: var(--s-5)"><h2 class="app-h3">Booking rules</h2>
+  <form method="post" action="/admin/settings/rules" class="stack"><input type="hidden" name="csrf" value="{{ csrf }}">
+    <div class="form-grid form-grid--3">
+      <div class="field"><label for="r1">Earliest booking, hours from now</label><input id="r1" name="booking_lead_hours" inputmode="numeric" value="{{ s.booking_lead_hours }}"></div>
+      <div class="field"><label for="r2">Book up to, days ahead</label><input id="r2" name="booking_window_days" inputmode="numeric" value="{{ s.booking_window_days }}"></div>
+      <div class="field"><label for="r3">Start times every, minutes</label><input id="r3" name="slot_step_minutes" inputmode="numeric" value="{{ s.slot_step_minutes }}"></div>
+      <div class="field"><label for="r4">Travel time between jobs, minutes</label><input id="r4" name="travel_buffer_minutes" inputmode="numeric" value="{{ s.travel_buffer_minutes }}"></div>
+      <div class="field"><label for="r5">Customers can change up to, hours before</label><input id="r5" name="cancel_cutoff_hours" inputmode="numeric" value="{{ s.cancel_cutoff_hours }}"></div>
+      <div class="field"><label for="r6">Plan visits kept on the calendar</label><input id="r6" name="plan_horizon_visits" inputmode="numeric" value="{{ s.plan_horizon_visits }}"></div>
+    </div>
+    <label class="check"><input type="checkbox" name="booking_requires_approval" value="1" {% if s.booking_requires_approval == '1' %}checked{% endif %}><span>I confirm each booking myself (customers see “request”, I get to check the address and the car first)</span></label>
+    <label class="check"><input type="checkbox" name="reminders_enabled" value="1" {% if s.reminders_enabled == '1' %}checked{% endif %}><span>Email customers a reminder the day before</span></label>
+    <div class="actions"><button class="btn btn--primary btn--small" type="submit">Save rules</button></div>
+  </form></section>
+{% endblock %}

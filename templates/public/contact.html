@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Contact GEM Autoworks: call, text or message{% endblock %}
+{% block description %}Call or text {{ site.phone }}, email, or send GEM Autoworks a message about your car. Mobile detailing in {{ site.service_area }}.{% endblock %}
+{% block body %}
+<main id="top">
+  <section class="hero hero--split" data-enter aria-labelledby="hero-h">
+    <div class="wrap"><div class="hero-text grid hero__grid">
+      <div class="hero__text span-5">
+        <h1 id="hero-h">Contact GEM Autoworks</h1>
+        <p class="hero__lead">Ask for a quote, check a date, or tell us about a tough job. Pavly replies by email or text, usually the same day.</p>
+        <div class="btn-row"><a class="btn btn--primary" href="/book">Book a detail</a><a class="btn btn--secondary" href="#message">Send a message</a></div>
+      </div>
+      <div class="hero__media span-6 start-7">
+        {% set hp = picture('/static/img/work/owner-senna') %}
+        <img src="{{ hp.src }}" srcset="{{ hp.srcset }}" sizes="(min-width: 1024px) 628px, 100vw" alt="Pavly, owner of GEM Autoworks, beside a black McLaren Senna" style="--ly-pos: 72% 40%" fetchpriority="high" width="1200" height="1600">
+      </div>
+    </div></div>
+  </section>
+
+  <section class="section ground-surface" id="message" style="--hm: 2" aria-labelledby="msg-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="msg-h">Send a message</h2>
+        <p>Ask for a quote, check a date, or tell us about a tough job.</p>
+      </div>
+      <div class="split-card">
+        <aside class="split-card__info" aria-label="Other ways to reach GEM">
+          <p class="split-card__title">Reach Pavly directly</p>
+          <ul class="methods">
+            <li><a class="method" href="{{ tel(site.phone) }}"><span class="method__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4-2 1.4a12 12 0 0 0 6.5 6.5l1.4-2 4 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span><span class="method__label">Call or text</span><span class="method__value">{{ site.phone }}</span></span></a></li>
+            <li><a class="method" href="mailto:{{ site.email }}"><span class="method__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 7l8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span><span class="method__label">Email</span><span class="method__value">{{ site.email }}</span></span></a></li>
+            <li><a class="method" href="{{ site.instagram_url }}" rel="noopener"><span class="method__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="12" r="3.8" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor"/></svg></span><span><span class="method__label">Instagram DM</span><span class="method__value">{{ site.instagram_handle }}</span></span></a></li>
+          </ul>
+          <p class="split-card__note"><span class="method__icon method__icon--sm"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>Replies by email or text, usually the same day.</p>
+        </aside>
+        <div class="split-card__form">
+        {% if sent %}
+        <div class="sent-state" role="status">
+          <h3 class="sent__title">Your message is in</h3>
+          <p>We reply by email or text, usually the same day. Want a time now? <a class="link" href="/book">Book a detail</a></p>
+        </div>
+        {% else %}
+        <form class="card-form card-form--flat" action="/contact" method="post" novalidate>
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <div class="hp" aria-hidden="true"><label for="f-website">Website</label><input id="f-website" name="website" tabindex="-1" autocomplete="off"></div>
+          {% if errors %}<p class="form-alert" role="alert">{{ errors|length }} thing{{ 's' if errors|length > 1 }} to fix before sending.</p>{% endif %}
+          <div class="cf-row">
+            <div class="cf-field"><label class="cf-label" for="f-name">Name</label>
+              <input id="f-name" name="name" type="text" autocomplete="name" value="{{ form.name or '' }}"{% if errors.name %} aria-invalid="true"{% endif %} aria-describedby="f-name-err">
+              {% if errors.name %}<p class="cf-error" id="f-name-err">{{ errors.name }}</p>{% endif %}</div>
+            <div class="cf-field"><label class="cf-label" for="f-phone">Phone <span class="cf-opt">optional</span></label>
+              <input id="f-phone" name="phone" type="tel" autocomplete="tel" value="{{ form.phone or '' }}"{% if errors.phone %} aria-invalid="true"{% endif %} aria-describedby="f-phone-err">
+              {% if errors.phone %}<p class="cf-error" id="f-phone-err">{{ errors.phone }}</p>{% endif %}</div>
+          </div>
+          <div class="cf-field"><label class="cf-label" for="f-email">Email</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" inputmode="email" value="{{ form.email or '' }}"{% if errors.email %} aria-invalid="true"{% endif %} aria-describedby="f-email-err">
+            {% if errors.email %}<p class="cf-error" id="f-email-err">{{ errors.email }}</p>{% endif %}</div>
+          <div class="cf-field"><label class="cf-label" for="f-message">Message</label>
+            <textarea id="f-message" name="message" rows="5" placeholder="The car, what it needs, and your town"{% if errors.message %} aria-invalid="true"{% endif %} aria-describedby="f-message-err">{{ form.message or '' }}</textarea>
+            {% if errors.message %}<p class="cf-error" id="f-message-err">{{ errors.message }}</p>{% endif %}</div>
+          <button class="btn btn--primary cf-submit" type="submit">Send message</button>
+        </form>
+        {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% if posts %}
+  <section class="section" id="instagram" aria-labelledby="ig-h">
+    <div class="wrap">
+      <div class="section-head section-head--split">
+        <h2 id="ig-h">Latest posts on Instagram</h2>
+        <a class="link" href="{{ site.instagram_url }}" rel="noopener">Follow {{ site.instagram_handle }}</a>
+      </div>
+      <div class="ig-grid">
+        {% for p in posts[:4] %}{% set img = picture(p.image_path) %}
+        <a href="{{ p.url }}" rel="noopener" aria-label="Open the post on Instagram: {{ p.caption[:80] }}">
+          <img src="{{ img.src }}" srcset="{{ img.srcset }}" sizes="(min-width: 1024px) 240px, 50vw" alt="{{ p.alt }}" loading="lazy" width="480" height="600">
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+</main>
+{% set close_title = 'Book a detail online' %}
+{% include 'partials/closing.html' %}
+{% endblock %}
